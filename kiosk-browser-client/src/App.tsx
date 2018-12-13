@@ -1,22 +1,33 @@
 import * as React from 'react';
 import './App.css';
-
-import logo from './logo.svg';
+import { Navigation } from './components/navigation';
 
 class App extends React.Component {
   public render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.tsx</code> and save to reload.
-        </p>
+        <div className="jumble-tron">
+          todo: here is where the images will display
+        </div>
+        <Navigation back={this.onBack} forward={this.onForward} pause={this.onPause} />
       </div>
     );
   }
+
+  private onBack = () => {
+    alert("got to back");
+    return;
+  };
+
+  private onForward = () => {
+    alert("got to forward");
+    return;
+  };
+
+  private onPause = () => {
+    alert("got to pause");
+    return;
+  };
 }
 
 export default App;
