@@ -9,9 +9,10 @@
         Title="MainWindow" Height="350" Width="525">
     <Grid>
 
-        <Controls:WebView x:Name="Viewport" Margin="0,29,0,0"/>
-        <TextBox x:Name="Location" HorizontalAlignment="Left" Height="28" TextWrapping="Wrap" Text="https://www.microsoft.com" VerticalAlignment="Top" Width="450"/>
-        <Button Content="Go" HorizontalAlignment="Left" Margin="451,-1,0,0" VerticalAlignment="Top" Width="66" Height="30" Click="Button_Click"/>
+        <Controls:WebView x:Name="Viewport" Margin="0,42,0,0"/>
+        <TextBox x:Name="Location" HorizontalAlignment="Left" Height="28" TextWrapping="Wrap" Text="https://www.microsoft.com" VerticalAlignment="Top" Width="371" Margin="0,1,0,0"/>
+        <Button Content="Go" HorizontalAlignment="Left" Margin="373,2,0,0" VerticalAlignment="Top" Width="66" Height="27" Click="Button_Click"/>
+        <Button x:Name="CaptureScreen" Content="Capture" HorizontalAlignment="Left" Margin="441,2,0,0" VerticalAlignment="Top" Width="66" Height="27" Click="CaptureScreen_Click"/>
 
     </Grid>
 </Window>
