@@ -24,5 +24,10 @@ namespace windows_push_client
         {
             InitializeComponent();
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            this.Viewport.Navigate(this.Location.Text);
+        }
     }
 }
