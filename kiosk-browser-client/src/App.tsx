@@ -5,31 +5,38 @@ import Sockette from 'sockette';
 
 import { Navigation } from './components/navigation';
 
+enum ConnectionState {
+  initializing,
+  connected,
+  failed,
+  reconnecting,
+}
+
 interface IState {
-  connected: boolean;
+  connectionState: ConnectionState;
   image?: string;
   ws?: Sockette;
 }
 
 class App extends React.Component {
-  public state: IState = { connected: false };
+  public state: IState = { connectionState: ConnectionState.initializing };
 
   public componentDidMount() {
     const ws = new Sockette("ws://localhost:8080", {
+      timeout: 3000,
+      // tslint:disable-next-line:object-literal-sort-keys
+      onerror: () => this.setState({ connectionState: ConnectionState.failed }),
       onmessage: msg => this.setState({ image: msg.data }),
-      onopen: () => this.setState({ connected: true }),
+      onopen: () => this.setState({ connectionState: ConnectionState.connected }),
+      onreconnect: () => this.setState({ connectionState: ConnectionState.reconnecting }),
     });
 
     this.setState({ ws });
   }
 
   public render() {
-    const connected = !!this.state.connected;
-
-    if (!connected) {
-      return (
-        <div>Connecting...</div>
-      );
+    if (this.state.connectionState !== ConnectionState.connected) {
+      return this.getDisconnectedBlock();
     } else {
       return (
         <div className="App">
@@ -44,6 +51,33 @@ class App extends React.Component {
         </div>
       );
     }
+  }
+
+  private getDisconnectedBlock() {
+    let block: JSX.Element;
+
+    switch (this.state.connectionState) {
+      case ConnectionState.connected:
+        throw new Error(`Invalid state ${this.state.connectionState}`);
+      case ConnectionState.failed:
+        block = (
+          <div>Connection failed!</div>
+        );
+        break;
+      case ConnectionState.reconnecting:
+        block = (
+          <div>Reconnecting...</div>
+        );
+        break;
+      case ConnectionState.initializing:
+      default:
+        block = (
+          <div>Connecting...</div>
+        );
+        break;
+    }
+
+    return block;
   }
 
   private onBack = () => {
