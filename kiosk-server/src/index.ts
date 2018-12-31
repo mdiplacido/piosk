@@ -1,37 +1,54 @@
-// tslint:disable-next-line:no-submodule-imports
+// tslint:disable:no-submodule-imports
 // tslint:disable:no-expression-statement
 import * as chokidar from 'chokidar';
-import * as fs from 'fs';
-import { ReplaySubject, Subject } from 'rxjs';
-import { debounceTime, filter, mergeMap, takeUntil, tap } from 'rxjs/operators';
+import { Stats } from 'fs';
+import { empty as observableEmpty, ReplaySubject, Subject } from 'rxjs';
+import { catchError, filter, mergeMap, takeUntil, tap } from 'rxjs/operators';
 import * as WebSocket from 'ws';
 
 import { ReadFileStream } from './io/read-file-stream';
 
 const PICKUP_DIRECTORY = "/tmp/screencap";
 
+interface PathStatsPair {
+    readonly path: string;
+    readonly stats: Stats;
+}
+
 // we will replay the last n file events
-const fileChangeSource = new ReplaySubject<string>(10);
+const fileChangeSource = new ReplaySubject<PathStatsPair>(10);
 
 const wss = new WebSocket.Server({ port: 8080 });
 
-const PATH_FILTER_PREDICATE = (path: string) => !!path && path.toLowerCase().endsWith(".png");
-
-// discover existing files
-// seems to be reading files in the order they were written which is what we want... FIFO
-fs.readdir(`${PICKUP_DIRECTORY}/`,
-    // tslint:disable-next-line:variable-name
-    (_err: NodeJS.ErrnoException, files: ReadonlyArray<string>) =>
-        files.filter(PATH_FILTER_PREDICATE).forEach(
-            f => fileChangeSource.next(f)));
+const PATH_FILTER_PREDICATE =
+    (pathStats: PathStatsPair) => !!pathStats && pathStats.path.toLowerCase().endsWith(".png");
 
 // start watcher for new and changing files.
-const watcher = chokidar.watch(PICKUP_DIRECTORY);
+const watcher = chokidar.watch(PICKUP_DIRECTORY, {
+    alwaysStat: true,
+    // wait for writes to have been stable for 2 seconds, check for changes every 100ms.
+    // i guess the thinking is that the latest you would know is after 2100 ms.
+    awaitWriteFinish: {
+        pollInterval: 100,
+        stabilityThreshold: 2000,
+    }
+});
+
+// TODO: we need a reaper to remove files that are older than some threshold.
 
 // watch for new files or changing files
+// NOTE: we cannot guarantee the order of the files, it's up to the client
+// to deal with sorting what it receives and dumping files it does not care
+// about.
 watcher
-    .on("add", path => fileChangeSource.next(path))
-    .on("change", path => fileChangeSource.next(path));
+    .on("add", (path, stats: Stats) => {
+        console.log(`got to watcher:add path is '${path}'`)
+        fileChangeSource.next({ path, stats });
+    })
+    .on("change", (path, stats: Stats) => {
+        console.log(`got to watcher:change path is '${path}'`)
+        fileChangeSource.next({ path, stats });
+    });
 
 wss.on('connection', ws => {
     const wsClosed = new Subject();
@@ -50,14 +67,23 @@ wss.on('connection', ws => {
         .pipe(
             takeUntil(wsClosed),
             filter(PATH_FILTER_PREDICATE),
-            // no changes in 5 seconds then we emit. 
-            // TODO: this probably should be done in a more robust way
-            // maybe we should check to see if the file file modification date is older than 5 seconds, rather than
-            // this implicit way of using debounce
-            debounceTime(5000),
-            // TODO: handle errors when reading file stream
-            mergeMap(path => ReadFileStream.fromPath(path)),
-            tap(({ path }) => watcher.unwatch(path))
+            tap(({ path }) => console.log(`attempting to read file ${path}`)),
+            mergeMap(pathStats =>
+                ReadFileStream.fromPath(pathStats.path).pipe(
+                    catchError(error => {
+                        // we have to catch errors so we keep the stream alive.
+                        console.error(`got retriable error: ${error}`);
+                        return observableEmpty();
+                    }))
+            ),
+            // if we get this far we are unwatching that means if a file reappears for some reason we will not see
+            // it from the watcher again.  don't see why this would be necessary.
+            tap(({ path }) => {
+                console.log(`unwatching path: ${path}`)
+                watcher.unwatch(path)
+            })
         )
-        .subscribe(({ data }) => ws.send(data.toString('base64')));
+        // not it is possible for files to be replayed that are no longer on disk, this will be handled and logged
+        // in the error block here
+        .subscribe(({ data }) => ws.send(data.toString('base64')), err => console.error(`got terminal Error! - ${err}`));
 });
