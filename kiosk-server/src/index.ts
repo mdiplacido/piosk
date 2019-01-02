@@ -1,18 +1,35 @@
 // tslint:disable:no-submodule-imports
 // tslint:disable:no-expression-statement
 import * as chokidar from 'chokidar';
-import { Stats } from 'fs';
+import { existsSync, mkdirSync, Stats } from 'fs';
 import { empty as observableEmpty, ReplaySubject, Subject } from 'rxjs';
 import { catchError, filter, mergeMap, takeUntil, tap } from 'rxjs/operators';
 import * as WebSocket from 'ws';
+import { argv } from 'yargs';
 
+import { Config } from './config/config';
 import { ReadFileStream } from './io/read-file-stream';
+import { ConsoleLogger } from './logging/console-logger';
 
-const PICKUP_DIRECTORY = "/tmp/screencap";
+
+const DEFAULT_PICKUP_DIRECTORY = "/tmp/piosk_pickup";
 
 interface PathStatsPair {
     readonly path: string;
     readonly stats: Stats;
+}
+
+const config: Config = {
+    pickupDirectory: (argv.pickup || "").replace(/[\\\/]+$/, '') || DEFAULT_PICKUP_DIRECTORY,
+};
+
+const logger = new ConsoleLogger("App")
+dumpSettings(config, logger);
+
+// ensure that pickup directory exists.
+if (!existsSync(config.pickupDirectory + "/")) {
+    logger.warn(`pickup directory ${config.pickupDirectory} does not exist, creating...`);
+    mkdirSync(config.pickupDirectory + "/");
 }
 
 // we will replay the last n file events
@@ -24,7 +41,7 @@ const PATH_FILTER_PREDICATE =
     (pathStats: PathStatsPair) => !!pathStats && pathStats.path.toLowerCase().endsWith(".png");
 
 // start watcher for new and changing files.
-const watcher = chokidar.watch(PICKUP_DIRECTORY, {
+const watcher = chokidar.watch(config.pickupDirectory, {
     alwaysStat: true,
     // wait for writes to have been stable for 2 seconds, check for changes every 100ms.
     // i guess the thinking is that the latest you would know is after 2100 ms.
@@ -42,20 +59,20 @@ const watcher = chokidar.watch(PICKUP_DIRECTORY, {
 // about.
 watcher
     .on("add", (path, stats: Stats) => {
-        console.log(`got to watcher:add path is '${path}'`)
+        logger.verbose(`got to watcher:add path is '${path}'`)
         fileChangeSource.next({ path, stats });
     })
     .on("change", (path, stats: Stats) => {
-        console.log(`got to watcher:change path is '${path}'`)
+        logger.verbose(`got to watcher:change path is '${path}'`)
         fileChangeSource.next({ path, stats });
     });
 
 wss.on('connection', (ws, req) => {
-    console.log(`Got new client connection from remote: ${req.connection.remoteAddress}`);
+    logger.info(`Got new client connection from remote: ${req.connection.remoteAddress}`);
     const wsClosed = new Subject();
 
     ws.on('message', message => {
-        console.log('received: %s', message);
+        logger.info('received: %s', message);
     });
 
     ws.on('close', () => {
@@ -68,25 +85,25 @@ wss.on('connection', (ws, req) => {
         .pipe(
             takeUntil(wsClosed),
             filter(PATH_FILTER_PREDICATE),
-            tap(({ path }) => console.log(`attempting to read file ${path}`)),
+            tap(({ path }) => logger.verbose(`attempting to read file ${path}`)),
             mergeMap(pathStats =>
                 ReadFileStream.fromPath(pathStats.path).pipe(
                     catchError(error => {
                         // we have to catch errors so we keep the stream alive.
-                        console.error(`got retriable error: ${error}`);
+                        logger.error(`got retriable error: ${error}`);
                         return observableEmpty();
                     }))
             ),
             // if we get this far we are unwatching that means if a file reappears for some reason we will not see
             // it from the watcher again.  don't see why this would be necessary.
             tap(({ path }) => {
-                console.log(`unwatching path: ${path}`)
+                logger.verbose(`unwatching path: ${path}`)
                 watcher.unwatch(path)
             })
         )
         // not it is possible for files to be replayed that are no longer on disk, this will be handled and logged
         // in the error block here
-        .subscribe(({ data }) => ws.send(data.toString('base64')), err => console.error(`got terminal Error! - ${err}`));
+        .subscribe(({ data }) => ws.send(data.toString('base64')), err => logger.error(`got terminal Error! - ${err}`));
 });
 
-console.log("running...");
+logger.info("running...");

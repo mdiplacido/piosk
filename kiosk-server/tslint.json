@@ -26,17 +26,17 @@
     // Immutability rules
     "readonly-keyword": true,
     "readonly-array": true,
-    "no-let": true,
+    "no-let": false,
     "no-object-mutation": true,
     "no-delete": true,
     "no-method-signature": true,
     // Functional style rules
-    "no-this": true,
-    "no-class": true,
+    "no-this": false,
+    "no-class": false,
     "no-mixed-interface": true,
     "no-console": false,
     "no-expression-statement": [
-      true,
+      false,
       {
         "ignore-prefix": [
           "console.",
@@ -44,7 +44,7 @@
         ]
       }
     ],
-    "no-if-statement": true
+    "no-if-statement": false
     /* end tslint-immutable rules */
   }
 }
