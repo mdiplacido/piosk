@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "kiosk-browser-client"
+		},
+		{
+			"path": "kiosk-server"
+		}
+	],
+	"settings": {}
+}
