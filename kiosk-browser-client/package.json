@@ -22,6 +22,7 @@
     "@types/node": "^10.12.15",
     "@types/react": "^16.7.17",
     "@types/react-dom": "^16.0.11",
+    "serve": "^10.1.1",
     "typescript": "^3.2.2"
   }
 }

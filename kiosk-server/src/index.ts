@@ -50,7 +50,8 @@ watcher
         fileChangeSource.next({ path, stats });
     });
 
-wss.on('connection', ws => {
+wss.on('connection', (ws, req) => {
+    console.log(`Got new client connection from remote: ${req.connection.remoteAddress}`);
     const wsClosed = new Subject();
 
     ws.on('message', message => {
@@ -87,3 +88,5 @@ wss.on('connection', ws => {
         // in the error block here
         .subscribe(({ data }) => ws.send(data.toString('base64')), err => console.error(`got terminal Error! - ${err}`));
 });
+
+console.log("running...");
