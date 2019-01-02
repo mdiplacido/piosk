@@ -1,0 +1,27 @@
+{
+  "name": "piosk",
+  "version": "1.0.0",
+  "description": "Top Level piosk node packages",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mdiplacido/piosk.git"
+  },
+  "keywords": [
+    "piosk",
+    "shared",
+    "dependencies"
+  ],
+  "author": "mdiplacido",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mdiplacido/piosk/issues"
+  },
+  "homepage": "https://github.com/mdiplacido/piosk#readme",
+  "devDependencies": {
+    "nodemon": "^1.18.9"
+  }
+}
