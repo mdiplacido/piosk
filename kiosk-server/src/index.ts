@@ -1,18 +1,19 @@
 // tslint:disable:no-submodule-imports
 // tslint:disable:no-expression-statement
-import * as chokidar from 'chokidar';
-import { existsSync, mkdirSync, Stats } from 'fs';
-import { empty as observableEmpty, ReplaySubject, Subject } from 'rxjs';
-import { catchError, filter, mergeMap, takeUntil, tap } from 'rxjs/operators';
-import * as WebSocket from 'ws';
-import { argv } from 'yargs';
+import * as chokidar from "chokidar";
+import { existsSync, mkdirSync, Stats } from "fs";
+import { empty as observableEmpty, ReplaySubject, Subject } from "rxjs";
+import { catchError, filter, mergeMap, takeUntil, tap } from "rxjs/operators";
+import * as WebSocket from "ws";
+import { argv } from "yargs";
 
-import { Config } from './config/config';
-import { ReadFileStream } from './io/read-file-stream';
-import { ConsoleLogger } from './logging/console-logger';
-
+import { Config } from "./config/config";
+import { ReadFileStream } from "./io/read-file-stream";
+import { ConsoleLogger } from "./logging/console-logger";
+import { dumpSettings } from "./utility/dump-settings";
 
 const DEFAULT_PICKUP_DIRECTORY = "/tmp/piosk_pickup";
+const DEFAULT_PORT = 8081;
 
 interface PathStatsPair {
     readonly path: string;
@@ -21,6 +22,8 @@ interface PathStatsPair {
 
 const config: Config = {
     pickupDirectory: (argv.pickup || "").replace(/[\\\/]+$/, '') || DEFAULT_PICKUP_DIRECTORY,
+    // has to be numeric and truthy
+    port: +argv.port || DEFAULT_PORT,
 };
 
 const logger = new ConsoleLogger("App")
@@ -35,7 +38,7 @@ if (!existsSync(config.pickupDirectory + "/")) {
 // we will replay the last n file events
 const fileChangeSource = new ReplaySubject<PathStatsPair>(10);
 
-const wss = new WebSocket.Server({ port: 8080 });
+const wss = new WebSocket.Server({ port: config.port });
 
 const PATH_FILTER_PREDICATE =
     (pathStats: PathStatsPair) => !!pathStats && pathStats.path.toLowerCase().endsWith(".png");

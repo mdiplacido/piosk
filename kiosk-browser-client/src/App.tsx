@@ -22,7 +22,7 @@ class App extends React.Component {
   public state: IState = { connectionState: ConnectionState.initializing };
 
   public componentDidMount() {
-    const ws = new Sockette("ws://localhost:8080", {
+    const ws = new Sockette("ws://localhost:8081", {
       timeout: 3000,
       // tslint:disable-next-line:object-literal-sort-keys
       onerror: () => this.setState({ connectionState: ConnectionState.failed }),
