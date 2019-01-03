@@ -12,7 +12,9 @@ import { ReadFileStream } from "./io/read-file-stream";
 import { ConsoleLogger } from "./logging/console-logger";
 import { dumpSettings } from "./utility/dump-settings";
 
-const DEFAULT_PICKUP_DIRECTORY = "/tmp/piosk_pickup";
+// we read from a jailed location on the Pi, clients that push to the Pi push over SFTP and the SSHD jails these
+// users this location on disk.
+const DEFAULT_PICKUP_DIRECTORY = "/var/jail/data/piosk_pickup";
 const DEFAULT_PORT = 8081;
 
 interface PathStatsPair {

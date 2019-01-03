@@ -34,7 +34,8 @@
             // snip wanted area
             g.CopyFromScreen(StartX, StartY, 0, 0, new System.Drawing.Size(Width, Height), CopyPixelOperation.SourceCopy);
 
-            const string screenCapFile = @"c:\temp\screencap\browsercap.png";
+            string name = Guid.NewGuid().ToString();
+            string screenCapFile = string.Format(@"c:\var\jail\data\piosk_pickup\{0}.png", name);
 
             // save uncompressed bitmap to disk
             using (System.IO.FileStream fs = System.IO.File.Open(screenCapFile, System.IO.FileMode.OpenOrCreate))
