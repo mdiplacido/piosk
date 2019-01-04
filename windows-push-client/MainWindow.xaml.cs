@@ -35,15 +35,13 @@
             g.CopyFromScreen(StartX, StartY, 0, 0, new System.Drawing.Size(Width, Height), CopyPixelOperation.SourceCopy);
 
             string name = Guid.NewGuid().ToString();
-            string screenCapFile = string.Format(@"c:\var\jail\data\piosk_pickup\{0}.png", name);
+            string screenCapFile = string.Format(@"\var\jail\data\piosk_pickup\{0}.png", name);
 
             // save uncompressed bitmap to disk
             using (System.IO.FileStream fs = System.IO.File.Open(screenCapFile, System.IO.FileMode.OpenOrCreate))
             {
                 screenshot.Save(fs, System.Drawing.Imaging.ImageFormat.Bmp);
             }
-
-            Process.Start(screenCapFile);
         }
 
         private System.Windows.Point TopLeft()
