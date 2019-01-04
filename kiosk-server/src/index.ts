@@ -1,7 +1,7 @@
 // tslint:disable:no-submodule-imports
 // tslint:disable:no-expression-statement
 import * as chokidar from "chokidar";
-import { existsSync, mkdirSync, Stats } from "fs";
+import { existsSync, mkdirpSync, Stats } from "fs-extra";
 import { empty as observableEmpty, ReplaySubject, Subject } from "rxjs";
 import { catchError, filter, mergeMap, takeUntil, tap } from "rxjs/operators";
 import * as WebSocket from "ws";
@@ -34,7 +34,8 @@ dumpSettings(config, logger);
 // ensure that pickup directory exists.
 if (!existsSync(config.pickupDirectory + "/")) {
     logger.warn(`pickup directory ${config.pickupDirectory} does not exist, creating...`);
-    mkdirSync(config.pickupDirectory + "/");
+    // make recursive as the parent folder may not exist.
+    mkdirpSync(config.pickupDirectory);
 }
 
 // we will replay the last n file events

@@ -54,6 +54,7 @@
   "dependencies": {
     "chalk": "^2.4.1",
     "chokidar": "^2.0.4",
+    "fs-extra": "^7.0.1",
     "rxjs": "^6.3.3",
     "sha.js": "^2.4.11",
     "ws": "^6.1.2",
