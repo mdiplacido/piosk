@@ -1,9 +1,9 @@
-﻿using System;
-using System.Linq;
-using System.Windows.Threading;
-
-namespace windows_push_client.Services
+﻿namespace windows_push_client.Services
 {
+    using System;
+    using System.Linq;
+    using System.Windows.Threading;
+
     public class TimedCaptureService
     {
         private readonly DispatcherTimer timer = new DispatcherTimer();
