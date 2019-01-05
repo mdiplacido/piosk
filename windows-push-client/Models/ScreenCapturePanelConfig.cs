@@ -8,5 +8,6 @@
         public string Url { get; set; }
         public string Author { get; set; }
         public TimeSpan Interval { get; set; }
+        public DateTime? LastCapture { get; set; }
     }
 }

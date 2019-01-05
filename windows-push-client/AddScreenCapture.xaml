@@ -15,7 +15,7 @@
         <Label Content="Name" HorizontalAlignment="Left" Margin="67,61,0,0" VerticalAlignment="Top"/>
         <TextBox x:Name="NameTextBox" HorizontalAlignment="Left" Height="23" Margin="113,66,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="439" TextChanged="NameTextBox_TextChanged"/>
         <Label Content="Capture Interval" HorizontalAlignment="Left" Margin="15,92,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="IntervalTextBox" HorizontalAlignment="Left" Height="23" Margin="113,95,0,0" TextWrapping="Wrap" Text="5" VerticalAlignment="Top" Width="120" TextChanged="IntervalTextBox_TextChanged"/>
+        <TextBox x:Name="IntervalTextBox" HorizontalAlignment="Left" Height="23" Margin="113,95,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" TextChanged="IntervalTextBox_TextChanged"/>
         <Label Content="seconds" HorizontalAlignment="Left" Margin="234,94,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.099,-0.391"/>
 
     </Grid>

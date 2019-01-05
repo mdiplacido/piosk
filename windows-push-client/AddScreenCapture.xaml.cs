@@ -10,7 +10,7 @@ namespace windows_push_client
     /// </summary>
     public partial class AddScreenCapture : UserControl
     {
-        private int LastSetIntervalValueSeconds = -1;
+        private int LastSetIntervalValueSeconds = 5;
 
         private bool isNameValid = false;
         private bool isIntervalValid = false;
