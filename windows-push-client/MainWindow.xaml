@@ -9,11 +9,14 @@
         Title="MainWindow" Height="450.323" Width="681.142">
     <Grid>
         <TabControl x:Name="screenCapturePanels" Margin="0,42,0,0">
-            <TabItem Header="TabItem">
-                <Grid Background="#FFE5E5E5" Margin="0,-4,-1,-8" VerticalAlignment="Bottom"/>
+            <TabItem x:Name="AddTab" Header="+">
+                <Grid Background="#FFE5E5E5">
+                    <local:AddScreenCapture x:Name="AddScreenCaptureComponent" Margin="0,2,0,0"/>
+                </Grid>
             </TabItem>
         </TabControl>
         <Button x:Name="PauseAllButton" Content="Pause" HorizontalAlignment="Left" Margin="7,6,0,0" VerticalAlignment="Top" Width="75"/>
         <Button x:Name="SaveAllButton" Content="Save All" HorizontalAlignment="Left" Margin="94,6,0,0" VerticalAlignment="Top" Width="75"/>
+        <TextBlock HorizontalAlignment="Left" Margin="269,214,0,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
     </Grid>
 </Window>

@@ -24,7 +24,15 @@
         {
             this.loggingService.Add("CreateCapturePanels initializing...");
 
-            this.screenCapturePanels.Items.Clear();
+            // hook the screen capture with our function
+            (this.AddScreenCaptureComponent as AddScreenCapture).SetSaveHandler(this.AddNewUserCreatedCapturePanel);
+
+            // add the log viewer 
+            this.screenCapturePanels.Items.Insert(0, new TabItem()
+            {
+                Header = "Log View",
+                Content = new LogView(this.loggingService),
+            });
 
             this.LoadCapturePanelConfigData()
                 .Select(config => new ScreenCapturePanel(config))
@@ -36,15 +44,8 @@
                 .ToList()
                 .ForEach(tab =>
                 {
-                    this.screenCapturePanels.Items.Add(tab);
+                    this.screenCapturePanels.Items.Insert(0, tab);
                 });
-
-            // add the log viewer 
-            this.screenCapturePanels.Items.Add(new TabItem()
-            {
-                Header = "Log View",
-                Content = new LogView(this.loggingService),
-            });
 
             this.loggingService.Add("CreateCapturePanels initializing complete");
         }
@@ -56,6 +57,21 @@
                 new ScreenCapturePanelConfig() { Url = "https://www.bing.com/", Name = "Bing Search" },
                 new ScreenCapturePanelConfig() { Url = "https://www.google.com/", Name = "Google Search" },
             };
+        }
+
+        private void AddNewUserCreatedCapturePanel(ScreenCapturePanelConfig config)
+        {
+            var panel = new ScreenCapturePanel(config);
+            var tab = new TabItem()
+            {
+                Content = panel,
+                Header = panel.Config.Name
+            };
+
+            this.screenCapturePanels.Items.Insert(0, tab);
+            this.screenCapturePanels.SelectedIndex = 0;
+
+            this.loggingService.Add(string.Format("Added new Capture Panel named \"{0}\"", panel.Config.Name));
         }
     }
 }

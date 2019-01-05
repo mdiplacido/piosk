@@ -79,6 +79,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AddScreenCapture.xaml.cs">
+      <DependentUpon>AddScreenCapture.xaml</DependentUpon>
+    </Compile>
     <Compile Include="LogView.xaml.cs">
       <DependentUpon>LogView.xaml</DependentUpon>
     </Compile>
@@ -87,6 +90,10 @@
       <DependentUpon>ScreenCapturePanel.xaml</DependentUpon>
     </Compile>
     <Compile Include="Services\LoggingService.cs" />
+    <Page Include="AddScreenCapture.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="LogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
