@@ -9,9 +9,6 @@
     <Grid>
         <RichTextBox x:Name="LogTextBox" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Block.LineHeight="6">
             <FlowDocument>
-                <Paragraph>
-                    <Run Text="RichTextBox"/>
-                </Paragraph>
             </FlowDocument>
         </RichTextBox>
     </Grid>

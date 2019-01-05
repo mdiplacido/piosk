@@ -14,17 +14,19 @@
     public partial class MainWindow : Window
     {
         private readonly LoggingService loggingService = new LoggingService();
+        private ILoggingService featureLogger;
         private TimedCaptureService timedCaptureService;
 
         public MainWindow()
         {
+            this.featureLogger = this.loggingService.ScopeForFeature("MainWindow");
             InitializeComponent();
             this.CreateCapturePanels();
         }
 
         private void CreateCapturePanels()
-        {
-            this.loggingService.Add("CreateCapturePanels initializing...");
+        { 
+            this.featureLogger.Info("CreateCapturePanels initializing...");
 
             // hook the screen capture with our function
             (this.AddScreenCaptureComponent as AddScreenCapture).SetSaveHandler(this.AddNewUserCreatedCapturePanel);
@@ -37,7 +39,7 @@
             });
 
             this.LoadCapturePanelConfigData()
-                .Select(config => new ScreenCapturePanel(config))
+                .Select(config => new ScreenCapturePanel(config, this.featureLogger))
                 .Select(panel => new TabItem()
                 {
                     Content = panel,
@@ -49,10 +51,10 @@
                     this.screenCapturePanels.Items.Insert(0, tab);
                 });
 
-            this.loggingService.Add("CreateCapturePanels initializing complete");
+            this.featureLogger.Info("CreateCapturePanels initializing complete");
 
             // we do not start the timer until the user decides to do so
-            this.timedCaptureService = new TimedCaptureService(loggingService);
+            this.timedCaptureService = new TimedCaptureService(this.featureLogger);
             this.UpdateCaptureServiceWithPanels();
         }
 
@@ -67,7 +69,7 @@
 
         private void AddNewUserCreatedCapturePanel(ScreenCapturePanelConfig config)
         {
-            var panel = new ScreenCapturePanel(config);
+            var panel = new ScreenCapturePanel(config, this.featureLogger);
             var tab = new TabItem()
             {
                 Content = panel,
@@ -77,7 +79,7 @@
             this.screenCapturePanels.Items.Insert(0, tab);
             this.screenCapturePanels.SelectedIndex = 0;
 
-            this.loggingService.Add(string.Format("Added new Capture Panel named \"{0}\"", panel.Config.Name));
+            this.featureLogger.Info("Added new Capture Panel named \"{0}\"", panel.Config.Name);
 
             this.UpdateCaptureServiceWithPanels();
         }

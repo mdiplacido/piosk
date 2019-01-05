@@ -7,7 +7,7 @@
     public class TimedCaptureService
     {
         private readonly DispatcherTimer timer = new DispatcherTimer();
-        private readonly LoggingService logger;
+        private readonly ILoggingService logger;
 
         private ScreenCapturePanel[] panelsToCapture = new ScreenCapturePanel[0];
 
@@ -19,17 +19,17 @@
             }
         }
 
-        public TimedCaptureService(LoggingService logger)
+        public TimedCaptureService(ILoggingService logger)
         {
             this.timer.Tick += CapturePanels_Tick;
-            this.logger = logger;
-            this.logger.Add(string.Format("TimedCaptureService: current timer IsEnabled '{0}'", this.timer.IsEnabled));
+            this.logger = logger.ScopeForFeature("TimedCaptureService");
+            this.logger.Info("current timer IsEnabled '{0}'", this.timer.IsEnabled);
         }
 
         private void CapturePanels_Tick(object sender, System.EventArgs e)
         {
-            this.logger.Add("TimedCaptureService: in CapturePanels_Tick...");
-            this.logger.Add("TimedCaptureService: exiting CapturePanels_Tick");
+            this.logger.Verbose("CapturePanels_Tick...");
+            this.logger.Verbose("exiting CapturePanels_Tick");
         }
 
         public void SetPanels(ScreenCapturePanel[] panels)
@@ -46,7 +46,7 @@
 
             if (minimumInterval == TimeSpan.Zero)
             {
-                this.logger.Add("TimedCaptureService: timer interval set to Zero, stopping timer");
+                this.logger.Warn("TimedCaptureService: timer interval set to Zero, stopping timer");
                 this.timer.Stop();
             }
 
@@ -71,9 +71,9 @@
 
         private void LogTimerInfo()
         {
-            this.logger.Add(string.Format("TimedCaptureService: timer IsEnabled {0}", this.timer.IsEnabled ? "Running" : "Paused"));
-            this.logger.Add(string.Format("TimedCaptureService: timer Interval: {0}", this.timer.Interval));
-            this.logger.Add(string.Format("TimedCaptureService: panel count: {0}", this.panelsToCapture.Count()));
+            this.logger.Info("timer IsEnabled {0}", this.timer.IsEnabled ? "Running" : "Paused");
+            this.logger.Info("timer Interval: {0}", this.timer.Interval);
+            this.logger.Info("panel count: {0}", this.panelsToCapture.Count());
         }
     }
 }
