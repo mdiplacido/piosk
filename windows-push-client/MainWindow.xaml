@@ -6,13 +6,14 @@
         xmlns:local="clr-namespace:windows_push_client"
         xmlns:Controls="clr-namespace:Microsoft.Toolkit.Wpf.UI.Controls;assembly=Microsoft.Toolkit.Wpf.UI.Controls.WebView" x:Class="windows_push_client.MainWindow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="450.323" Width="681.142">
     <Grid>
-
-        <Controls:WebView x:Name="Viewport" Margin="0,42,0,0"/>
-        <TextBox x:Name="Location" HorizontalAlignment="Left" Height="28" TextWrapping="Wrap" Text="https://www.microsoft.com" VerticalAlignment="Top" Width="371" Margin="0,1,0,0"/>
-        <Button Content="Go" HorizontalAlignment="Left" Margin="373,2,0,0" VerticalAlignment="Top" Width="66" Height="27" Click="Button_Click"/>
-        <Button x:Name="CaptureScreen" Content="Capture" HorizontalAlignment="Left" Margin="441,2,0,0" VerticalAlignment="Top" Width="66" Height="27" Click="CaptureScreen_Click"/>
-
+        <TabControl x:Name="screenCapturePanels" Margin="0,42,0,0">
+            <TabItem Header="TabItem">
+                <Grid Background="#FFE5E5E5" Margin="0,-4,-1,-8" VerticalAlignment="Bottom"/>
+            </TabItem>
+        </TabControl>
+        <Button x:Name="PauseAllButton" Content="Pause" HorizontalAlignment="Left" Margin="7,6,0,0" VerticalAlignment="Top" Width="75"/>
+        <Button x:Name="SaveAllButton" Content="Save All" HorizontalAlignment="Left" Margin="94,6,0,0" VerticalAlignment="Top" Width="75"/>
     </Grid>
 </Window>

@@ -1,52 +1,61 @@
 ﻿namespace windows_push_client
 {
-    using System;
-    using System.Diagnostics;
-    using System.Drawing;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Windows;
+    using System.Windows.Controls;
+    using windows_push_client.Models;
+    using windows_push_client.Services;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly LoggingService loggingService = new LoggingService();
+
         public MainWindow()
         {
             InitializeComponent();
+            this.CreateCapturePanels();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void CreateCapturePanels()
         {
-            this.Viewport.Navigate(this.Location.Text);
-        }
+            this.loggingService.Add("CreateCapturePanels initializing...");
 
-        private void CaptureScreen_Click(object sender, RoutedEventArgs e)
-        {
-            var topLeft = this.TopLeft();
-            TakeScreenshot((int)Math.Ceiling(topLeft.X), (int)Math.Ceiling(topLeft.Y), (int)Math.Ceiling(this.Viewport.ActualWidth), (int)Math.Ceiling(this.Viewport.ActualHeight));
-        }
+            this.screenCapturePanels.Items.Clear();
 
-        private void TakeScreenshot(int StartX, int StartY, int Width, int Height)
-        {
-            // Bitmap in right size
-            Bitmap screenshot = new Bitmap(Width, Height);
-            Graphics g = Graphics.FromImage(screenshot);
-            // snip wanted area
-            g.CopyFromScreen(StartX, StartY, 0, 0, new System.Drawing.Size(Width, Height), CopyPixelOperation.SourceCopy);
+            this.LoadCapturePanelConfigData()
+                .Select(config => new ScreenCapturePanel(config))
+                .Select(panel => new TabItem()
+                {
+                    Content = panel,
+                    Header = panel.Config.Name
+                })
+                .ToList()
+                .ForEach(tab =>
+                {
+                    this.screenCapturePanels.Items.Add(tab);
+                });
 
-            string name = Guid.NewGuid().ToString();
-            string screenCapFile = string.Format(@"\var\jail\data\piosk_pickup\{0}.png", name);
-
-            // save uncompressed bitmap to disk
-            using (System.IO.FileStream fs = System.IO.File.Open(screenCapFile, System.IO.FileMode.OpenOrCreate))
+            // add the log viewer 
+            this.screenCapturePanels.Items.Add(new TabItem()
             {
-                screenshot.Save(fs, System.Drawing.Imaging.ImageFormat.Bmp);
-            }
+                Header = "Log View",
+                Content = new LogView(this.loggingService),
+            });
+
+            this.loggingService.Add("CreateCapturePanels initializing complete");
         }
 
-        private System.Windows.Point TopLeft()
+        private List<ScreenCapturePanelConfig> LoadCapturePanelConfigData()
         {
-            return this.Viewport.PointToScreen(new System.Windows.Point(0, 0));
+            return new List<ScreenCapturePanelConfig>()
+            {
+                new ScreenCapturePanelConfig() { Url = "https://www.bing.com/", Name = "Bing Search" },
+                new ScreenCapturePanelConfig() { Url = "https://www.google.com/", Name = "Google Search" },
+            };
         }
     }
 }

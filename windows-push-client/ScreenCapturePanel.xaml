@@ -1,0 +1,18 @@
+﻿<UserControl
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:windows_push_client"
+             xmlns:Controls="clr-namespace:Microsoft.Toolkit.Wpf.UI.Controls;assembly=Microsoft.Toolkit.Wpf.UI.Controls.WebView" x:Class="windows_push_client.ScreenCapturePanel"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+
+        <Controls:WebView x:Name="Viewport" Margin="0,30,0,10"/>
+        <TextBox x:Name="Location" HorizontalAlignment="Left" Height="20" TextWrapping="Wrap" Text="https://www.microsoft.com" VerticalAlignment="Top" Width="166" Margin="0,1,0,0"/>
+        <Button Content="Go" HorizontalAlignment="Left" Margin="167,2,0,0" VerticalAlignment="Top" Width="29" Height="19" Click="Button_Click"/>
+        <Button x:Name="CaptureScreen" Content="Capture" HorizontalAlignment="Left" Margin="197,2,0,0" VerticalAlignment="Top" Width="62" Height="19" Click="CaptureScreen_Click"/>
+
+    </Grid>
+</UserControl>
