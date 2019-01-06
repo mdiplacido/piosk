@@ -66,8 +66,8 @@
         {
             return new List<ScreenCapturePanelConfig>()
             {
-                new ScreenCapturePanelConfig() { Url = "https://www.bing.com/", Name = "Bing Search", Interval = TimeSpan.FromSeconds(5) },
-                new ScreenCapturePanelConfig() { Url = "https://www.google.com/", Name = "Google Search", Interval = TimeSpan.FromSeconds(5) },
+                new ScreenCapturePanelConfig() { Url = "https://onlineclock.net/", Name = "Online Clock", Interval = TimeSpan.FromSeconds(5) },
+                new ScreenCapturePanelConfig() { Url = "http://www.clocktab.com/", Name = "Clock Tab", Interval = TimeSpan.FromSeconds(5) },
             };
         }
 
