@@ -16,11 +16,15 @@
         private readonly LoggingService loggingService = new LoggingService();
         private ILoggingService featureLogger;
         private TimedCaptureService timedCaptureService;
+        private LogView logView;
 
         public MainWindow()
         {
             this.featureLogger = this.loggingService.ScopeForFeature("MainWindow");
+
             InitializeComponent();
+
+            this.logView = new LogView(this.loggingService);
             this.CreateCapturePanels();
         }
 
@@ -35,11 +39,14 @@
             this.screenCapturePanels.Items.Insert(0, new TabItem()
             {
                 Header = "Log View",
-                Content = new LogView(this.loggingService),
+                Content = this.logView,
             });
 
+            // we do not start the timer until the user decides to do so
+            this.timedCaptureService = new TimedCaptureService(this.featureLogger);
+
             this.LoadCapturePanelConfigData()
-                .Select(config => new ScreenCapturePanel(config, this.featureLogger))
+                .Select(config => new ScreenCapturePanel(config, this.featureLogger, this.timedCaptureService, this.HandleCapturePanelFocusRequest))
                 .Select(panel => new TabItem()
                 {
                     Content = panel,
@@ -52,9 +59,6 @@
                 });
 
             this.featureLogger.Info("CreateCapturePanels initializing complete");
-
-            // we do not start the timer until the user decides to do so
-            this.timedCaptureService = new TimedCaptureService(this.featureLogger);
             this.UpdateCaptureServiceWithPanels();
         }
 
@@ -63,13 +67,13 @@
             return new List<ScreenCapturePanelConfig>()
             {
                 new ScreenCapturePanelConfig() { Url = "https://www.bing.com/", Name = "Bing Search", Interval = TimeSpan.FromSeconds(5) },
-                new ScreenCapturePanelConfig() { Url = "https://www.google.com/", Name = "Google Search", Interval = TimeSpan.FromSeconds(2) },
+                new ScreenCapturePanelConfig() { Url = "https://www.google.com/", Name = "Google Search", Interval = TimeSpan.FromSeconds(5) },
             };
         }
 
         private void AddNewUserCreatedCapturePanel(ScreenCapturePanelConfig config)
         {
-            var panel = new ScreenCapturePanel(config, this.featureLogger);
+            var panel = new ScreenCapturePanel(config, this.featureLogger, this.timedCaptureService, this.HandleCapturePanelFocusRequest);
             var tab = new TabItem()
             {
                 Content = panel,
@@ -106,6 +110,26 @@
             this.timedCaptureService.Toggle();
 
             this.PauseResumeButton.Content = this.timedCaptureService.IsEnabled ? "Stop" : "Start";
+        }
+
+        private void HandleCapturePanelFocusRequest(ScreenCapturePanel panel)
+        {
+            var match = this.screenCapturePanels.Items
+                .Cast<TabItem>()
+                .Select((t, i) => new { Index = i, Tab = t })
+                .FirstOrDefault(t => t.Tab.Content == panel);
+
+            if (match == null)
+            {
+                throw new ApplicationException(string.Format("Unexpected state! Not able to find panel {0}", panel.Config.Name));
+            }
+
+            this.screenCapturePanels.SelectedIndex = match.Index;
+        }
+
+        private void CleareLogsButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.logView.Clear();
         }
     }
 }

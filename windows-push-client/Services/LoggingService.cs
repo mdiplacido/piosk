@@ -1,5 +1,6 @@
 ﻿namespace windows_push_client.Services
 {
+    using NLog;
     using System;
     using System.Reactive.Linq;
     using System.Reactive.Subjects;
@@ -40,22 +41,22 @@
 
         public void Error(string message, params object[] args)
         {
-            this.logger.AddMessage(this.MakeFormattedMessage("Error", message, args));
+            this.logger.AddMessage(this.MakeFormattedMessage("E", message, args));
         }
 
         public void Info(string message, params object[] args)
         {
-            this.logger.AddMessage(this.MakeFormattedMessage("Info", message, args));
+            this.logger.AddMessage(this.MakeFormattedMessage("I", message, args));
         }
 
         public void Verbose(string message, params object[] args)
         {
-            this.logger.AddMessage(this.MakeFormattedMessage("Verbose", message, args));
+            this.logger.AddMessage(this.MakeFormattedMessage("V", message, args));
         }
 
         public void Warn(string message, params object[] args)
         {
-            this.logger.AddMessage(this.MakeFormattedMessage("Warn", message, args));
+            this.logger.AddMessage(this.MakeFormattedMessage("W", message, args));
         }
 
         private string MakeFormattedMessage(string type, string message, params object[] args)
@@ -69,6 +70,12 @@
     public class LoggingService
     {
         private readonly ReplaySubject<string> events = new ReplaySubject<string>(100);
+        private readonly Logger diskLogger;
+
+        public LoggingService()
+        {
+            this.diskLogger = this.SetupNLog();
+        }
 
         public IObservable<string> Events
         {
@@ -85,7 +92,17 @@
 
         public void AddMessage(string message)
         {
+            this.diskLogger.Trace(message);
             this.events.OnNext(message);
+        }
+
+        private Logger SetupNLog()
+        {
+            var config = new NLog.Config.LoggingConfiguration();
+            var logfile = new NLog.Targets.FileTarget("piosk-push-client") { FileName = "./piosk-push-client.log" };
+            config.AddRuleForAllLevels(logfile);
+            NLog.LogManager.Configuration = config;
+            return LogManager.GetCurrentClassLogger();
         }
     }
 }

@@ -33,5 +33,10 @@ namespace windows_push_client
             this.LogTextBox.AppendText(value + Environment.NewLine);
             this.LogTextBox.ScrollToEnd();
         }
+
+        public void Clear()
+        {
+            this.LogTextBox.Document.Blocks.Clear();
+        }
     }
 }
