@@ -99,6 +99,7 @@
     </Compile>
     <Compile Include="Services\LoggingService.cs" />
     <Compile Include="Services\TimedCaptureService.cs" />
+    <Compile Include="Utility\TimerUtility.cs" />
     <Page Include="AddScreenCapture.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

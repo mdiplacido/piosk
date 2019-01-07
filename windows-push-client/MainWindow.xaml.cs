@@ -83,7 +83,7 @@
             this.screenCapturePanels.Items.Insert(0, tab);
             this.screenCapturePanels.SelectedIndex = 0;
 
-            this.featureLogger.Info("Added new Capture Panel named \"{0}\"", panel.Config.Name);
+            this.featureLogger.Info("Added new Capture Panel named {0}", panel.Config.PrettyName);
 
             this.UpdateCaptureServiceWithPanels();
         }
@@ -121,7 +121,7 @@
 
             if (match == null)
             {
-                throw new ApplicationException(string.Format("Unexpected state! Not able to find panel {0}", panel.Config.Name));
+                throw new ApplicationException(string.Format("Unexpected state! Not able to find panel {0}", panel.Config.PrettyName));
             }
 
             this.screenCapturePanels.SelectedIndex = match.Index;

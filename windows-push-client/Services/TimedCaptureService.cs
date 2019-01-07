@@ -32,7 +32,8 @@
 
         public void NotifyPanelProcessingComplete(ScreenCapturePanel panel)
         {
-            this.logger.Info("Receiving completion notification from panel: {0}", panel.Config.Name);
+            this.logger.Info("Receiving completion notification from panel: {0}", panel.Config.PrettyName);
+            this.currentCapture = null;
             this.ProcessPanelQueue();
         }
 
@@ -127,6 +128,13 @@
 
             this.LogInfo();
 
+            // sanity check: it's possible that the timer has been paused.  we will short circuit here.
+            if (!this.timer.IsEnabled)
+            {
+                this.logger.Info("Timer is paused, exiting ProcessPanelQueue");
+                return;
+            }
+
             // pickup and new panels and add them to the queue.
             // only add panels not already in the queue
             this.PanelsDue().ForEach(p => this.panelCaptureQueue.Enqueue(p));
@@ -134,6 +142,12 @@
             if (!this.panelCaptureQueue.Any())
             {
                 this.logger.Verbose("ProcessPanelQueue - No panels to process.");
+                return;
+            }
+
+            if (this.currentCapture != null)
+            {
+                this.logger.Warn("Cannot Process more queue items, currently waiting on {0}", this.currentCapture.Config.PrettyName);
                 return;
             }
 
@@ -149,7 +163,7 @@
             // overlayed on top of our WebView will be captured.
             if (this.panelCaptureQueue.TryDequeue(out ScreenCapturePanel nextPanel))
             {
-                this.logger.Info("Dequeued {0}", nextPanel.Config.Name);
+                this.logger.Info("Dequeued {0}", nextPanel.Config.PrettyName);
 
                 // we use the current capture as a sanity check to ensure we don't process this agian
                 // in addition to checking if the panel itself thinks it is capturing.
@@ -157,7 +171,8 @@
 
                 // panels will call back to this ProcessPanelQueue when they are done processing work.
                 // this will allow the queue to continue to drain.
-                nextPanel.CaptureScreen();
+                // this is an async operation...
+                nextPanel.CaptureScreen(this);
             }
 
             this.LogInfo();

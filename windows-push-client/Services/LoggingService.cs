@@ -62,7 +62,7 @@
         private string MakeFormattedMessage(string type, string message, params object[] args)
         {
             var formattedMessage = string.Format(message, args);
-            var logSuffix = string.Format("[{0}][{1}] - ", type, this.feature);
+            var logSuffix = string.Format("[{0}][{1}][{2}] - ", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff"), type, this.feature);
             return logSuffix + formattedMessage;
         }
     }
@@ -102,7 +102,15 @@
             var logfile = new NLog.Targets.FileTarget("piosk-push-client") { FileName = "./piosk-push-client.log" };
             config.AddRuleForAllLevels(logfile);
             NLog.LogManager.Configuration = config;
-            return LogManager.GetCurrentClassLogger();
+
+            // NLog is our way to learn about application crashes as well
+            var logger = LogManager.GetCurrentClassLogger();
+
+            AppDomain.CurrentDomain.UnhandledException += 
+                (object sender, UnhandledExceptionEventArgs eArg) =>
+                    logger.Error(eArg.ExceptionObject?.ToString());
+
+            return logger;
         }
     }
 }
