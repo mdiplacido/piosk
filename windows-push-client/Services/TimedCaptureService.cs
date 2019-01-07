@@ -153,19 +153,19 @@
 
             this.logger.Info("Processing {0} panels", this.panelCaptureQueue.Count());
 
-            // take the first item and beging processing that, we will chain the processing
-            // when this panel completes or fails we will recieve notification and will move
+            // take the first item and begin processing that, we will chain the processing
+            // when this panel completes or fails we will receive notification and will move
             // on to the next panel.
 
-            // NOTE: why we chain - we need to serialize these due to the way we take the screenshot.
+            // NOTE: why we chain - we need to serialize these due to the way we take the screen-shot.
             // currently I don't have a way to ask the WebView to capture itself, I need
             // to actually capture the screen.  This has it's drawbacks as any other app windows
-            // overlayed on top of our WebView will be captured.
+            // overlay-ed on top of our WebView will be captured.
             if (this.panelCaptureQueue.TryDequeue(out ScreenCapturePanel nextPanel))
             {
                 this.logger.Info("Dequeued {0}", nextPanel.Config.PrettyName);
 
-                // we use the current capture as a sanity check to ensure we don't process this agian
+                // we use the current capture as a sanity check to ensure we don't process this again
                 // in addition to checking if the panel itself thinks it is capturing.
                 this.currentCapture = nextPanel;
 

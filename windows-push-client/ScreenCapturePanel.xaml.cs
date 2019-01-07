@@ -75,7 +75,7 @@
 
             if (!this.IsCaptureSourceTimer)
             {
-                this.logger.Verbose("Capture source is manual user click, running immedate capture");
+                this.logger.Verbose("Capture source is manual user click, running immediate capture");
                 this.HandleScreenCapture();
             }
             else
@@ -110,7 +110,7 @@
             // will unblock its navigation.
             if (!this.IsVisible)
             {
-                this.logger.Info("Panel {0} is being asked to navigate, but it is not visible, forcing visiblity", this.Config.PrettyName);
+                this.logger.Info("Panel {0} is being asked to navigate, but it is not visible, forcing visibility", this.Config.PrettyName);
                 this.requestFocus(this);
             }
 
