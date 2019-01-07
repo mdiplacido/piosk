@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:windows_push_client"
         xmlns:Controls="clr-namespace:Microsoft.Toolkit.Wpf.UI.Controls;assembly=Microsoft.Toolkit.Wpf.UI.Controls.WebView" x:Class="windows_push_client.MainWindow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450.323" Width="681.142">
+        Title="Piosk Capture Client" Height="450.323" Width="681.142">
     <Grid>
         <TabControl x:Name="screenCapturePanels" Margin="0,42,0,0">
             <TabItem x:Name="AddTab" Header="+">
