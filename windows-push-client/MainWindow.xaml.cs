@@ -35,10 +35,12 @@
                 new DiskPublisherService(this.config),
                 new SFTPPublisherService(new SFTPClientFactory(this.config), this.config),
                 this.featureLogger
-            );
+            )
+            {
+                EnableFtpPublishing = this.config.EnablePublishToSFTP,
+                EnableDiskPublishing = this.config.EnablePublishToDisk
+            };
 
-            this.capturePublisher.EnableFtpPublishing = this.config.EnablePublishToSFTP;
-            this.capturePublisher.EnableDiskPublishing = this.config.EnablePublishToDisk;          
             this.CreateCapturePanels();
         }
 
