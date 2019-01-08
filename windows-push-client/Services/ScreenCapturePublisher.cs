@@ -1,4 +1,6 @@
-﻿namespace windows_push_client.Services
+﻿
+
+namespace windows_push_client.Services
 {
     public class ScreenCapturePublisher : IPublisherService
     {
@@ -44,12 +46,19 @@
                 }
             }
 
+            void safeDecrementAndTrySendCompletion(PublishCompletionStatus s, string message)
+            {
+                // the underlying publishers can execute completion on threads other than the compute bound UI thread.
+                // to be safe we always dispatch back to the UI thread.
+                App.Current.Dispatcher.Invoke(() => decrementAndTrySendCompletion(s, message));
+            }
+
             if (this.EnableDiskPublishing)
             {
                 this.disk.Send(
                     data,
                     fileName,
-                    (s, message) => decrementAndTrySendCompletion(s, $"Completed writing file: {fileName}, status: {s}, message: {message}"));
+                    (s, message) => safeDecrementAndTrySendCompletion(s, $"Completed writing file: {fileName}, status: {s}, message: {message}"));
             }
             else
             {
@@ -61,7 +70,7 @@
                 this.sftp.Send(
                     data,
                     fileName,
-                    (s, message) => decrementAndTrySendCompletion(s, $"Completed sending ${fileName} over FTP, status: {s}, message: {message}"));
+                    (s, message) => safeDecrementAndTrySendCompletion(s, $"Completed sending ${fileName} over SFTP, status: {s}, message: {message}"));
             }
             else
             {

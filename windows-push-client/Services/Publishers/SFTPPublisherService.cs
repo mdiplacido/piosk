@@ -27,7 +27,12 @@
                     client.UploadFile(
                         stream,
                         Path.Combine(this.config.SFTPPublishPath, fileName),
-                        length => complete(PublishCompletionStatus.Success, $"Successfully uploaded {fileName}"));
+                        length => {
+                            if (length == (ulong)data.Length)
+                            {
+                                complete(PublishCompletionStatus.Success, $"Successfully uploaded {fileName}");
+                            }
+                        });
                 }
             }
             catch (Exception ex)
