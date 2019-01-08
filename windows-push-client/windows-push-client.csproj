@@ -44,6 +44,9 @@
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.4.5.11\lib\net45\NLog.dll</HintPath>
     </Reference>
+    <Reference Include="Renci.SshNet, Version=2016.1.0.0, Culture=neutral, PublicKeyToken=1cee9f8bde3db106, processorArchitecture=MSIL">
+      <HintPath>..\packages\SSH.NET.2016.1.0\lib\net40\Renci.SshNet.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
@@ -93,11 +96,17 @@
     <Compile Include="LogView.xaml.cs">
       <DependentUpon>LogView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Models\Config.cs" />
     <Compile Include="Models\ScreenCapturePanelConfig.cs" />
     <Compile Include="ScreenCapturePanel.xaml.cs">
       <DependentUpon>ScreenCapturePanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Services\Publishers\DiskPublisherService.cs" />
     <Compile Include="Services\LoggingService.cs" />
+    <Compile Include="Services\Publishers\IPublisherService.cs" />
+    <Compile Include="Services\Publishers\SFTPClientFactory.cs" />
+    <Compile Include="Services\Publishers\SFTPPublisherService.cs" />
+    <Compile Include="Services\ScreenCapturePublisher.cs" />
     <Compile Include="Services\TimedCaptureService.cs" />
     <Compile Include="Utility\TimerUtility.cs" />
     <Page Include="AddScreenCapture.xaml">
@@ -143,7 +152,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

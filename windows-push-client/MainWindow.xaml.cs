@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Configuration;
     using System.Linq;
     using System.Windows;
     using System.Windows.Controls;
@@ -16,20 +17,33 @@
         private readonly LoggingService loggingService = new LoggingService();
         private ILoggingService featureLogger;
         private TimedCaptureService timedCaptureService;
+        private ScreenCapturePublisher capturePublisher;
         private LogView logView;
+        private Config config;
 
         public MainWindow()
         {
+            this.config = Config.Load();
             this.featureLogger = this.loggingService.ScopeForFeature("MainWindow");
+            this.featureLogger.Info("Log Config {0}", this.config.ToString());
 
             InitializeComponent();
 
             this.logView = new LogView(this.loggingService);
+
+            this.capturePublisher = new ScreenCapturePublisher(
+                new DiskPublisherService(this.config),
+                new SFTPPublisherService(new SFTPClientFactory(this.config), this.config),
+                this.featureLogger
+            );
+
+            this.capturePublisher.EnableFtpPublishing = this.config.EnablePublishToSFTP;
+            this.capturePublisher.EnableDiskPublishing = this.config.EnablePublishToDisk;          
             this.CreateCapturePanels();
         }
 
         private void CreateCapturePanels()
-        { 
+        {
             this.featureLogger.Info("CreateCapturePanels initializing...");
 
             // hook the screen capture with our function
@@ -46,7 +60,13 @@
             this.timedCaptureService = new TimedCaptureService(this.featureLogger);
 
             this.LoadCapturePanelConfigData()
-                .Select(config => new ScreenCapturePanel(config, this.featureLogger, this.timedCaptureService, this.HandleCapturePanelFocusRequest))
+                .Select(config => new ScreenCapturePanel(
+                    config,
+                    this.featureLogger,
+                    this.timedCaptureService,
+                    this.capturePublisher,
+                    this.HandleCapturePanelFocusRequest)
+                )
                 .Select(panel => new TabItem()
                 {
                     Content = panel,
@@ -73,7 +93,13 @@
 
         private void AddNewUserCreatedCapturePanel(ScreenCapturePanelConfig config)
         {
-            var panel = new ScreenCapturePanel(config, this.featureLogger, this.timedCaptureService, this.HandleCapturePanelFocusRequest);
+            var panel = new ScreenCapturePanel(
+                config,
+                this.featureLogger,
+                this.timedCaptureService,
+                this.capturePublisher,
+                this.HandleCapturePanelFocusRequest);
+
             var tab = new TabItem()
             {
                 Content = panel,

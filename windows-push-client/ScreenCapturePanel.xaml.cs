@@ -14,20 +14,14 @@
     /// </summary>
     public partial class ScreenCapturePanel : UserControl
     {
-        private bool screenCaptureInProgress = false;
         private readonly ILoggingService logger;
         private readonly TimedCaptureService captureService;
         private readonly Action<ScreenCapturePanel> requestFocus;
         private object captureSource;  // the thing that started the capture eg. user button click or timer
         public ScreenCapturePanelConfig Config { get; set; }
+        private readonly ScreenCapturePublisher capturePublisher;
 
-        public bool IsCaptureInProgress
-        {
-            get
-            {
-                return this.screenCaptureInProgress;
-            }
-        }
+        public bool IsCaptureInProgress { get; private set; } = false;
 
         private bool IsCaptureSourceTimer
         {
@@ -37,9 +31,15 @@
             }
         }
 
-        public ScreenCapturePanel(ScreenCapturePanelConfig config, ILoggingService logger, TimedCaptureService captureService, Action<ScreenCapturePanel> requestFocus)
+        public ScreenCapturePanel(
+            ScreenCapturePanelConfig config, 
+            ILoggingService logger, 
+            TimedCaptureService captureService,
+            ScreenCapturePublisher capturePublisher,
+            Action<ScreenCapturePanel> requestFocus)
         {
             InitializeComponent();
+            this.capturePublisher = capturePublisher;
             this.requestFocus = requestFocus;
             this.captureService = captureService;
             this.logger = logger.ScopeForFeature("ScreenCapturePanel");
@@ -50,7 +50,7 @@
 
         public void CaptureScreen(object source)
         {
-            if (this.screenCaptureInProgress)
+            if (this.IsCaptureInProgress)
             {
                 this.logger.Warn("Skipping screen capture for {0}, screen capture in progress!", this.Config.PrettyName);
                 return;
@@ -59,7 +59,7 @@
             this.captureSource = source;
 
             this.logger.Verbose("Starting screen capture for {0}, refreshing WebView...", this.Config.PrettyName);
-            this.screenCaptureInProgress = true;
+            this.IsCaptureInProgress = true;
             this.Navigate();
         }
 
@@ -67,7 +67,7 @@
         {
             this.logger.Verbose("WebView navigation complete for {0}, checking if screen capture needed...", this.Config.PrettyName);
 
-            if (!this.screenCaptureInProgress)
+            if (!this.IsCaptureInProgress)
             {
                 this.logger.Verbose("Screen capture not needed, screen capture not in progress for {0}", this.Config.PrettyName);
                 return;
@@ -131,14 +131,14 @@
             // snip wanted area
             g.CopyFromScreen(StartX, StartY, 0, 0, new System.Drawing.Size(Width, Height), CopyPixelOperation.SourceCopy);
 
-            string name = Guid.NewGuid().ToString();
-            string screenCapFile = string.Format(@"\var\jail\data\piosk_pickup\{0}.png", name);
+            ImageConverter converter = new ImageConverter();
+            var imageBytes = (byte[])converter.ConvertTo(screenshot, typeof(byte[]));
+            string name = Guid.NewGuid().ToString() + ".png";
 
-            // save uncompressed bitmap to disk
-            using (System.IO.FileStream fs = System.IO.File.Open(screenCapFile, System.IO.FileMode.OpenOrCreate))
+            this.capturePublisher.Send(imageBytes, name, (status, message) =>
             {
-                screenshot.Save(fs, System.Drawing.Imaging.ImageFormat.Bmp);
-            }
+                this.logger.Verbose("Capture publish complete for {0}, status: {1}, message: {2}", this.Config.PrettyName, status, message);
+            });
         }
 
         private System.Windows.Point TopLeft()
@@ -157,7 +157,7 @@
             }
             finally
             {
-                this.screenCaptureInProgress = false;
+                this.IsCaptureInProgress = false;
                 this.logger.Verbose("Screen capture completed for {0}", this.Config.PrettyName);
                 this.Config.LastCapture = DateTime.UtcNow;
 
