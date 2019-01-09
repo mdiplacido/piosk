@@ -3,6 +3,8 @@
     using Microsoft.Toolkit.Win32.UI.Controls.Interop.WinRT;
     using System;
     using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
     using System.Windows;
     using System.Windows.Controls;
     using windows_push_client.Models;
@@ -32,8 +34,8 @@
         }
 
         public ScreenCapturePanel(
-            ScreenCapturePanelConfig config, 
-            ILoggingService logger, 
+            ScreenCapturePanelConfig config,
+            ILoggingService logger,
             TimedCaptureService captureService,
             ScreenCapturePublisher capturePublisher,
             Action<ScreenCapturePanel> requestFocus)
@@ -123,22 +125,28 @@
             this.CaptureScreen(this.CaptureScreenButton);
         }
 
-        private void TakeScreenshot(int StartX, int StartY, int Width, int Height)
+        private byte[] TakeScreenshot()
         {
+            // we have to take a screenshot using the Graphics interface.  asking the control to return a bitmap
+            // does not work with the WebView component, at least not at the time I wrote this.
+            // IMPORTANT: SCREENSHOT ONLY WORKS IF YOU ARE AT THE TERMINAL. WHAT I'VE BEEN DOING IS RUNNING
+            // THIS PUSH CLIENT ON A VM AND LEAVING MY SESSION ATTACHED.  SEE DOCUMENTATION FOR MORE DETAILS.
+            var topLeft = this.TopLeft();
+            int StartX = (int)Math.Ceiling(topLeft.X);
+            int StartY = (int)Math.Ceiling(topLeft.Y);
+            int Width = (int)Math.Ceiling(this.Viewport.ActualWidth);
+            int Height = (int)Math.Ceiling(this.Viewport.ActualHeight);
+
             // Bitmap in right size
-            Bitmap screenshot = new Bitmap(Width, Height);
-            Graphics g = Graphics.FromImage(screenshot);
-            // snip wanted area
-            g.CopyFromScreen(StartX, StartY, 0, 0, new System.Drawing.Size(Width, Height), CopyPixelOperation.SourceCopy);
-
-            ImageConverter converter = new ImageConverter();
-            var imageBytes = (byte[])converter.ConvertTo(screenshot, typeof(byte[]));
-            string name = Guid.NewGuid().ToString() + ".png";
-
-            this.capturePublisher.Send(imageBytes, name, (status, message) =>
+            using (Bitmap screenshot = new Bitmap(Width, Height))
+            using (Graphics g = Graphics.FromImage(screenshot))
+            using (var stream = new MemoryStream())
             {
-                this.logger.Verbose("Capture publish complete for {0}, status: {1}, message: {2}", this.Config.PrettyName, status, message);
-            });
+                // snip wanted area
+                g.CopyFromScreen(StartX, StartY, 0, 0, new System.Drawing.Size(Width, Height), CopyPixelOperation.SourceCopy);
+                screenshot.Save(stream, ImageFormat.Png);
+                return stream.ToArray();
+            }
         }
 
         private System.Windows.Point TopLeft()
@@ -150,10 +158,17 @@
         {
             // NOTE: at this point we assume that this panel is visible for screen capture
             this.logger.Verbose("Taking screen capture for {0}", this.Config.PrettyName);
+
             try
             {
-                var topLeft = this.TopLeft();
-                this.TakeScreenshot((int)Math.Ceiling(topLeft.X), (int)Math.Ceiling(topLeft.Y), (int)Math.Ceiling(this.Viewport.ActualWidth), (int)Math.Ceiling(this.Viewport.ActualHeight));
+                byte[] imageBytes = this.TakeScreenshot();
+
+                string name = Guid.NewGuid().ToString() + ".png";
+
+                this.capturePublisher.Send(imageBytes, name, (status, message) =>
+                {
+                    this.logger.Verbose("Capture publish complete for {0}, status: {1}, message: {2}", this.Config.PrettyName, status, message);
+                });
             }
             finally
             {

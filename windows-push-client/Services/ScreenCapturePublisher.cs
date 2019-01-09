@@ -1,7 +1,7 @@
-﻿
-
-namespace windows_push_client.Services
+﻿namespace windows_push_client.Services
 {
+    using System;
+
     public class ScreenCapturePublisher : IPublisherService
     {
         private readonly DiskPublisherService disk;
@@ -25,10 +25,17 @@ namespace windows_push_client.Services
             this.sftp = sftp;
         }
 
+
+        // TODO: we should have an enqueue which writes the image to disk for publishing.
+        // and a disk watcher that then enque's and gets the connection and performs the publishing off
+        // of the UI thread.  This will allow capture to write to a share and a separate instance on another 
+        // machine doing the publishing.
         public void Send(byte[] data, string fileName, PublishCompleteHandler complete)
         {
             var completionCount = 2;
             PublishCompletionStatus status = PublishCompletionStatus.None;
+
+            var startTime = DateTime.UtcNow;
 
             void decrementAndTrySendCompletion(PublishCompletionStatus s, string message)
             {
@@ -42,7 +49,9 @@ namespace windows_push_client.Services
 
                 if (--completionCount < 1)
                 {
-                    complete(status, $"Final publish status is {status}, last message: {message}");
+                    var elapsedTime = DateTime.UtcNow - startTime;
+                    var totalMbBytesSent = (data.Length / (1024 * 1024)).ToString("0.###");
+                    complete(status, $"Final publish status is {status}, time elpased: {elapsedTime.TotalSeconds} seconds, sent {totalMbBytesSent}Mb, last message: {message}");
                 }
             }
 

@@ -10,7 +10,7 @@
     <Grid>
 
         <Controls:WebView x:Name="Viewport" Margin="0,26,0,0"/>
-        <TextBox x:Name="Location" HorizontalAlignment="Left" Height="20" TextWrapping="Wrap" Text="https://www.microsoft.com" VerticalAlignment="Top" Width="166" Margin="0,1,0,0"/>
+        <TextBox x:Name="Location" HorizontalAlignment="Left" Height="20" Text="https://www.microsoft.com" VerticalAlignment="Top" Width="166" Margin="0,1,0,0"/>
         <Button Content="Go" HorizontalAlignment="Left" Margin="167,2,0,0" VerticalAlignment="Top" Width="29" Height="19" Click="Navigate_ButtonClick"/>
         <Button x:Name="CaptureScreenButton" Content="Capture" HorizontalAlignment="Left" Margin="197,2,0,0" VerticalAlignment="Top" Width="62" Height="19" Click="CaptureScreen_Click"/>
 
