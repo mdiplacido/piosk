@@ -50,7 +50,7 @@
                 if (--completionCount < 1)
                 {
                     var elapsedTime = DateTime.UtcNow - startTime;
-                    var totalMbBytesSent = (data.Length / (1024 * 1024)).ToString("0.###");
+                    var totalMbBytesSent = ((double)data.Length / (1024 * 1024)).ToString("0.###");
                     complete(status, $"Final publish status is {status}, time elpased: {elapsedTime.TotalSeconds} seconds, sent {totalMbBytesSent}Mb, last message: {message}");
                 }
             }
