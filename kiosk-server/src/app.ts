@@ -36,7 +36,7 @@ export class App {
         this.setupFileSystemWatcher();
         this.listenOnWebSocket();
         this.startReaper();
-        this.logger.info("Running...");
+        this.logger.info("WebSocket Server Running...");
     }
 
     private listenOnWebSocket(): void {
@@ -45,15 +45,17 @@ export class App {
             const wsClosed = new Subject();
 
             ws.on('message', message => {
-                this.logger.info('received: %s from client', message);
+                this.logger.info(`received: ${message} from client`);
             });
 
             ws.on('close', () => {
+                this.logger.info(`closing connection with client: ${req.connection.remoteAddress}`);
                 wsClosed.next();
                 wsClosed.complete();
             });
 
-            // tslint:disable-next-line:no-expression-statement
+            // here we setup a subscription to the FS change source and assuming the client is still connected
+            // eg. "wsClosed" has not emitted then we read the file and push it back down to the client.
             this.fileChangeSource
                 .pipe(
                     takeUntil(wsClosed),
@@ -71,12 +73,19 @@ export class App {
                     // it from the watcher again.  don't see why this would be necessary.
                     tap(({ path }) => {
                         this.logger.verbose(`un-watching path: ${path}`)
-                        this.fileSystemWatcher.unwatch(path)
+
+                        try {
+                            this.fileSystemWatcher.unwatch(path)
+                        } catch (error) {
+                            this.logger.error(`failed to un-watch the path ${path}`);
+                        }
                     })
                 )
                 // not it is possible for files to be replayed that are no longer on disk, this will be handled and logged
                 // in the error block here
-                .subscribe(({ data }) => ws.send(data.toString('base64')), err => this.logger.error(`got terminal Error! - ${err}`));
+                .subscribe(({ data }) => {
+                    ws.send(data.toString('base64'), error => error && this.logger.error(`got error ${error} sending to client`));
+                }, err => this.logger.error(`got terminal Error! - ${err}`));
         });
     }
 
