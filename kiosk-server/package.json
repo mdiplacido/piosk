@@ -31,7 +31,7 @@
     "monitor": "nodemon build/main",
     "version": "standard-version",
     "reset": "git clean -dfx && git reset --hard && npm i",
-    "start-watch": "run-s clean build:main && run-p \"build:main -- -w\" monitor",
+    "start:watch": "run-s clean build:main && run-p \"build:main -- -w\" monitor",
     "start": "npm run build:main && node build/main/index.js",
     "clean": "trash build test",
     "all": "run-s reset test cov:check doc:html",

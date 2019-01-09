@@ -7,6 +7,7 @@ import { catchError, filter, mergeMap, takeUntil, tap } from "rxjs/operators";
 import * as WebSocket from "ws";
 import { argv } from "yargs";
 
+import { App } from "./app";
 import { Config } from "./config/config";
 import { ReadFileStream } from "./io/read-file-stream";
 import { ConsoleLogger } from "./logging/console-logger";
@@ -28,8 +29,12 @@ const config: Config = {
     port: +argv.port || DEFAULT_PORT,
 };
 
-const logger = new ConsoleLogger("App")
+const logger = new ConsoleLogger("Main")
 dumpSettings(config, logger);
+
+const app = new App(logger);
+app.run();
+
 
 // ensure that pickup directory exists.
 if (!existsSync(config.pickupDirectory + "/")) {
