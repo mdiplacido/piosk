@@ -26,7 +26,7 @@
         public TimedCaptureService(ILoggingService logger)
         {
             this.timer.Tick += CapturePanels_Tick;
-            this.logger = logger.ScopeForFeature("TimedCaptureService");
+            this.logger = logger.ScopeForFeature(this.GetType());
             this.logger.Info("current timer IsEnabled '{0}'", this.timer.IsEnabled);
         }
 

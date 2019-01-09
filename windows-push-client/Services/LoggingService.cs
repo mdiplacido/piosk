@@ -12,7 +12,7 @@
         void Error(string message, params object[] args);
         void Warn(string message, params object[] args);
         void Info(string message, params object[] args);
-        ILoggingService ScopeForFeature(string feature);
+        ILoggingService ScopeForFeature(Type feature);
     }
 
     public class ScopedLoggingService : ILoggingService
@@ -34,9 +34,9 @@
             }
         }
 
-        public ILoggingService ScopeForFeature(string feature)
+        public ILoggingService ScopeForFeature(Type feature)
         {
-            return this.logger.ScopeForFeature(feature);
+            return this.logger.ScopeForFeature(nameof(feature));
         }
 
         public void Error(string message, params object[] args)

@@ -20,7 +20,7 @@
 
         public ScreenCapturePublisher(DiskPublisherService disk, SFTPPublisherService sftp, ILoggingService logger)
         {
-            this.logger = logger.ScopeForFeature("ScreenCapturePublisher");
+            this.logger = logger.ScopeForFeature(this.GetType());
             this.disk = disk;
             this.sftp = sftp;
         }
@@ -51,7 +51,7 @@
                 {
                     var elapsedTime = DateTime.UtcNow - startTime;
                     var totalMbBytesSent = ((double)data.Length / (1024 * 1024)).ToString("0.###");
-                    complete(status, $"Final publish status is {status}, time elpased: {elapsedTime.TotalSeconds} seconds, sent {totalMbBytesSent}Mb, last message: {message}");
+                    complete(status, $"Final publish status is {status}, time elpased: {elapsedTime.TotalSeconds} seconds, image size {totalMbBytesSent}Mb, last message: {message}");
                 }
             }
 

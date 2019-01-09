@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Configuration;
     using System.Linq;
     using System.Windows;
     using System.Windows.Controls;
@@ -33,7 +32,7 @@
 
             this.capturePublisher = new ScreenCapturePublisher(
                 new DiskPublisherService(this.config),
-                new SFTPPublisherService(new SFTPClientFactory(this.config), this.config),
+                new SFTPPublisherService(new SFTPClientFactory(this.config), this.config, this.featureLogger),
                 this.featureLogger
             )
             {

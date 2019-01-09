@@ -44,7 +44,7 @@
             this.capturePublisher = capturePublisher;
             this.requestFocus = requestFocus;
             this.captureService = captureService;
-            this.logger = logger.ScopeForFeature("ScreenCapturePanel");
+            this.logger = logger.ScopeForFeature(this.GetType());
             this.Config = config;
             this.Location.Text = config.Url;
             this.Viewport.NavigationCompleted += Viewport_NavigationCompleted;
