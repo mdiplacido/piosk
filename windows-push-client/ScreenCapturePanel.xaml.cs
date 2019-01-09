@@ -142,6 +142,9 @@
             using (Graphics g = Graphics.FromImage(screenshot))
             using (var stream = new MemoryStream())
             {
+                var dpi = this.GetDPI();
+                screenshot.SetResolution(dpi.Item1, dpi.Item2);
+
                 // snip wanted area
                 g.CopyFromScreen(StartX, StartY, 0, 0, new System.Drawing.Size(Width, Height), CopyPixelOperation.SourceCopy);
                 screenshot.Save(stream, ImageFormat.Png);
@@ -185,6 +188,21 @@
                     this.captureService.NotifyPanelProcessingComplete(this);
                 }
             }
+        }
+
+        private Tuple<float, float> GetDPI()
+        {
+            PresentationSource source = PresentationSource.FromVisual(this.Viewport);
+
+            float dpiX = 96.0f, dpiY = 96.0f;
+
+            if (source != null)
+            {
+                dpiX = 96.0f * (float)source.CompositionTarget.TransformToDevice.M11;
+                dpiY = 96.0f * (float)source.CompositionTarget.TransformToDevice.M22;
+            }
+
+            return new Tuple<float, float>(dpiX, dpiY);         
         }
     }
 }
