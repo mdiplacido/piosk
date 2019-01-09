@@ -11,6 +11,7 @@ import { Config } from './config/config';
 import { empty as observableEmpty, ReplaySubject, Subject } from 'rxjs';
 import { existsSync, mkdirpSync, Stats } from 'fs-extra';
 import { Logger } from './logging/logger';
+import { PickupReaper } from './reaper/pickup-reaper';
 import { ReadFileStream } from './io/read-file-stream';
 
 interface PathStatsPair {
@@ -25,10 +26,12 @@ export class App {
     private readonly logger: Logger;
     private readonly fileChangeSource = new ReplaySubject<PathStatsPair>(10);
     private readonly wss = new WebSocket.Server({ port: this.config.port });
+    private readonly reaper: PickupReaper;
     private fileSystemWatcher: chokidar.FSWatcher;
 
     constructor(private readonly config: Config, logger: Logger) {
         this.logger = logger.createScopedLogger("App", true /* increment depth */);
+        this.reaper = new PickupReaper(this.logger);
     }
 
     public run(): void {
@@ -90,7 +93,12 @@ export class App {
     }
 
     private startReaper(): void {
-        this.logger.info("Starting reaper...");
+        if (!this.config.isReaperEnabled) {
+            this.logger.warn("Reaper is not enabled, pickup directory can overflow");
+            return;
+        }
+
+        this.reaper.run();
     }
 
     private setupFileSystemWatcher(): void {
