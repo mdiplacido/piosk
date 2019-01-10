@@ -7,5 +7,9 @@
 			"path": "kiosk-server"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"cSpell.words": [
+			"pngx"
+		]
+	}
 }

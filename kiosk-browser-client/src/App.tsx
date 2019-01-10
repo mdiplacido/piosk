@@ -15,12 +15,17 @@ enum ConnectionState {
 
 interface IState {
   connectionState: ConnectionState;
-  image?: string;
+  images: IImagePayload[];
+  currentImage: IImagePayload;
   ws?: Sockette;
 }
 
-class App extends React.Component {
-  public state: IState = { connectionState: ConnectionState.initializing };
+class App extends React.Component<any, IState> {
+  public state: IState = { 
+    connectionState: ConnectionState.initializing,
+    currentImage: null as any as IImagePayload,
+    images: [],
+  };
 
   public componentDidMount() {
     const ws = new Sockette("ws://localhost:8081", {
@@ -46,8 +51,8 @@ class App extends React.Component {
         <div className="App">
           <div className="jumble-tron">
             {
-              this.state.image ?
-                <img src={`data:image/png;base64,${this.state.image}`} /> :
+              this.state.currentImage ?
+                <img src={`data:image/png;base64,${this.state.currentImage.data}`} /> :
                 <div>No images to show</div>
             }
           </div>
@@ -62,8 +67,8 @@ class App extends React.Component {
 
     switch (kioskMessage.type) {
       case KioskMessageType.Image: {
-        const imageInfo = kioskMessage.payload as IImagePayload
-        this.setState({ image: imageInfo.data });
+        const imagePayload = kioskMessage.payload as IImagePayload;
+        this.setState(prev => ({ currentImage: imagePayload, images: [...prev.images, imagePayload] }));
         break;
       }
       default:
@@ -100,14 +105,24 @@ class App extends React.Component {
   }
 
   private onBack = () => {
-    alert("got to back");
-    return;
+    this.move("back");
   };
 
   private onForward = () => {
-    alert("got to forward");
-    return;
+    this.move("forward");
   };
+
+  private move(direction: "forward" | "back") {
+    const add = direction === "forward" ? 1 : -1;
+    const index = this.state.images.indexOf(this.state.currentImage) + add;
+
+    if (index < 0 || index > this.state.images.length - 1) {
+      return;
+    }
+
+    this.setState(( { currentImage: this.state.images[index] } ));
+    return;
+  }
 
   private onPause = () => {
     alert("got to pause");
