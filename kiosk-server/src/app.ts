@@ -1,18 +1,14 @@
-import * as chokidar from 'chokidar';
-import * as WebSocket from 'ws';
-import {
-    catchError,
-    filter,
-    mergeMap,
-    takeUntil,
-    tap
-    } from 'rxjs/operators';
-import { Config } from './config/config';
-import { empty as observableEmpty, ReplaySubject, Subject } from 'rxjs';
-import { existsSync, mkdirpSync, Stats } from 'fs-extra';
-import { Logger } from './logging/logger';
-import { PickupReaper } from './reaper/pickup-reaper';
-import { ReadFileStream } from './io/read-file-stream';
+import * as chokidar from "chokidar";
+import { existsSync, mkdirpSync, Stats } from "fs-extra";
+import { empty as observableEmpty, ReplaySubject, Subject } from "rxjs";
+import { catchError, filter, mergeMap, takeUntil, tap } from "rxjs/operators";
+import * as WebSocket from "ws";
+
+import { Config } from "./config/config";
+import { ReadFileStream } from "./io/read-file-stream";
+import { Logger } from "./logging/logger";
+import { IKioskMessage } from "./model/payloads";
+import { PickupReaper } from "./reaper/pickup-reaper";
 
 interface PathStatsPair {
     readonly path: string;
@@ -87,7 +83,7 @@ export class App {
                 // not it is possible for files to be replayed that are no longer on disk, this will be handled and logged
                 // in the error block here
                 .subscribe(({ data, path }) => {
-                    this.logger.verbose(`sending file ${path} to client: ${ req.connection.remoteAddress }`);
+                    this.logger.verbose(`sending file ${path} to client: ${req.connection.remoteAddress}`);
                     const payload = this.createImagePayloadFromPng(data, path);
                     ws.send(payload, error => error && this.logger.error(`got error ${error} sending to client`));
                 }, err => this.logger.error(`got terminal Error! - ${err}`));
@@ -96,7 +92,10 @@ export class App {
 
     private createImagePayloadFromPng(_data: Buffer, _path: string): IKioskMessage {
         // handle scenario where we found a png and we need to make a payload for the "random" channel/category
-        return null;
+        var test: IKioskMessage = {
+        } as IKioskMessage;
+
+        return test;
     }
 
     private startReaper(): void {

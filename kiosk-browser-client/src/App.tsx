@@ -1,9 +1,10 @@
-import './App.css';
+import "./App.css";
 
-import * as React from 'react';
-import Sockette from 'sockette';
+import * as React from "react";
+import Sockette from "sockette";
 
-import { Navigation } from './components/navigation';
+import { Navigation } from "./components/navigation";
+import { IImagePayload, IKioskMessage, KioskMessageType } from "./model/payloads";
 
 enum ConnectionState {
   initializing,
@@ -27,7 +28,7 @@ class App extends React.Component {
       // tslint:disable-next-line:object-literal-sort-keys
       onerror: () =>
         this.setState({ connectionState: ConnectionState.failed }),
-      onmessage: msg => this.handleMessage(msg),        
+      onmessage: msg => this.handleMessage(msg),
       onopen: () =>
         this.setState({ connectionState: ConnectionState.connected }),
       onreconnect: () =>
@@ -63,7 +64,7 @@ class App extends React.Component {
       case KioskMessageType.Image: {
         const imageInfo = kioskMessage.payload as IImagePayload
         this.setState({ image: imageInfo.data });
-        break;        
+        break;
       }
       default:
         console.log(`cannot handle type ${kioskMessage.type}`);
