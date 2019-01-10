@@ -17,6 +17,7 @@ interface IState {
   connectionState: ConnectionState;
   images: IImagePayload[];
   currentImage: IImagePayload;
+  maxImages: number;
   ws?: Sockette;
 }
 
@@ -25,6 +26,7 @@ class App extends React.Component<any, IState> {
     connectionState: ConnectionState.initializing,
     currentImage: null as any as IImagePayload,
     images: [],
+    maxImages: 10
   };
 
   public componentDidMount() {
@@ -73,7 +75,7 @@ class App extends React.Component<any, IState> {
         // were we are not sorting the incoming initial images on disk.  for now we will sort on the client.
         // we will not assume that the current image is the latest
         this.setState(prev => {
-          const images = this.sortImages([...prev.images, imagePayload]);
+          const images = this.pruneAndSortImages([...prev.images, imagePayload]);
           const currentImage = images[images.length - 1];
           return {
             currentImage,
@@ -141,9 +143,15 @@ class App extends React.Component<any, IState> {
     return;
   };
 
-  private sortImages = (images: IImagePayload[]) => {
+  private pruneAndSortImages = (images: IImagePayload[]) => {
     // we sort images ascending.
-    return images.sort((a, b) => a.birthtimeMs - b.birthtimeMs);
+    const sortedImages = images.sort((a, b) => a.birthtimeMs - b.birthtimeMs);
+
+    const keepIndex = Math.max(0, sortedImages.length - this.state.maxImages);
+
+    // we will drop any images over max
+    // tslint:disable-next-line:variable-name
+    return sortedImages.filter((_image, i) => i >= keepIndex);
   }
 }
 
