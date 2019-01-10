@@ -31,7 +31,7 @@ export class App {
 
     constructor(private readonly config: Config, logger: Logger) {
         this.logger = logger.createScopedLogger("App", true /* increment depth */);
-        this.reaper = new PickupReaper(this.logger);
+        this.reaper = new PickupReaper(this.config, this.logger);
     }
 
     public run(): void {
