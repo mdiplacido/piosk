@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import { App } from './app';
 import { argv } from 'yargs';
 import { Config } from './config/config';
@@ -13,6 +14,9 @@ const config: Config = {
     pickupDirectory: (argv.pickup || "").replace(/[\\\/]+$/, '') || DEFAULT_PICKUP_DIRECTORY,
     // has to be numeric and truthy
     port: +argv.port || DEFAULT_PORT,
+    isReaperEnabled: _.isNil(argv.enableReaper) ? true : argv.enableReaper === "true",
+    reapIntervalSeconds: +argv.reapIntervalSeconds || 60,
+    pickupQuotaMb: +argv.pickupQuotaMb || 100,
 };
 
 const logger = new ConsoleLogger("Main")
