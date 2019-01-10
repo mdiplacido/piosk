@@ -88,9 +88,15 @@ export class App {
                 // in the error block here
                 .subscribe(({ data, path }) => {
                     this.logger.verbose(`sending file ${path} to client: ${ req.connection.remoteAddress }`);
-                    ws.send(data.toString('base64'), error => error && this.logger.error(`got error ${error} sending to client`));
+                    const payload = this.createImagePayloadFromPng(data, path);
+                    ws.send(payload, error => error && this.logger.error(`got error ${error} sending to client`));
                 }, err => this.logger.error(`got terminal Error! - ${err}`));
         });
+    }
+
+    private createImagePayloadFromPng(_data: Buffer, _path: string): IKioskMessage {
+        // handle scenario where we found a png and we need to make a payload for the "random" channel/category
+        return null;
     }
 
     private startReaper(): void {

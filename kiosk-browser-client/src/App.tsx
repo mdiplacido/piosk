@@ -25,10 +25,13 @@ class App extends React.Component {
     const ws = new Sockette("ws://localhost:8081", {
       timeout: 3000,
       // tslint:disable-next-line:object-literal-sort-keys
-      onerror: () => this.setState({ connectionState: ConnectionState.failed }),
-      onmessage: msg => this.setState({ image: msg.data }),
-      onopen: () => this.setState({ connectionState: ConnectionState.connected }),
-      onreconnect: () => this.setState({ connectionState: ConnectionState.reconnecting }),
+      onerror: () =>
+        this.setState({ connectionState: ConnectionState.failed }),
+      onmessage: msg => this.handleMessage(msg),        
+      onopen: () =>
+        this.setState({ connectionState: ConnectionState.connected }),
+      onreconnect: () =>
+        this.setState({ connectionState: ConnectionState.reconnecting })
     });
 
     this.setState({ ws });
@@ -50,6 +53,21 @@ class App extends React.Component {
           <Navigation back={this.onBack} forward={this.onForward} pause={this.onPause} />
         </div>
       );
+    }
+  }
+
+  private handleMessage(msg: MessageEvent): void {
+    const kioskMessage: IKioskMessage = msg.data;
+
+    switch (kioskMessage.type) {
+      case KioskMessageType.Image: {
+        const imageInfo = kioskMessage.payload as IImagePayload
+        this.setState({ image: imageInfo.data });
+        break;        
+      }
+      default:
+        console.log(`cannot handle type ${kioskMessage.type}`);
+        break;
     }
   }
 
