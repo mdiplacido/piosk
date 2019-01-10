@@ -58,7 +58,7 @@ class App extends React.Component {
   }
 
   private handleMessage(msg: MessageEvent): void {
-    const kioskMessage: IKioskMessage = msg.data;
+    const kioskMessage: IKioskMessage = JSON.parse(msg.data);
 
     switch (kioskMessage.type) {
       case KioskMessageType.Image: {
@@ -67,7 +67,7 @@ class App extends React.Component {
         break;
       }
       default:
-        console.log(`cannot handle type ${kioskMessage.type}`);
+        console.log(`cannot handle type '${kioskMessage.type}'`);
         break;
     }
   }

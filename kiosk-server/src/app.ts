@@ -7,7 +7,7 @@ import * as WebSocket from "ws";
 import { Config } from "./config/config";
 import { ReadFileStream } from "./io/read-file-stream";
 import { Logger } from "./logging/logger";
-import { IKioskMessage } from "./model/payloads";
+import { IKioskMessage, KioskMessageType, IImagePayload } from "./model/payloads";
 import { PickupReaper } from "./reaper/pickup-reaper";
 
 interface PathStatsPair {
@@ -84,18 +84,26 @@ export class App {
                 // in the error block here
                 .subscribe(({ data, path }) => {
                     this.logger.verbose(`sending file ${path} to client: ${req.connection.remoteAddress}`);
-                    const payload = this.createImagePayloadFromPng(data, path);
+                    const payload = JSON.stringify(this.createImagePayloadFromPng(data, path));
                     ws.send(payload, error => error && this.logger.error(`got error ${error} sending to client`));
                 }, err => this.logger.error(`got terminal Error! - ${err}`));
         });
     }
 
-    private createImagePayloadFromPng(_data: Buffer, _path: string): IKioskMessage {
+    private createImagePayloadFromPng(data: Buffer, path: string): IKioskMessage {
         // handle scenario where we found a png and we need to make a payload for the "random" channel/category
-        var test: IKioskMessage = {
-        } as IKioskMessage;
+        const image: IImagePayload = {
+            path,
+            author: "unknown",
+            data: data.toString("base64")
+        };
 
-        return test;
+        const msg: IKioskMessage = {
+            type: KioskMessageType.Image,
+            payload: image
+        };
+
+        return msg;
     }
 
     private startReaper(): void {
