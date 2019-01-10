@@ -21,7 +21,7 @@ interface IState {
 }
 
 class App extends React.Component<any, IState> {
-  public state: IState = { 
+  public state: IState = {
     connectionState: ConnectionState.initializing,
     currentImage: null as any as IImagePayload,
     images: [],
@@ -68,7 +68,19 @@ class App extends React.Component<any, IState> {
     switch (kioskMessage.type) {
       case KioskMessageType.Image: {
         const imagePayload = kioskMessage.payload as IImagePayload;
-        this.setState(prev => ({ currentImage: imagePayload, images: [...prev.images, imagePayload] }));
+
+        // we are not guaranteed to get images in order, currently when the server starts there is a special case
+        // were we are not sorting the incoming initial images on disk.  for now we will sort on the client.
+        // we will not assume that the current image is the latest
+        this.setState(prev => {
+          const images = this.sortImages([...prev.images, imagePayload]);
+          const currentImage = images[images.length - 1];
+          return {
+            currentImage,
+            images
+          };
+        });
+
         break;
       }
       default:
@@ -120,7 +132,7 @@ class App extends React.Component<any, IState> {
       return;
     }
 
-    this.setState(( { currentImage: this.state.images[index] } ));
+    this.setState(({ currentImage: this.state.images[index] }));
     return;
   }
 
@@ -128,6 +140,11 @@ class App extends React.Component<any, IState> {
     alert("got to pause");
     return;
   };
+
+  private sortImages = (images: IImagePayload[]) => {
+    // we sort images ascending.
+    return images.sort((a, b) => a.birthtimeMs - b.birthtimeMs);
+  }
 }
 
 export default App;
