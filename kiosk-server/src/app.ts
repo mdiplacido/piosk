@@ -86,7 +86,8 @@ export class App {
                 )
                 // not it is possible for files to be replayed that are no longer on disk, this will be handled and logged
                 // in the error block here
-                .subscribe(({ data }) => {
+                .subscribe(({ data, path }) => {
+                    this.logger.verbose(`sending file ${path} to client: ${ req.connection.remoteAddress }`);
                     ws.send(data.toString('base64'), error => error && this.logger.error(`got error ${error} sending to client`));
                 }, err => this.logger.error(`got terminal Error! - ${err}`));
         });
