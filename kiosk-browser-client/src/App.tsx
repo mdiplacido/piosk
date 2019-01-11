@@ -17,7 +17,6 @@ interface IState {
   images: IImagePayload[];
   currentImage: IImagePayload;
   maxImages: number;
-  ws?: Sockette;
   showNavigationBar: boolean;
   hasPrev: boolean;
   hasNext: boolean;
@@ -35,7 +34,7 @@ class App extends React.Component<any, IState> {
   };
 
   public componentDidMount() {
-    const ws = new Sockette("ws://localhost:8081", {
+    (() => new Sockette("ws://localhost:8081", {
       timeout: 5000,
       // tslint:disable-next-line:object-literal-sort-keys
       onerror: () =>
@@ -45,9 +44,7 @@ class App extends React.Component<any, IState> {
         this.setState({ connectionState: ConnectionState.connected }),
       onreconnect: () =>
         this.setState({ connectionState: ConnectionState.reconnecting })
-    });
-
-    this.setState({ ws });
+    }))();
   }
 
   public render() {
