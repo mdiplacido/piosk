@@ -1,10 +1,8 @@
-import "./App.css";
-
-import * as React from "react";
-import Sockette from "sockette";
-
-import { Navigation } from "./components/navigation";
-import { IImagePayload, IKioskMessage, KioskMessageType } from "./model/payloads";
+import * as React from 'react';
+import Sockette from 'sockette';
+import { IImagePayload, IKioskMessage, KioskMessageType } from './model/payloads';
+import { Navigation } from './components/navigation';
+import './App.css';
 
 enum ConnectionState {
   initializing,
@@ -51,10 +49,10 @@ class App extends React.Component<any, IState> {
     } else {
       return (
         <div className="App">
-          <div className="jumble-tron">
+          <div className="img-box">
             {
               this.state.currentImage ?
-                <img src={`data:image/png;base64,${this.state.currentImage.data}`} /> :
+                <img className="center-fit" src={`data:image/png;base64,${this.state.currentImage.data}`} /> :
                 <div>No images to show</div>
             }
           </div>
