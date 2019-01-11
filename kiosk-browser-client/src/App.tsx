@@ -27,8 +27,8 @@ class App extends React.Component<any, IState> {
   public state: IState = {
     connectionState: ConnectionState.initializing,
     currentImage: null as any as IImagePayload,
-    hasNext: this.getNextButton(),
-    hasPrev: this.getPrevButton(),
+    hasNext: false,
+    hasPrev: false,
     images: [],
     maxImages: 10,
     showNavigationBar: false
@@ -82,15 +82,15 @@ class App extends React.Component<any, IState> {
           <div className="img-box">
             {
               this.state.currentImage ? (
-              <img className="center-fit" src={`data:image/png;base64,${this.state.currentImage.data}`} />) : 
-              ( <div>No images to show</div>)
+                <img className="center-fit" src={`data:image/png;base64,${this.state.currentImage.data}`} />) :
+                (<div>No images to show</div>)
             }
           </div>
-          <Navigation 
+          <Navigation
             back={this.onBack}
             forward={this.onForward}
-            pause={this.onPause} 
-            openNav={this.state.showNavigationBar} 
+            pause={this.onPause}
+            openNav={this.state.showNavigationBar}
             toggleNav={this.toggleNavigationBar}
             disableNext={!this.state.hasNext}
             disablePrev={!this.state.hasPrev}
@@ -189,18 +189,6 @@ class App extends React.Component<any, IState> {
     // tslint:disable-next-line:variable-name
     return sortedImages.filter((_image, i) => i >= keepIndex);
   };
-
-  private getNextButton() {
-    return this.state &&
-      this.state.images &&
-      this.state.images.indexOf(this.state.currentImage) < this.state.images.length - 1;
-  }
-
-  private getPrevButton() {
-    return this.state &&
-      this.state.images &&
-      this.state.images.indexOf(this.state.currentImage) > 0;
-  }
 
   private toggleNavigationBar = () => {
     this.setState({ showNavigationBar: !this.state.showNavigationBar });
