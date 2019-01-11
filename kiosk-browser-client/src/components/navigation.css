@@ -52,6 +52,14 @@
     background-color: #004578;
 }
 
+.navigation-container > button:disabled {
+    background-color: #666666;
+}
+
+.navigation-container > button:disabled:hover{
+    cursor: not-allowed;
+}
+
 .navigation-container .close-button {
     font-size: 24px;
     padding-right: 10px;

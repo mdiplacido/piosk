@@ -18,12 +18,16 @@ interface IState {
   maxImages: number;
   ws?: Sockette;
   openNavigationBar: boolean;
+  hasPrev: boolean;
+  hasNext: boolean;
 }
 
 class App extends React.Component<any, IState> {
   public state: IState = {
     connectionState: ConnectionState.initializing,
     currentImage: null as any as IImagePayload,
+    hasNext: this.getNextButton(),
+    hasPrev: this.getPrevButton(),
     images: [],
     maxImages: 10,
     openNavigationBar: false,
@@ -48,31 +52,26 @@ class App extends React.Component<any, IState> {
   public render() {
     let fadeNavTimer: NodeJS.Timeout;
 
-    const startNavFading=()=>{
+    const startNavFading = () => {
       fadeNavTimer = setTimeout(() => {
         this.setState({ openNavigationBar: false });
       }, 3000);
-    }
+    };
 
-    const stopNavFading=()=>{
+    const stopNavFading = () => {
       if (typeof fadeNavTimer !== "undefined") {
         clearTimeout(fadeNavTimer);
       }
-    }
+    };
 
-    const openNavigationWhenMouseMove = ()=> {
+    const openNavigationWhenMouseMove = () => {
       stopNavFading();
 
-      if(!this.state.openNavigationBar) {
-        this.setState({ openNavigationBar:  true });
+      if (!this.state.openNavigationBar) {
+        this.setState({ openNavigationBar: true });
         startNavFading();
       }
-    }
-
-    const toggleNavigationBar = ()=> {
-      const navOpen: boolean = this.state.openNavigationBar;
-        this.setState( {openNavigationBar: !navOpen });
-    }
+    };
 
     if (this.state.connectionState !== ConnectionState.connected) {
       return this.getDisconnectedBlock();
@@ -80,13 +79,24 @@ class App extends React.Component<any, IState> {
       return (
         <div className="App" onMouseMove={openNavigationWhenMouseMove}>
           <div className="img-box">
-            {
-              this.state.currentImage ?
-                <img className="center-fit" src={`data:image/png;base64,${this.state.currentImage.data}`} /> :
-                <div>No images to show</div>
-            }
+            {this.state.currentImage ? (
+              <img
+                className="center-fit"
+                src={`data:image/png;base64,${this.state.currentImage.data}`}
+              />
+            ) : (
+              <div>No images to show</div>
+            )}
           </div>
-          <Navigation back={this.onBack} forward={this.onForward} pause={this.onPause} openNav={this.state.openNavigationBar} toggleNav={toggleNavigationBar} />
+          <Navigation
+            back={this.onBack}
+            forward={this.onForward}
+            pause={this.onPause}
+            openNav={this.state.openNavigationBar}
+            toggleNav={this.toggleNavigationBar}
+            disableNext={!this.state.hasNext}
+            disablePrev={!this.state.hasPrev}
+          />
         </div>
       );
     }
@@ -107,7 +117,9 @@ class App extends React.Component<any, IState> {
           const currentImage = images[images.length - 1];
           return {
             currentImage,
-            images
+            hasNext: images.indexOf(currentImage) < images.length - 1,
+            hasPrev: images.indexOf(currentImage) > 0,
+            images,
           };
         });
 
@@ -162,7 +174,12 @@ class App extends React.Component<any, IState> {
       return;
     }
 
-    this.setState(({ currentImage: this.state.images[index] }));
+    this.setState({
+      currentImage: this.state.images[index],
+      hasNext: index < this.state.images.length - 1,
+      hasPrev: index > 0
+    });
+
     return;
   }
 
@@ -180,7 +197,24 @@ class App extends React.Component<any, IState> {
     // we will drop any images over max
     // tslint:disable-next-line:variable-name
     return sortedImages.filter((_image, i) => i >= keepIndex);
+  };
+
+  private getNextButton(){
+    return this.state && 
+      this.state.images && 
+      this.state.images.indexOf(this.state.currentImage) < this.state.images.length -1;
   }
+
+  private getPrevButton(){
+    return this.state &&
+      this.state.images && 
+      this.state.images.indexOf(this.state.currentImage) > 0;
+  }
+
+  private toggleNavigationBar = () => {
+    const navOpen: boolean = this.state.openNavigationBar;
+    this.setState({ openNavigationBar: !navOpen });
+  };
 }
 
 export default App;

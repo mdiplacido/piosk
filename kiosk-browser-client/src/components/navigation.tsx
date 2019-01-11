@@ -10,11 +10,13 @@ const qrcode = <FontAwesomeIcon icon={faQrcode} />
 const close = <FontAwesomeIcon icon={faTimesCircle} />
 
 export interface INavigation {
-  openNav: boolean;
-  toggleNav: ()=> void;
-  back: () => void;
-  forward: () => void;
-  pause: () => void;
+    openNav: boolean;
+    disableNext: boolean;
+    disablePrev: boolean;
+    toggleNav: ()=> void;
+    back: () => void;
+    forward: () => void;
+    pause: () => void;
 }
 
 export const Navigation = (props: INavigation)=> {
@@ -30,9 +32,9 @@ export const Navigation = (props: INavigation)=> {
             <div className="navigation-container">
                 <span className='close-button' onClick={handleOnClick}>{close}</span>
 
-                <button onClick={props.back}>{back}</button>
+                <button onClick={props.back} disabled={props.disablePrev}>{back}</button>
                 <button onClick={props.pause}>{pause}</button>
-                <button onClick={props.forward}>{forward}</button>
+                <button onClick={props.forward} disabled={props.disableNext}>{forward}</button>
 
                 {/* category ddl fits here  */}
                 <button>{qrcode}</button>
