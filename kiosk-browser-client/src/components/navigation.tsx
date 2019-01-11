@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { faChevronLeft, faChevronRight, faPause, faQrcode } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import "./navigation.css";
+import './navigation.css';
 
 const back = <FontAwesomeIcon icon={faChevronLeft} />
 const pause = <FontAwesomeIcon icon={faPause} />
