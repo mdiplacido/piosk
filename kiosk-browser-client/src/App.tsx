@@ -56,7 +56,7 @@ class App extends React.Component<any, IState> {
     const startNavFading = () => {
       fadeNavTimer = setTimeout(() => {
         this.setState({ openNavigationBar: false });
-      }, 3000);
+      }, 8000);
     };
 
     const stopNavFading = () => {
