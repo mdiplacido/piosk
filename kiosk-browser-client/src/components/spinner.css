@@ -1,0 +1,27 @@
+.spinner-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 500;
+    background: #FFF;
+    opacity: .65;
+    align-content: center;
+}
+
+.center {
+    margin-left: -25px;
+    margin-top: -25px;
+    position: relative;
+    top: 50%;
+    color: #0078d4;
+    align-content: center;    
+    text-align: center;
+    vertical-align: middle;    
+}
+
+.text {
+    margin-top: 20px;
+    font-size: 16pt;
+}
