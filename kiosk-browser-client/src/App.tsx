@@ -18,7 +18,7 @@ interface IState {
   currentImage: IImagePayload;
   maxImages: number;
   ws?: Sockette;
-  openNavigationBar: boolean;
+  showNavigationBar: boolean;
   hasPrev: boolean;
   hasNext: boolean;
 }
@@ -31,7 +31,7 @@ class App extends React.Component<any, IState> {
     hasPrev: this.getPrevButton(),
     images: [],
     maxImages: 10,
-    openNavigationBar: false,
+    showNavigationBar: false
   };
 
   public componentDidMount() {
@@ -55,7 +55,7 @@ class App extends React.Component<any, IState> {
 
     const startNavFading = () => {
       fadeNavTimer = setTimeout(() => {
-        this.setState({ openNavigationBar: false });
+        this.setState({ showNavigationBar: false });
       }, 8000);
     };
 
@@ -65,11 +65,11 @@ class App extends React.Component<any, IState> {
       }
     };
 
-    const openNavigationWhenMouseMove = () => {
+    const showNavigationBar = () => {
       stopNavFading();
 
-      if (!this.state.openNavigationBar) {
-        this.setState({ openNavigationBar: true });
+      if (!this.state.showNavigationBar) {
+        this.setState({ showNavigationBar: true });
         startNavFading();
       }
     };
@@ -78,7 +78,7 @@ class App extends React.Component<any, IState> {
       return this.getDisconnectedBlock();
     } else {
       return (
-        <div className="App" onMouseMove={openNavigationWhenMouseMove}>
+        <div className="App" onMouseMove={showNavigationBar}>
           <div className="img-box">
             {this.state.currentImage ? (
               <img
@@ -89,15 +89,15 @@ class App extends React.Component<any, IState> {
               <div>No images to show</div>
             )}
           </div>
-          <Navigation
-            back={this.onBack}
-            forward={this.onForward}
-            pause={this.onPause}
-            openNav={this.state.openNavigationBar}
-            toggleNav={this.toggleNavigationBar}
-            disableNext={!this.state.hasNext}
-            disablePrev={!this.state.hasPrev}
-          />
+        <Navigation 
+          back={this.onBack}
+          forward={this.onForward}
+          pause={this.onPause} 
+          openNav={this.state.showNavigationBar} 
+          toggleNav={this.toggleNavigationBar}
+          disableNext={!this.state.hasNext}
+          disablePrev={!this.state.hasPrev}
+        />
         </div>
       );
     }
@@ -134,8 +134,8 @@ class App extends React.Component<any, IState> {
 
   private getDisconnectedBlock() {
     return <div>
-      <Spinner text={this.getConnectionStatusMessage()} spin={this.state.connectionState !== ConnectionState.failed} />
-    </div>;
+        <Spinner text={this.getConnectionStatusMessage()} spin={this.state.connectionState !== ConnectionState.failed} />
+      </div>;
   }
 
   private getConnectionStatusMessage(): string {
@@ -145,7 +145,7 @@ class App extends React.Component<any, IState> {
       case ConnectionState.failed:
         return "Connection failed!";
       case ConnectionState.reconnecting:
-        return "Reconnecting..."
+        return "Reconnecting...";
       case ConnectionState.initializing:
       default:
         return "Connecting...";
@@ -193,21 +193,20 @@ class App extends React.Component<any, IState> {
     return sortedImages.filter((_image, i) => i >= keepIndex);
   };
 
-  private getNextButton(){
-    return this.state && 
-      this.state.images && 
-      this.state.images.indexOf(this.state.currentImage) < this.state.images.length -1;
+  private getNextButton() {
+    return this.state &&
+      this.state.images &&
+      this.state.images.indexOf(this.state.currentImage) < this.state.images.length - 1;
   }
 
-  private getPrevButton(){
+  private getPrevButton() {
     return this.state &&
-      this.state.images && 
+      this.state.images &&
       this.state.images.indexOf(this.state.currentImage) > 0;
   }
 
   private toggleNavigationBar = () => {
-    const navOpen: boolean = this.state.openNavigationBar;
-    this.setState({ openNavigationBar: !navOpen });
+    this.setState({ showNavigationBar: !this.state.showNavigationBar });
   };
 }
 
