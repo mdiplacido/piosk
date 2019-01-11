@@ -1,6 +1,7 @@
+import * as React from 'react';
 import { faChevronLeft, faChevronRight, faPause } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import * as React from 'react';
+import './navigation.css';
 
 const back = <FontAwesomeIcon icon={faChevronLeft} />
 const pause = <FontAwesomeIcon icon={faPause} />
@@ -14,10 +15,12 @@ export interface INavigation {
 
 export const Navigation = (props: INavigation) => {
     return (
-        <div className="navigation-container">
-            <button onClick={props.back}>{back}</button>
-            <button onClick={props.pause}>{pause}</button>
-            <button onClick={props.forward}>{forward}</button>
+        <div className="navigation-center-container">
+            <div className="navigation-container">
+                <button onClick={props.back}>{back}</button>
+                <button onClick={props.pause}>{pause}</button>
+                <button onClick={props.forward}>{forward}</button>
+            </div>
         </div>
     );
 }
