@@ -13,24 +13,25 @@ export interface INavigation {
     openNav: boolean;
     disableNext: boolean;
     disablePrev: boolean;
-    toggleNav: ()=> void;
+    closeNav: () => void;
     back: () => void;
     forward: () => void;
     pause: () => void;
 }
 
-export const Navigation = (props: INavigation)=> {
-    const navigationClass = props.openNav? ' open' : ' close'; 
-    function handleOnClick(event:any){
+export const Navigation = (props: INavigation) => {
+    const navigationClass = props.openNav ? ' open' : ' close';
+
+    function handleClose(event: any) {
         event.preventDefault();
-        props.toggleNav();
+        props.closeNav();
     }
 
     return (
-        <div 
+        <div
             className={"navigation-center-container" + navigationClass}>
             <div className="navigation-container">
-                <span className='close-button' onClick={handleOnClick}>{close}</span>
+                <span className='close-button' onClick={handleClose}>{close}</span>
 
                 <button onClick={props.back} disabled={props.disablePrev}>{back}</button>
                 <button onClick={props.pause}>{pause}</button>

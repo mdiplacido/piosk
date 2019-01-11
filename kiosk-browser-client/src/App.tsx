@@ -33,6 +33,8 @@ class App extends React.Component<any, IState> {
     showNavigationBar: false
   };
 
+  private fadeNavTimer?: NodeJS.Timeout;
+
   public componentDidMount() {
     (() => new Sockette("ws://localhost:8081", {
       timeout: 5000,
@@ -48,34 +50,11 @@ class App extends React.Component<any, IState> {
   }
 
   public render() {
-    let fadeNavTimer: NodeJS.Timeout;
-
-    const startNavFading = () => {
-      fadeNavTimer = setTimeout(() => {
-        this.setState({ showNavigationBar: false });
-      }, 8000);
-    };
-
-    const stopNavFading = () => {
-      if (typeof fadeNavTimer !== "undefined") {
-        clearTimeout(fadeNavTimer);
-      }
-    };
-
-    const showNavigationBar = () => {
-      stopNavFading();
-
-      if (!this.state.showNavigationBar) {
-        this.setState({ showNavigationBar: true });
-        startNavFading();
-      }
-    };
-
     if (this.state.connectionState !== ConnectionState.connected) {
       return this.getDisconnectedBlock();
     } else {
       return (
-        <div className="App" onMouseMove={showNavigationBar}>
+        <div className="App" onMouseMove={this.showNavigationBar}>
           <div className="img-box">
             {
               this.state.currentImage ? (
@@ -88,7 +67,7 @@ class App extends React.Component<any, IState> {
             forward={this.onForward}
             pause={this.onPause}
             openNav={this.state.showNavigationBar}
-            toggleNav={this.toggleNavigationBar}
+            closeNav={this.hideNavigationBar}
             disableNext={!this.state.hasNext}
             disablePrev={!this.state.hasPrev}
           />
@@ -187,8 +166,27 @@ class App extends React.Component<any, IState> {
     return sortedImages.filter((_image, i) => i >= keepIndex);
   };
 
-  private toggleNavigationBar = () => {
-    this.setState({ showNavigationBar: !this.state.showNavigationBar });
+  private hideNavigationBar = () => {
+    this.setState({ showNavigationBar: false });
+  };
+
+  private startNavFading = () => {
+    this.fadeNavTimer = setTimeout(() => {
+      this.hideNavigationBar();
+    }, 8000);
+  };
+
+  private stopNavFading = () => {
+    if (typeof this.fadeNavTimer !== "undefined") {
+      clearTimeout(this.fadeNavTimer);
+      this.fadeNavTimer = undefined;
+    }
+  };
+
+  private showNavigationBar = () => {
+    this.stopNavFading();
+    this.setState({ showNavigationBar: true });
+    this.startNavFading();
   };
 }
 
