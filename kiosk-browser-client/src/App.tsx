@@ -17,19 +17,26 @@ interface IState {
   images: IImagePayload[];
   currentImage: IImagePayload;
   maxImages: number;
-  ws?: Sockette;
+  showNavigationBar: boolean;
+  hasPrev: boolean;
+  hasNext: boolean;
 }
 
 class App extends React.Component<any, IState> {
   public state: IState = {
     connectionState: ConnectionState.initializing,
     currentImage: null as any as IImagePayload,
+    hasNext: false,
+    hasPrev: false,
     images: [],
-    maxImages: 10
+    maxImages: 10,
+    showNavigationBar: false
   };
 
+  private fadeNavTimer?: NodeJS.Timeout;
+
   public componentDidMount() {
-    const ws = new Sockette("ws://localhost:8081", {
+    (() => new Sockette("ws://localhost:8081", {
       timeout: 5000,
       // tslint:disable-next-line:object-literal-sort-keys
       onerror: () =>
@@ -39,9 +46,7 @@ class App extends React.Component<any, IState> {
         this.setState({ connectionState: ConnectionState.connected }),
       onreconnect: () =>
         this.setState({ connectionState: ConnectionState.reconnecting })
-    });
-
-    this.setState({ ws });
+    }))();
   }
 
   public render() {
@@ -49,15 +54,23 @@ class App extends React.Component<any, IState> {
       return this.getDisconnectedBlock();
     } else {
       return (
-        <div className="App">
+        <div className="App" onMouseMove={this.showNavigationBar}>
           <div className="img-box">
             {
-              this.state.currentImage ?
-                <img className="center-fit" src={`data:image/png;base64,${this.state.currentImage.data}`} /> :
-                <div>No images to show</div>
+              this.state.currentImage ? (
+                <img className="center-fit" src={`data:image/png;base64,${this.state.currentImage.data}`} />) :
+                (<div>No images to show</div>)
             }
           </div>
-          <Navigation back={this.onBack} forward={this.onForward} pause={this.onPause} />
+          <Navigation
+            back={this.onBack}
+            forward={this.onForward}
+            pause={this.onPause}
+            openNav={this.state.showNavigationBar}
+            closeNav={this.hideNavigationBar}
+            disableNext={!this.state.hasNext}
+            disablePrev={!this.state.hasPrev}
+          />
         </div>
       );
     }
@@ -78,7 +91,9 @@ class App extends React.Component<any, IState> {
           const currentImage = images[images.length - 1];
           return {
             currentImage,
-            images
+            hasNext: images.indexOf(currentImage) < images.length - 1,
+            hasPrev: images.indexOf(currentImage) > 0,
+            images,
           };
         });
 
@@ -103,7 +118,7 @@ class App extends React.Component<any, IState> {
       case ConnectionState.failed:
         return "Connection failed!";
       case ConnectionState.reconnecting:
-        return "Reconnecting..."
+        return "Reconnecting...";
       case ConnectionState.initializing:
       default:
         return "Connecting...";
@@ -126,7 +141,12 @@ class App extends React.Component<any, IState> {
       return;
     }
 
-    this.setState(({ currentImage: this.state.images[index] }));
+    this.setState({
+      currentImage: this.state.images[index],
+      hasNext: index < this.state.images.length - 1,
+      hasPrev: index > 0
+    });
+
     return;
   }
 
@@ -144,7 +164,30 @@ class App extends React.Component<any, IState> {
     // we will drop any images over max
     // tslint:disable-next-line:variable-name
     return sortedImages.filter((_image, i) => i >= keepIndex);
-  }
+  };
+
+  private hideNavigationBar = () => {
+    this.setState({ showNavigationBar: false });
+  };
+
+  private startNavFading = () => {
+    this.fadeNavTimer = setTimeout(() => {
+      this.hideNavigationBar();
+    }, 8000);
+  };
+
+  private stopNavFading = () => {
+    if (typeof this.fadeNavTimer !== "undefined") {
+      clearTimeout(this.fadeNavTimer);
+      this.fadeNavTimer = undefined;
+    }
+  };
+
+  private showNavigationBar = () => {
+    this.stopNavFading();
+    this.setState({ showNavigationBar: true });
+    this.startNavFading();
+  };
 }
 
 export default App;

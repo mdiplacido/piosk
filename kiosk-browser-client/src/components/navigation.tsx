@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { faChevronLeft, faChevronRight, faPause, faQrcode } from '@fortawesome/free-solid-svg-icons';
+import { faChevronLeft, faChevronRight, faPause, faQrcode, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './navigation.css';
 
@@ -7,22 +7,37 @@ const back = <FontAwesomeIcon icon={faChevronLeft} />
 const pause = <FontAwesomeIcon icon={faPause} />
 const forward = <FontAwesomeIcon icon={faChevronRight} />
 const qrcode = <FontAwesomeIcon icon={faQrcode} />
+const close = <FontAwesomeIcon icon={faTimesCircle} />
 
 export interface INavigation {
+    openNav: boolean;
+    disableNext: boolean;
+    disablePrev: boolean;
+    closeNav: () => void;
     back: () => void;
     forward: () => void;
     pause: () => void;
 }
 
 export const Navigation = (props: INavigation) => {
-    return (
-        <div className="navigation-center-container">
-            <div className="navigation-container">
-                <button onClick={props.back}>{back}</button>
-                <button onClick={props.pause}>{pause}</button>
-                <button onClick={props.forward}>{forward}</button>
+    const navigationClass = props.openNav ? ' open' : ' close';
 
-               {/* category ddl fits here  */}
+    function handleClose(event: any) {
+        event.preventDefault();
+        props.closeNav();
+    }
+
+    return (
+        <div
+            className={"navigation-center-container" + navigationClass}>
+            <div className="navigation-container">
+                <span className='close-button' onClick={handleClose}>{close}</span>
+
+                <button onClick={props.back} disabled={props.disablePrev}>{back}</button>
+                <button onClick={props.pause}>{pause}</button>
+                <button onClick={props.forward} disabled={props.disableNext}>{forward}</button>
+
+                {/* category ddl fits here  */}
                 <button>{qrcode}</button>
             </div>
         </div>
