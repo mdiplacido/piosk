@@ -3,6 +3,7 @@ import Sockette from 'sockette';
 import { IImagePayload, IKioskMessage, KioskMessageType } from './model/payloads';
 import { Navigation } from './components/navigation';
 import './App.css';
+import { Spinner } from "./components/spinner";
 
 enum ConnectionState {
   initializing,
@@ -35,7 +36,7 @@ class App extends React.Component<any, IState> {
 
   public componentDidMount() {
     const ws = new Sockette("ws://localhost:8081", {
-      timeout: 3000,
+      timeout: 5000,
       // tslint:disable-next-line:object-literal-sort-keys
       onerror: () =>
         this.setState({ connectionState: ConnectionState.failed }),
@@ -132,30 +133,23 @@ class App extends React.Component<any, IState> {
   }
 
   private getDisconnectedBlock() {
-    let block: JSX.Element;
+    return <div>
+      <Spinner text={this.getConnectionStatusMessage()} spin={this.state.connectionState !== ConnectionState.failed} />
+    </div>;
+  }
 
+  private getConnectionStatusMessage(): string {
     switch (this.state.connectionState) {
       case ConnectionState.connected:
         throw new Error(`Invalid state ${this.state.connectionState}`);
       case ConnectionState.failed:
-        block = (
-          <div>Connection failed!</div>
-        );
-        break;
+        return "Connection failed!";
       case ConnectionState.reconnecting:
-        block = (
-          <div>Reconnecting...</div>
-        );
-        break;
+        return "Reconnecting..."
       case ConnectionState.initializing:
       default:
-        block = (
-          <div>Connecting...</div>
-        );
-        break;
+        return "Connecting...";
     }
-
-    return block;
   }
 
   private onBack = () => {
