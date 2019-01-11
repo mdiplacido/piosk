@@ -9,6 +9,7 @@ export interface IKioskStatistics {
 }
 
 export interface IImagePayload {
+    birthtimeMs: number;
     path: string;
     author: string;
     data: string;  // eg base64 encoded image

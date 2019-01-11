@@ -1,13 +1,13 @@
 import * as chokidar from "chokidar";
 import { existsSync, mkdirpSync, Stats } from "fs-extra";
 import { empty as observableEmpty, ReplaySubject, Subject } from "rxjs";
-import { catchError, filter, mergeMap, takeUntil, tap } from "rxjs/operators";
+import { catchError, filter, map, mergeMap, takeUntil, tap } from "rxjs/operators";
 import * as WebSocket from "ws";
 
 import { Config } from "./config/config";
 import { ReadFileStream } from "./io/read-file-stream";
 import { Logger } from "./logging/logger";
-import { IKioskMessage, KioskMessageType, IImagePayload } from "./model/payloads";
+import { IImagePayload, IKioskMessage, KioskMessageType } from "./model/payloads";
 import { PickupReaper } from "./reaper/pickup-reaper";
 
 interface PathStatsPair {
@@ -66,7 +66,13 @@ export class App {
                                 // we have to catch errors so we keep the stream alive.
                                 this.logger.error(`got retriable error: ${error}`);
                                 return observableEmpty();
+                            }),
+                            map(readData => ({
+                                data: readData.data,
+                                path: readData.path,
+                                stats: pathStats.stats
                             }))
+                        )
                     ),
                     // if we get this far we are un-watching that means if a file reappears for some reason we will not see
                     // it from the watcher again.  don't see why this would be necessary.
@@ -82,28 +88,58 @@ export class App {
                 )
                 // not it is possible for files to be replayed that are no longer on disk, this will be handled and logged
                 // in the error block here
-                .subscribe(({ data, path }) => {
-                    this.logger.verbose(`sending file ${path} to client: ${req.connection.remoteAddress}`);
-                    const payload = JSON.stringify(this.createImagePayloadFromPng(data, path));
-                    ws.send(payload, error => error && this.logger.error(`got error ${error} sending to client`));
+                .subscribe(({ data, path, stats }) => {
+                    this.logger.verbose(`sending payload for file ${path} to client: ${req.connection.remoteAddress}`);
+
+                    const payload = this.getImagePayload(data, path, stats);
+
+                    if (payload == null) {
+                        this.logger.warn(`Skipping file '${path}' cannot coerce into image payload`);
+                        return;
+                    }
+
+                    const kioskMessage = this.createKioskMessage(payload, KioskMessageType.Image);
+
+                    ws.send(
+                        JSON.stringify(kioskMessage),
+                        error => error && this.logger.error(`got error ${error} sending to client`));
                 }, err => this.logger.error(`got terminal Error! - ${err}`));
         });
     }
 
-    private createImagePayloadFromPng(data: Buffer, path: string): IKioskMessage {
+    private createKioskMessage(payload: IImagePayload, type: KioskMessageType): IKioskMessage {
+        return {
+            type,
+            payload
+        };
+    }
+
+    private getImagePayload(data: Buffer, path: string, fStats: Stats): IImagePayload {
+        if (path.toLowerCase().endsWith(".png")) {
+            return this.createImagePayloadFromPng(data, path, fStats);
+        } else if (path.toLowerCase().endsWith(".pngx")) {
+            try {
+                const pngxData: IImagePayload = JSON.parse(data.toString());
+                return pngxData;
+            } catch (error) {
+                this.logger.error(`Got error ${error} attempting to parse pngx file ${path}`);
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private createImagePayloadFromPng(data: Buffer, path: string, fStats: Stats): IImagePayload {
         // handle scenario where we found a png and we need to make a payload for the "random" channel/category
         const image: IImagePayload = {
             path,
-            author: "unknown",
-            data: data.toString("base64")
+            birthtimeMs: fStats.birthtimeMs,
+            author: "Unknown",
+            data: data.toString("base64"),
         };
 
-        const msg: IKioskMessage = {
-            type: KioskMessageType.Image,
-            payload: image
-        };
-
-        return msg;
+        return image;
     }
 
     private startReaper(): void {

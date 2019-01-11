@@ -15,8 +15,9 @@ export interface INavigation {
 }
 
 export const Navigation = (props: INavigation) => {
-    return <div className="navigation-container">
-            <div>
+    return (
+        <div className="navigation-center-container">
+            <div className="navigation-container">
                 <button onClick={props.back}>{back}</button>
                 <button onClick={props.pause}>{pause}</button>
                 <button onClick={props.forward}>{forward}</button>
@@ -25,5 +26,6 @@ export const Navigation = (props: INavigation) => {
                {/* category ddl fits here  */}
                 <button>{qrcode}</button>
             </div>
-        </div>;
+        </div>
+    );
 }

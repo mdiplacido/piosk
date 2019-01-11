@@ -1,10 +1,8 @@
-import "./App.css";
-
-import * as React from "react";
-import Sockette from "sockette";
-
-import { Navigation } from "./components/navigation";
-import { IImagePayload, IKioskMessage, KioskMessageType } from "./model/payloads";
+import * as React from 'react';
+import Sockette from 'sockette';
+import { IImagePayload, IKioskMessage, KioskMessageType } from './model/payloads';
+import { Navigation } from './components/navigation';
+import './App.css';
 
 enum ConnectionState {
   initializing,
@@ -15,12 +13,19 @@ enum ConnectionState {
 
 interface IState {
   connectionState: ConnectionState;
-  image?: string;
+  images: IImagePayload[];
+  currentImage: IImagePayload;
+  maxImages: number;
   ws?: Sockette;
 }
 
-class App extends React.Component {
-  public state: IState = { connectionState: ConnectionState.initializing };
+class App extends React.Component<any, IState> {
+  public state: IState = {
+    connectionState: ConnectionState.initializing,
+    currentImage: null as any as IImagePayload,
+    images: [],
+    maxImages: 10
+  };
 
   public componentDidMount() {
     const ws = new Sockette("ws://localhost:8081", {
@@ -44,10 +49,10 @@ class App extends React.Component {
     } else {
       return (
         <div className="App">
-          <div className="jumble-tron image-box">
+          <div className="img-box">
             {
-              this.state.image ?
-                <img className="image-center-fit" src={`data:image/png;base64,${this.state.image}`} /> :
+              this.state.currentImage ?
+                <img className="center-fit" src={`data:image/png;base64,${this.state.currentImage.data}`} /> :
                 <div>No images to show</div>
             }
           </div>
@@ -62,8 +67,20 @@ class App extends React.Component {
 
     switch (kioskMessage.type) {
       case KioskMessageType.Image: {
-        const imageInfo = kioskMessage.payload as IImagePayload
-        this.setState({ image: imageInfo.data });
+        const imagePayload = kioskMessage.payload as IImagePayload;
+
+        // we are not guaranteed to get images in order, currently when the server starts there is a special case
+        // were we are not sorting the incoming initial images on disk.  for now we will sort on the client.
+        // we will not assume that the current image is the latest
+        this.setState(prev => {
+          const images = this.pruneAndSortImages([...prev.images, imagePayload]);
+          const currentImage = images[images.length - 1];
+          return {
+            currentImage,
+            images
+          };
+        });
+
         break;
       }
       default:
@@ -100,19 +117,40 @@ class App extends React.Component {
   }
 
   private onBack = () => {
-    alert("got to back");
-    return;
+    this.move("back");
   };
 
   private onForward = () => {
-    alert("got to forward");
-    return;
+    this.move("forward");
   };
+
+  private move(direction: "forward" | "back") {
+    const add = direction === "forward" ? 1 : -1;
+    const index = this.state.images.indexOf(this.state.currentImage) + add;
+
+    if (index < 0 || index > this.state.images.length - 1) {
+      return;
+    }
+
+    this.setState(({ currentImage: this.state.images[index] }));
+    return;
+  }
 
   private onPause = () => {
     alert("got to pause");
     return;
   };
+
+  private pruneAndSortImages = (images: IImagePayload[]) => {
+    // we sort images ascending.
+    const sortedImages = images.sort((a, b) => a.birthtimeMs - b.birthtimeMs);
+
+    const keepIndex = Math.max(0, sortedImages.length - this.state.maxImages);
+
+    // we will drop any images over max
+    // tslint:disable-next-line:variable-name
+    return sortedImages.filter((_image, i) => i >= keepIndex);
+  }
 }
 
 export default App;

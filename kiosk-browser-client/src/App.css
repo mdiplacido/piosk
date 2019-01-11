@@ -6,40 +6,14 @@ body {
   text-align: center;
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
+/* begin image styles */
+.img-box {
+  display: grid;
+  height: 100%;
 }
 
-.App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
-  color: white;
+.center-fit {
+  max-width: 100%;
+  max-height: 100vh;
+  margin: auto;
 }
-
-.App-title {
-  font-size: 1.5em;
-}
-
-.App-intro {
-  font-size: large;
-}
-
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* style for image */
-.image-box {
-    display: grid;
-    height: 100%;
-}
-
-.image-center-fit {
-    max-width: 100%;
-    max-height: calc(100vh - 72px); /* deduct footer height*/
-    margin: auto;
-}
-
