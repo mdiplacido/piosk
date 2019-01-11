@@ -16,3 +16,27 @@
     justify-content: center;
     align-items: center; 
 }
+
+button {
+    background-image: -webkit-linear-gradient(top, #eb94d0, #7b9fb6);
+    background-image: -moz-linear-gradient(top, #eb94d0, #7b9fb6);
+    background-image: -ms-linear-gradient(top, #eb94d0, #7b9fb6);
+    background-image: -o-linear-gradient(top, #eb94d0, #7b9fb6);
+    background-image: linear-gradient(to bottom, #eb94d0, #7b9fb6);
+    outline: none;
+}
+
+#back-button {
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+
+#forward-button {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+#pause-button {
+    margin-left: 5px;
+    margin-right: 5px;
+}
