@@ -5,8 +5,13 @@
     transition: .25s ease-in-out;
   }
 
-.navigation-center-container:hover {
+.navigation-center-container:hover,
+.navigation-center-container.open {
     bottom: 0px;
+}
+
+.navigation-center-container.close {
+    bottom: -72px;
 }
 
 .navigation-container {
@@ -23,7 +28,8 @@
     border-top: solid 5px #0078d4;
 }
 
-.navigation-container:hover {
+.navigation-container:hover,
+.navigation-center-container.open .navigation-container{
     border-top: solid 5px transparent;
     transition: .25s ease-in-out;
 }
