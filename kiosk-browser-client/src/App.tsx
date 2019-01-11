@@ -80,24 +80,21 @@ class App extends React.Component<any, IState> {
       return (
         <div className="App" onMouseMove={showNavigationBar}>
           <div className="img-box">
-            {this.state.currentImage ? (
-              <img
-                className="center-fit"
-                src={`data:image/png;base64,${this.state.currentImage.data}`}
-              />
-            ) : (
-              <div>No images to show</div>
-            )}
+            {
+              this.state.currentImage ? (
+              <img className="center-fit" src={`data:image/png;base64,${this.state.currentImage.data}`} />) : 
+              ( <div>No images to show</div>)
+            }
           </div>
-        <Navigation 
-          back={this.onBack}
-          forward={this.onForward}
-          pause={this.onPause} 
-          openNav={this.state.showNavigationBar} 
-          toggleNav={this.toggleNavigationBar}
-          disableNext={!this.state.hasNext}
-          disablePrev={!this.state.hasPrev}
-        />
+          <Navigation 
+            back={this.onBack}
+            forward={this.onForward}
+            pause={this.onPause} 
+            openNav={this.state.showNavigationBar} 
+            toggleNav={this.toggleNavigationBar}
+            disableNext={!this.state.hasNext}
+            disablePrev={!this.state.hasPrev}
+          />
         </div>
       );
     }
@@ -134,8 +131,8 @@ class App extends React.Component<any, IState> {
 
   private getDisconnectedBlock() {
     return <div>
-        <Spinner text={this.getConnectionStatusMessage()} spin={this.state.connectionState !== ConnectionState.failed} />
-      </div>;
+      <Spinner text={this.getConnectionStatusMessage()} spin={this.state.connectionState !== ConnectionState.failed} />
+    </div>;
   }
 
   private getConnectionStatusMessage(): string {
