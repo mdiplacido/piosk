@@ -1,3 +1,7 @@
+body {
+  background-color: black;
+}
+
 .App {
   text-align: center;
 }
@@ -26,3 +30,16 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* style for image */
+.image-box {
+    display: grid;
+    height: 100%;
+}
+
+.image-center-fit {
+    max-width: 100%;
+    max-height: calc(100vh - 72px); /* deduct footer height*/
+    margin: auto;
+}
+

@@ -44,10 +44,10 @@ class App extends React.Component {
     } else {
       return (
         <div className="App">
-          <div className="jumble-tron">
+          <div className="jumble-tron image-box">
             {
               this.state.image ?
-                <img src={`data:image/png;base64,${this.state.image}`} /> :
+                <img className="image-center-fit" src={`data:image/png;base64,${this.state.image}`} /> :
                 <div>No images to show</div>
             }
           </div>
