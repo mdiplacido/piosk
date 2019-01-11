@@ -1,6 +1,6 @@
+import * as React from 'react';
 import { faChevronLeft, faChevronRight, faPause, faQrcode } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import * as React from 'react';
 import "./navigation.css";
 
 const back = <FontAwesomeIcon icon={faChevronLeft} />
@@ -21,8 +21,7 @@ export const Navigation = (props: INavigation) => {
                 <button onClick={props.back}>{back}</button>
                 <button onClick={props.pause}>{pause}</button>
                 <button onClick={props.forward}>{forward}</button>
-            </div>
-            <div>
+
                {/* category ddl fits here  */}
                 <button>{qrcode}</button>
             </div>

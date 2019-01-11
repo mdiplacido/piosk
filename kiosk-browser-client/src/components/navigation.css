@@ -1,24 +1,29 @@
-/* footer nav bar styles */
 .navigation-center-container {
-  position: fixed;
-  text-align: center;
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-flex;
-  padding: 0 20px;
-  background-color: #dadada;
-  bottom: 0px;
-  border-top: 4px solid #0078d4;
-  border-radius: 10px 10px 0px 0px;
-  transition: .25s ease-in-out;
+    width: 100%;
+    position: fixed;
+    bottom: -72px;
+    transition: .25s ease-in-out;
+  }
+
+.navigation-center-container:hover {
+    bottom: 0px;
 }
 
-.navigation-center-container div {
-  margin: 10px 20px;
+.navigation-container {
+    border-top-right-radius: 25px;
+    border-top-left-radius: 25px;
+    margin: auto;
+    width: 80%;
+    height: 100%;
+    background-color: rgba(128, 128, 128, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    padding: 10px;
 }
 
-/* button styles */
-.navigation-center-container > div > button {
+/* start button styles */
+.navigation-container > button {
     font-size: 16px;
     margin: 5px;
     border-radius: 50%;
@@ -30,26 +35,7 @@
     box-shadow: rgba(0,0,0,0.15) 0px 3px 10px, rgba(0,0,0,0.22) 0px 3px 10px;
 }
 
-.navigation-container > div > button:hover {
+.navigation-container > button:hover {
     background-color: #004578;
 }
-
-/* from master */
-.navigation-center-container {
-    width: 100%;
-    position: fixed;
-    bottom: 0px;
-    height: 50px;
-  }
-  
-.navigation-container {
-    border-top-right-radius: 25px;
-    border-top-left-radius: 25px;
-    margin: auto;
-    width: 80%;
-    height: 100%;
-    background-color: rgba(128, 128, 128, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center; 
-}
+/* end button styles */
