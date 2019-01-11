@@ -20,6 +20,12 @@
     justify-content: center;
     align-items: center; 
     padding: 10px;
+    border-top: solid 5px #0078d4;
+}
+
+.navigation-container:hover {
+    border-top: solid 5px transparent;
+    transition: .25s ease-in-out;
 }
 
 /* start button styles */
