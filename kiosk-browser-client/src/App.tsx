@@ -17,6 +17,7 @@ interface IState {
   currentImage: IImagePayload;
   maxImages: number;
   ws?: Sockette;
+  openNavigationBar: boolean;
 }
 
 class App extends React.Component<any, IState> {
@@ -24,7 +25,8 @@ class App extends React.Component<any, IState> {
     connectionState: ConnectionState.initializing,
     currentImage: null as any as IImagePayload,
     images: [],
-    maxImages: 10
+    maxImages: 10,
+    openNavigationBar: false,
   };
 
   public componentDidMount() {
@@ -44,11 +46,39 @@ class App extends React.Component<any, IState> {
   }
 
   public render() {
+    let fadeNavTimer: NodeJS.Timeout;
+
+    const startNavFading=()=>{
+      fadeNavTimer = setTimeout(() => {
+        this.setState({ openNavigationBar: false });
+      }, 3000);
+    }
+
+    const stopNavFading=()=>{
+      if (typeof fadeNavTimer !== "undefined") {
+        clearTimeout(fadeNavTimer);
+      }
+    }
+
+    const openNavigationWhenMouseMove = ()=> {
+      stopNavFading();
+
+      if(!this.state.openNavigationBar) {
+        this.setState({ openNavigationBar:  true });
+        startNavFading();
+      }
+    }
+
+    const toggleNavigationBar = ()=> {
+      const navOpen: boolean = this.state.openNavigationBar;
+        this.setState( {openNavigationBar: !navOpen });
+    }
+
     if (this.state.connectionState !== ConnectionState.connected) {
       return this.getDisconnectedBlock();
     } else {
       return (
-        <div className="App">
+        <div className="App" onMouseMove={openNavigationWhenMouseMove}>
           <div className="img-box">
             {
               this.state.currentImage ?
@@ -56,7 +86,7 @@ class App extends React.Component<any, IState> {
                 <div>No images to show</div>
             }
           </div>
-          <Navigation back={this.onBack} forward={this.onForward} pause={this.onPause} />
+          <Navigation back={this.onBack} forward={this.onForward} pause={this.onPause} openNav={this.state.openNavigationBar} toggleNav={toggleNavigationBar} />
         </div>
       );
     }

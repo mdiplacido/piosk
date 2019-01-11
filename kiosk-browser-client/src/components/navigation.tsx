@@ -9,48 +9,38 @@ const forward = <FontAwesomeIcon icon={faChevronRight} />
 const qrcode = <FontAwesomeIcon icon={faQrcode} />
 
 export interface INavigation {
-    back: () => void;
-    forward: () => void;
-    pause: () => void;
+  openNav: boolean;
+  toggleNav: ()=> void;
+  back: () => void;
+  forward: () => void;
+  pause: () => void;
 }
 
-export interface IState {
-    isOpen: boolean;
-}
 
-export class Navigation extends React.Component<INavigation> {
-    public state: IState = {
-        isOpen : true,
-    };
 
-    public handleOpen = () => {
-        console.log("opening nav bar");
-        this.setState({ isOpen: true });
-    };
+export const Navigation = (props: INavigation)=> {
+    const navigationClass = props.openNav? ' open' : ' close'; 
 
-    public handleClose = () => {
-        console.log("closing nav bar");
-        this.setState({ isOpen: false });
-    };
-
-    public render() {
-        const navigationClass = this.state.isOpen ? ' open' : ' close'; 
-        return (
-            <div 
-                className={"navigation-center-container" + navigationClass}
-                onMouseEnter={this.handleOpen} 
-                onMouseLeave={this.handleClose}
-                onClick={ this.state.isOpen? this.handleClose: this.handleOpen}
-            >
-                <div className="navigation-container">
-                    <button onClick={this.props.back}>{back}</button>
-                    <button onClick={this.props.pause}>{pause}</button>
-                    <button onClick={this.props.forward}>{forward}</button>
-
-                    {/* category ddl fits here  */}
-                    <button>{qrcode}</button>
-                </div>
-            </div>
-        );
+    function handleOnClick(event:any){
+        event.preventDefault();
+        console.log(event.currentTarget);
+        props.toggleNav();
     }
+
+    console.log('props: '+props.openNav+'; class: '+navigationClass); 
+    return (
+        <div 
+            className={"navigation-center-container" + navigationClass}>
+            <div className="navigation-container">
+                <button onClick={props.back}>{back}</button>
+                <button onClick={props.pause}>{pause}</button>
+                <button onClick={props.forward}>{forward}</button>
+
+                {/* category ddl fits here  */}
+                <button>{qrcode}</button>
+
+                <span onClick={handleOnClick}>x</span>
+            </div>
+        </div>
+    );
 }
