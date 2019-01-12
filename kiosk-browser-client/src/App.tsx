@@ -45,6 +45,11 @@ class App extends React.Component<any, IState> {
     this.startSlideShow();
   }
 
+  public componentWillUnmount() {
+    window.clearTimeout(this.fadeNavTimer);
+    window.clearTimeout(this.slideshowTimer);
+  }
+
   public render() {
     if (this.state.connectionState !== ConnectionState.connected) {
       return this.getDisconnectedBlock();
@@ -191,10 +196,7 @@ class App extends React.Component<any, IState> {
   };
 
   private stopNavFading = () => {
-    if (this.fadeNavTimer !== undefined) {
-      window.clearTimeout(this.fadeNavTimer);
-      this.fadeNavTimer = undefined;
-    }
+    window.clearTimeout(this.fadeNavTimer);
   };
 
   private showNavigationBar = () => {
