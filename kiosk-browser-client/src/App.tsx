@@ -55,7 +55,7 @@ class App extends React.Component<any, IState> {
       return this.getDisconnectedBlock();
     } else {
       return (
-        <div className="App" onMouseMove={this.showNavigationBar}>
+        <div className="App" onMouseMove={this.handleShowNavigationBar}>
           <div className="img-box">
             {
               this.state.currentImage ? (
@@ -63,13 +63,15 @@ class App extends React.Component<any, IState> {
                 <Spinner spin={true} text="No images to show, waiting for images..." />
             }
           </div>
+
+          {/* note using class property bound functions for all handlers passed to Navigation */}
           <Navigation
-            back={this.onBack}
-            forward={this.onForward}
+            back={this.handleBack}
+            forward={this.handleForward}
             isPaused={this.state.isPaused}
-            pause={this.onPause}
+            pause={this.handleOnPause}
             openNav={this.state.showNavigationBar}
-            closeNav={this.hideNavigationBar}
+            closeNav={this.handleHideNavigationBar}
             disableNext={!this.state.hasNext}
             disablePrev={!this.state.hasPrev}
           />
@@ -78,7 +80,31 @@ class App extends React.Component<any, IState> {
     }
   }
 
-  private handleMessage = (msg: MessageEvent) => {
+  private handleBack = () => {
+    this.move("back");
+  };
+
+  private handleForward = () => {
+    this.move("forward");
+  };
+
+  private handleOnPause = () => {
+    this.setState(prev => ({
+      isPaused: !prev.isPaused,
+    }));
+  };
+
+  private handleHideNavigationBar = () => {
+    this.setState({ showNavigationBar: false });
+  };
+
+  private handleShowNavigationBar = () => {
+    this.stopNavFading();
+    this.setState({ showNavigationBar: true });
+    this.startNavFading();
+  };
+
+  private onSocketteMessage(msg: MessageEvent): void {
     const kioskMessage: IKioskMessage = JSON.parse(msg.data);
 
     switch (kioskMessage.type) {
@@ -116,13 +142,13 @@ class App extends React.Component<any, IState> {
     }
   }
 
-  private getDisconnectedBlock = () => {
+  private getDisconnectedBlock(): JSX.Element {
     return <div>
       <Spinner text={this.getConnectionStatusMessage()} spin={this.state.connectionState !== ConnectionState.failed} />
     </div>;
   }
 
-  private getConnectionStatusMessage = () => {
+  private getConnectionStatusMessage(): string {
     switch (this.state.connectionState) {
       case ConnectionState.connected:
         throw new Error(`Invalid state ${this.state.connectionState}`);
@@ -136,15 +162,17 @@ class App extends React.Component<any, IState> {
     }
   }
 
-  private onBack = () => {
-    this.move("back");
+  private startNavFading(): void {
+    this.fadeNavTimer = window.setTimeout(() => {
+      this.handleHideNavigationBar();
+    }, 8000);
   };
 
-  private onForward = () => {
-    this.move("forward");
+  private stopNavFading(): void {
+    window.clearTimeout(this.fadeNavTimer);
   };
 
-  private move(direction: "forward" | "back", isSlideShowCaller = false) {
+  private move(direction: "forward" | "back", isSlideShowCaller = false): void {
     const add = direction === "forward" ? 1 : -1;
     let index = this.state.images.indexOf(this.state.currentImage) + add;
 
@@ -164,17 +192,9 @@ class App extends React.Component<any, IState> {
       hasPrev: index > 0,
       imageDisplayTimeMs: new Date().getTime()
     });
-
-    return;
   }
 
-  private onPause = () => {
-    this.setState(prev => ({
-      isPaused: !prev.isPaused,
-    }));
-  };
-
-  private pruneAndSortImages = (images: IImagePayload[]) => {
+  private pruneAndSortImages(images: IImagePayload[]): IImagePayload[] {
     // we sort images ascending.
     const sortedImages = images.sort((a, b) => a.birthtimeMs - b.birthtimeMs);
 
@@ -185,33 +205,16 @@ class App extends React.Component<any, IState> {
     return sortedImages.filter((_image, i) => i >= keepIndex);
   };
 
-  private hideNavigationBar = () => {
-    this.setState({ showNavigationBar: false });
-  };
-
-  private startNavFading = () => {
-    this.fadeNavTimer = window.setTimeout(() => {
-      this.hideNavigationBar();
-    }, 8000);
-  };
-
-  private stopNavFading = () => {
-    window.clearTimeout(this.fadeNavTimer);
-  };
-
-  private showNavigationBar = () => {
-    this.stopNavFading();
-    this.setState({ showNavigationBar: true });
-    this.startNavFading();
-  };
-
-  private setupSockette = () => {
+  private setupSockette(): void {
     (() => new Sockette("ws://localhost:8081", {
       timeout: 5000,
+      // adding slight delay before we post the error.  there's a weird condition
+      // where the "connecting" or "reconnecting" do not get a chance to show
+      // especially when the connection to the server quickly fails.
       // tslint:disable-next-line:object-literal-sort-keys
-      onerror: () =>
-        this.setState({ connectionState: ConnectionState.failed }),
-      onmessage: msg => this.handleMessage(msg),
+      onerror: () => window.setTimeout(() =>
+        this.setState({ connectionState: ConnectionState.failed }), 2000),
+      onmessage: msg => this.onSocketteMessage(msg),
       onopen: () =>
         this.setState({ connectionState: ConnectionState.connected }),
       onreconnect: () =>
@@ -219,7 +222,7 @@ class App extends React.Component<any, IState> {
     }))();
   }
 
-  private startSlideShow = (slideShowIntervalMs = 8000) => {
+  private startSlideShow(slideShowIntervalMs = 8000): void {
     this.slideshowTimer = window.setTimeout(() => {
       // each image should have at least 8 seconds to 
       // be on the screen, if the current image has been
