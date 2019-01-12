@@ -4,6 +4,15 @@ body {
 
 .App {
   text-align: center;
+
+  /* 
+   * setting the app div to take up the entire screen.  if we do not then the
+   * image will not sit in the middle of the screen and mouse events for the
+   * App div will fit the size of the image iow you will have to roll over
+   * the image in order to activate our mousemove events, this fixes all that
+   */
+  width: 100vw;
+  height: 100vh;
 }
 
 /* begin image styles */
