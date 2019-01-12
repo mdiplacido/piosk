@@ -1,5 +1,11 @@
 import * as React from 'react';
-import { faChevronLeft, faChevronRight, faPause, faQrcode, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+import {
+    faChevronLeft,
+    faChevronRight,
+    faPause,
+    faQrcode,
+    faTimesCircle
+    } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './navigation.css';
 
@@ -20,7 +26,7 @@ export interface INavigation {
 }
 
 export const Navigation = (props: INavigation) => {
-    const navigationClass = props.openNav ? ' open' : ' close';
+    const navigationClass = props.openNav ? 'open' : 'close';
 
     function handleClose(event: any) {
         event.preventDefault();
@@ -29,7 +35,7 @@ export const Navigation = (props: INavigation) => {
 
     return (
         <div
-            className={"navigation-center-container" + navigationClass}>
+            className={`navigation-center-container ${navigationClass}`}>
             <div className="navigation-container">
                 <span className='close-button' onClick={handleClose}>{close}</span>
 
