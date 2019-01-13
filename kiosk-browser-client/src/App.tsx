@@ -3,7 +3,7 @@ import Sockette from 'sockette';
 import { IImagePayload, IKioskMessage, KioskMessageType } from './model/payloads';
 import { Navigation } from './components/navigation';
 import { Spinner } from './components/spinner';
-import './App.css';
+import './App.scss';
 
 enum ConnectionState {
   initializing,
