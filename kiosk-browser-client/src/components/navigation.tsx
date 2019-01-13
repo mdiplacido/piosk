@@ -7,7 +7,7 @@ import {
     faTimesCircle
     } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import './navigation.css';
+import './navigation.scss';
 
 const back = <FontAwesomeIcon icon={faChevronLeft} />
 const pause = (isPaused: boolean) => <FontAwesomeIcon icon={faPause} spin={isPaused} />
