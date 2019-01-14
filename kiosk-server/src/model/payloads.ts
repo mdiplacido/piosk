@@ -13,7 +13,7 @@ export interface IImagePayload {
     path: string;
     author: string;
     data: string;  // eg base64 encoded image
-    url: string;
+    url?: string;
 }
 
 export interface IKioskMessage {

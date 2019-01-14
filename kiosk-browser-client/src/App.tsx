@@ -68,7 +68,7 @@ class App extends React.Component<any, IState> {
                 <Spinner spin={true} text="No images to show, waiting for images..." />
             }
           </div>
-          <div className={`qr-box ${this.state.showQR ? 'open' : 'close'}`}>>
+          <div className={`qr-box ${this.state.showQR ? 'open' : 'close'}`}>
             {
               this.state.hasQR && this.state.currentImage ? 
               (<QRCode value={this.state.currentImage.url ? this.state.currentImage.url : "https://www.microsoft.com/"} renderAs="svg" />) : 
