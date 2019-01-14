@@ -118,10 +118,6 @@ class App extends React.Component<any, IState> {
     this.startNavFading();
   };
 
-  private handleHideQRCode = () => {
-    this.setState({showQR: false });
-  };
-
   private handleToggleQRCode = () => {
     this.setState(prev => ({
       showQR: !prev.showQR,
@@ -190,7 +186,6 @@ class App extends React.Component<any, IState> {
   private startNavFading(): void {
     this.fadeNavTimer = window.setTimeout(() => {
       this.handleHideNavigationBar();
-      this.handleHideQRCode();
     }, 8000);
   };
 
