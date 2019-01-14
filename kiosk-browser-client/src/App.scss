@@ -27,3 +27,21 @@ body {
   }
 }
 /* end image styles */
+
+/* begin qr code styles */
+.qr-box {
+  position: fixed;
+  bottom: 50%;
+  transform: translateY(50%);
+  z-index: 1;
+  transition: .5s ease-in-out;
+
+    &.open {
+      right: 10px; 
+    }
+
+    &.close {
+      right: -130px;
+    }
+}
+/* end qr code styles */

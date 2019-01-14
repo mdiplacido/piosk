@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as QRCode from 'qrcode.react';
 import Sockette from 'sockette';
 import { IImagePayload, IKioskMessage, KioskMessageType } from './model/payloads';
 import { Navigation } from './components/navigation';
@@ -22,6 +23,8 @@ interface IState {
   showNavigationBar: boolean;
   hasPrev: boolean;
   hasNext: boolean;
+  hasQR: boolean;
+  showQR: boolean;
 }
 
 class App extends React.Component<any, IState> {
@@ -30,11 +33,13 @@ class App extends React.Component<any, IState> {
     currentImage: null as any as IImagePayload,
     hasNext: false,
     hasPrev: false,
+    hasQR: false,
     imageDisplayTimeMs: 0,
     images: [],
     isPaused: false,
     maxImages: 10,
     showNavigationBar: false,
+    showQR: false,
   };
 
   private fadeNavTimer?: number;
@@ -63,6 +68,13 @@ class App extends React.Component<any, IState> {
                 <Spinner spin={true} text="No images to show, waiting for images..." />
             }
           </div>
+          <div className={`qr-box ${this.state.showQR ? 'open' : 'close'}`}>>
+            {
+              this.state.hasQR && this.state.currentImage ? 
+              (<QRCode value={this.state.currentImage.url ? this.state.currentImage.url : "https://www.microsoft.com/"} renderAs="svg" />) : 
+              <span />
+            }
+          </div>
 
           {/* note using class property bound functions for all handlers passed to Navigation */}
           <Navigation
@@ -74,6 +86,8 @@ class App extends React.Component<any, IState> {
             closeNav={this.handleHideNavigationBar}
             disableNext={!this.state.hasNext}
             disablePrev={!this.state.hasPrev}
+            disableQR={!this.state.hasQR}
+            toggleQR={this.handleToggleQRCode}
           />
         </div>
       );
@@ -104,6 +118,16 @@ class App extends React.Component<any, IState> {
     this.startNavFading();
   };
 
+  private handleHideQRCode = () => {
+    this.setState({showQR: false });
+  };
+
+  private handleToggleQRCode = () => {
+    this.setState(prev => ({
+      showQR: !prev.showQR,
+    }));
+  };
+
   private onSocketteMessage(msg: MessageEvent): void {
     const kioskMessage: IKioskMessage = JSON.parse(msg.data);
 
@@ -129,6 +153,7 @@ class App extends React.Component<any, IState> {
             currentImage,
             hasNext: images.indexOf(currentImage) < images.length - 1,
             hasPrev: images.indexOf(currentImage) > 0,
+            hasQR: !!currentImage.url,
             imageDisplayTimeMs,
             images,
           };
@@ -165,6 +190,7 @@ class App extends React.Component<any, IState> {
   private startNavFading(): void {
     this.fadeNavTimer = window.setTimeout(() => {
       this.handleHideNavigationBar();
+      this.handleHideQRCode();
     }, 8000);
   };
 
@@ -190,6 +216,7 @@ class App extends React.Component<any, IState> {
       currentImage: this.state.images[index],
       hasNext: index < this.state.images.length - 1,
       hasPrev: index > 0,
+      hasQR: !!this.state.images[index].url,
       imageDisplayTimeMs: new Date().getTime()
     });
   }

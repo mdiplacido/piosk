@@ -13,6 +13,7 @@ export interface IImagePayload {
   author: string;
   birthtimeMs: number;
   data: string;  // eg base64 encoded image
+  url: string;
 }
 
 export interface IKioskMessage {

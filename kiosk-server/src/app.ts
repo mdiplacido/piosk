@@ -137,6 +137,7 @@ export class App {
             birthtimeMs: fStats.birthtimeMs,
             author: "Unknown",
             data: data.toString("base64"),
+            url: `test url for ${path}`,
         };
 
         return image;
