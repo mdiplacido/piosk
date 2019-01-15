@@ -70,8 +70,8 @@ class App extends React.Component<any, IState> {
           </div>
           <div className={`qr-box ${this.state.showQR ? 'open' : 'close'}`}>
             {
-              this.state.hasQR && this.state.currentImage ? 
-              (<QRCode value={this.state.currentImage.url ? this.state.currentImage.url : "https://www.microsoft.com/"} renderAs="svg" />) : 
+              this.state.hasQR && this.state.currentImage && this.state.currentImage.url ? 
+              (<QRCode value={this.state.currentImage.url} renderAs="svg" />) : 
               <span />
             }
           </div>
@@ -211,7 +211,7 @@ class App extends React.Component<any, IState> {
       currentImage: this.state.images[index],
       hasNext: index < this.state.images.length - 1,
       hasPrev: index > 0,
-      hasQR: !!this.state.images[index].url,
+      hasQR: this.state.images && this.state.images[index] && !!this.state.images[index].url,
       imageDisplayTimeMs: new Date().getTime()
     });
   }
