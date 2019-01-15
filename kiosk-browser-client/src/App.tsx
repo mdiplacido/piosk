@@ -149,7 +149,7 @@ class App extends React.Component<any, IState> {
             currentImage,
             hasNext: images.indexOf(currentImage) < images.length - 1,
             hasPrev: images.indexOf(currentImage) > 0,
-            hasQR: !!currentImage.url,
+            hasQR: currentImage && !!currentImage.url,
             imageDisplayTimeMs,
             images,
           };
