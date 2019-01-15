@@ -19,11 +19,13 @@ export interface INavigation {
     openNav: boolean;
     disableNext: boolean;
     disablePrev: boolean;
+    disableQR: boolean;
     isPaused: boolean;
     closeNav: () => void;
     back: () => void;
     forward: () => void;
     pause: () => void;
+    toggleQR: () => void;
 }
 
 export const Navigation = (props: INavigation) => {
@@ -45,7 +47,7 @@ export const Navigation = (props: INavigation) => {
                 <button onClick={props.forward} disabled={props.disableNext || props.isPaused}>{forward}</button>
 
                 {/* category ddl fits here  */}
-                <button>{qrcode}</button>
+                <button onClick={props.toggleQR} disabled={props.disableQR}>{qrcode}</button>
             </div>
         </div>
     );
