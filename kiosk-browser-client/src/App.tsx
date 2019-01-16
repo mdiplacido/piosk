@@ -1,9 +1,10 @@
 import * as React from 'react';
+import * as QRCode from 'qrcode.react';
 import Sockette from 'sockette';
 import { IImagePayload, IKioskMessage, KioskMessageType } from './model/payloads';
 import { Navigation } from './components/navigation';
-import './App.css';
-import { Spinner } from "./components/spinner";
+import { Spinner } from './components/spinner';
+import './App.scss';
 
 enum ConnectionState {
   initializing,
@@ -15,11 +16,15 @@ enum ConnectionState {
 interface IState {
   connectionState: ConnectionState;
   images: IImagePayload[];
+  isPaused: boolean;
   currentImage: IImagePayload;
+  imageDisplayTimeMs: number;
   maxImages: number;
   showNavigationBar: boolean;
   hasPrev: boolean;
   hasNext: boolean;
+  hasQR: boolean;
+  showQR: boolean;
 }
 
 class App extends React.Component<any, IState> {
@@ -28,25 +33,26 @@ class App extends React.Component<any, IState> {
     currentImage: null as any as IImagePayload,
     hasNext: false,
     hasPrev: false,
+    hasQR: false,
+    imageDisplayTimeMs: 0,
     images: [],
+    isPaused: false,
     maxImages: 10,
-    showNavigationBar: false
+    showNavigationBar: false,
+    showQR: false,
   };
 
-  private fadeNavTimer?: NodeJS.Timeout;
+  private fadeNavTimer?: number;
+  private slideshowTimer?: number;
 
   public componentDidMount() {
-    (() => new Sockette("ws://localhost:8081", {
-      timeout: 5000,
-      // tslint:disable-next-line:object-literal-sort-keys
-      onerror: () =>
-        this.setState({ connectionState: ConnectionState.failed }),
-      onmessage: msg => this.handleMessage(msg),
-      onopen: () =>
-        this.setState({ connectionState: ConnectionState.connected }),
-      onreconnect: () =>
-        this.setState({ connectionState: ConnectionState.reconnecting })
-    }))();
+    this.setupSockette();
+    this.startSlideShow();
+  }
+
+  public componentWillUnmount() {
+    window.clearTimeout(this.fadeNavTimer);
+    window.clearTimeout(this.slideshowTimer);
   }
 
   public render() {
@@ -54,29 +60,71 @@ class App extends React.Component<any, IState> {
       return this.getDisconnectedBlock();
     } else {
       return (
-        <div className="App" onMouseMove={this.showNavigationBar}>
+        <div className="App" onMouseMove={this.handleShowNavigationBar}>
           <div className="img-box">
             {
               this.state.currentImage ? (
                 <img className="center-fit" src={`data:image/png;base64,${this.state.currentImage.data}`} />) :
-                (<div>No images to show</div>)
+                <Spinner spin={true} text="No images to show, waiting for images..." />
             }
           </div>
+          <div className={`qr-box ${this.state.showQR ? 'open' : 'close'}`}>
+            {
+              this.state.hasQR && this.state.currentImage && this.state.currentImage.url ? 
+              (<QRCode value={this.state.currentImage.url} renderAs="svg" />) : 
+              <span />
+            }
+          </div>
+
+          {/* note using class property bound functions for all handlers passed to Navigation */}
           <Navigation
-            back={this.onBack}
-            forward={this.onForward}
-            pause={this.onPause}
+            back={this.handleBack}
+            forward={this.handleForward}
+            isPaused={this.state.isPaused}
+            pause={this.handleOnPause}
             openNav={this.state.showNavigationBar}
-            closeNav={this.hideNavigationBar}
+            closeNav={this.handleHideNavigationBar}
             disableNext={!this.state.hasNext}
             disablePrev={!this.state.hasPrev}
+            disableQR={!this.state.hasQR}
+            toggleQR={this.handleToggleQRCode}
           />
         </div>
       );
     }
   }
 
-  private handleMessage(msg: MessageEvent): void {
+  private handleBack = () => {
+    this.move("back");
+  };
+
+  private handleForward = () => {
+    this.move("forward");
+  };
+
+  private handleOnPause = () => {
+    this.setState(prev => ({
+      isPaused: !prev.isPaused,
+    }));
+  };
+
+  private handleHideNavigationBar = () => {
+    this.setState({ showNavigationBar: false });
+  };
+
+  private handleShowNavigationBar = () => {
+    this.stopNavFading();
+    this.setState({ showNavigationBar: true });
+    this.startNavFading();
+  };
+
+  private handleToggleQRCode = () => {
+    this.setState(prev => ({
+      showQR: !prev.showQR,
+    }));
+  };
+
+  private onSocketteMessage(msg: MessageEvent): void {
     const kioskMessage: IKioskMessage = JSON.parse(msg.data);
 
     switch (kioskMessage.type) {
@@ -88,11 +136,21 @@ class App extends React.Component<any, IState> {
         // we will not assume that the current image is the latest
         this.setState(prev => {
           const images = this.pruneAndSortImages([...prev.images, imagePayload]);
-          const currentImage = images[images.length - 1];
+
+          const currentImage = !this.state.isPaused ?
+            images[images.length - 1] :
+            this.state.currentImage;
+
+          const imageDisplayTimeMs = !this.state.isPaused ?
+            new Date().getTime() :
+            prev.imageDisplayTimeMs;
+
           return {
             currentImage,
             hasNext: images.indexOf(currentImage) < images.length - 1,
             hasPrev: images.indexOf(currentImage) > 0,
+            hasQR: currentImage && !!currentImage.url,
+            imageDisplayTimeMs,
             images,
           };
         });
@@ -105,7 +163,7 @@ class App extends React.Component<any, IState> {
     }
   }
 
-  private getDisconnectedBlock() {
+  private getDisconnectedBlock(): JSX.Element {
     return <div>
       <Spinner text={this.getConnectionStatusMessage()} spin={this.state.connectionState !== ConnectionState.failed} />
     </div>;
@@ -125,37 +183,40 @@ class App extends React.Component<any, IState> {
     }
   }
 
-  private onBack = () => {
-    this.move("back");
+  private startNavFading(): void {
+    this.fadeNavTimer = window.setTimeout(() => {
+      this.handleHideNavigationBar();
+    }, 8000);
   };
 
-  private onForward = () => {
-    this.move("forward");
+  private stopNavFading(): void {
+    window.clearTimeout(this.fadeNavTimer);
   };
 
-  private move(direction: "forward" | "back") {
+  private move(direction: "forward" | "back", isSlideShowCaller = false): void {
     const add = direction === "forward" ? 1 : -1;
-    const index = this.state.images.indexOf(this.state.currentImage) + add;
+    let index = this.state.images.indexOf(this.state.currentImage) + add;
 
-    if (index < 0 || index > this.state.images.length - 1) {
+    if (index < 0 || (index > this.state.images.length - 1 && !isSlideShowCaller)) {
+      // if the caller is the user invoking the next then we will not allow
+      // the user to move next.  Technically next should be disabled, but
+      // this is a sanity check.
       return;
+    } else if (index > this.state.images.length - 1) {
+      // caller is the slideshow, we'll just wrap back to the beginning
+      index = 0;
     }
 
     this.setState({
       currentImage: this.state.images[index],
       hasNext: index < this.state.images.length - 1,
-      hasPrev: index > 0
+      hasPrev: index > 0,
+      hasQR: this.state.images && this.state.images[index] && !!this.state.images[index].url,
+      imageDisplayTimeMs: new Date().getTime()
     });
-
-    return;
   }
 
-  private onPause = () => {
-    alert("got to pause");
-    return;
-  };
-
-  private pruneAndSortImages = (images: IImagePayload[]) => {
+  private pruneAndSortImages(images: IImagePayload[]): IImagePayload[] {
     // we sort images ascending.
     const sortedImages = images.sort((a, b) => a.birthtimeMs - b.birthtimeMs);
 
@@ -166,28 +227,53 @@ class App extends React.Component<any, IState> {
     return sortedImages.filter((_image, i) => i >= keepIndex);
   };
 
-  private hideNavigationBar = () => {
-    this.setState({ showNavigationBar: false });
-  };
+  private setupSockette(): void {
+    (() => new Sockette("ws://localhost:8081", {
+      timeout: 5000,
+      // adding slight delay before we post the error.  there's a weird condition
+      // where the "connecting" or "reconnecting" do not get a chance to show
+      // especially when the connection to the server quickly fails.
+      // tslint:disable-next-line:object-literal-sort-keys
+      onerror: () => window.setTimeout(() =>
+        this.setState({ connectionState: ConnectionState.failed }), 2000),
+      onmessage: msg => this.onSocketteMessage(msg),
+      onopen: () =>
+        this.setState({ connectionState: ConnectionState.connected }),
+      onreconnect: () =>
+        this.setState({ connectionState: ConnectionState.reconnecting })
+    }))();
+  }
 
-  private startNavFading = () => {
-    this.fadeNavTimer = setTimeout(() => {
-      this.hideNavigationBar();
-    }, 8000);
-  };
+  private startSlideShow(slideShowIntervalMs = 8000): void {
+    this.slideshowTimer = window.setTimeout(() => {
+      // each image should have at least 8 seconds to 
+      // be on the screen, if the current image has been
+      // on for less then we'll just cancel this timer
+      // and call ourselves gain.
+      const timeRemaining =
+        Math.max(0, slideShowIntervalMs - (new Date().getTime() - this.state.imageDisplayTimeMs));
 
-  private stopNavFading = () => {
-    if (typeof this.fadeNavTimer !== "undefined") {
-      clearTimeout(this.fadeNavTimer);
-      this.fadeNavTimer = undefined;
-    }
-  };
+      console.log(`slideshow time remaining is ${timeRemaining}ms`);
 
-  private showNavigationBar = () => {
-    this.stopNavFading();
-    this.setState({ showNavigationBar: true });
-    this.startNavFading();
-  };
+      if (!timeRemaining) {
+        if (!this.state.isPaused) {
+          // cannot proceed, we are paused.
+          // we will fire again in SlideShowIntervalMs
+          console.log(`slide show timer moving forward`);
+          this.move("forward", true /* isSlideShowCaller */);
+        } else {
+          console.log("slide show timer came due, but the slide show is paused...");
+        }
+
+        // if we moved or not we have to start a new interval of the slideshow timer
+        this.startSlideShow();
+      } else {
+        // schedule a new one for timeRemaining
+        console.log(`time remaining ${this.slideshowTimer}`);
+        this.startSlideShow(timeRemaining);
+      }
+    }, slideShowIntervalMs);
+  }
 }
 
 export default App;

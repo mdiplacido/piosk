@@ -1,10 +1,16 @@
 import * as React from 'react';
-import { faChevronLeft, faChevronRight, faPause, faQrcode, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+import {
+    faChevronLeft,
+    faChevronRight,
+    faPause,
+    faQrcode,
+    faTimesCircle
+    } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import './navigation.css';
+import './navigation.scss';
 
 const back = <FontAwesomeIcon icon={faChevronLeft} />
-const pause = <FontAwesomeIcon icon={faPause} />
+const pause = (isPaused: boolean) => <FontAwesomeIcon icon={faPause} spin={isPaused} />
 const forward = <FontAwesomeIcon icon={faChevronRight} />
 const qrcode = <FontAwesomeIcon icon={faQrcode} />
 const close = <FontAwesomeIcon icon={faTimesCircle} />
@@ -13,14 +19,17 @@ export interface INavigation {
     openNav: boolean;
     disableNext: boolean;
     disablePrev: boolean;
+    disableQR: boolean;
+    isPaused: boolean;
     closeNav: () => void;
     back: () => void;
     forward: () => void;
     pause: () => void;
+    toggleQR: () => void;
 }
 
 export const Navigation = (props: INavigation) => {
-    const navigationClass = props.openNav ? ' open' : ' close';
+    const navigationClass = props.openNav ? 'open' : 'close';
 
     function handleClose(event: any) {
         event.preventDefault();
@@ -29,16 +38,16 @@ export const Navigation = (props: INavigation) => {
 
     return (
         <div
-            className={"navigation-center-container" + navigationClass}>
+            className={`navigation-center-container ${navigationClass}`}>
             <div className="navigation-container">
                 <span className='close-button' onClick={handleClose}>{close}</span>
 
-                <button onClick={props.back} disabled={props.disablePrev}>{back}</button>
-                <button onClick={props.pause}>{pause}</button>
-                <button onClick={props.forward} disabled={props.disableNext}>{forward}</button>
+                <button onClick={props.back} disabled={props.disablePrev || props.isPaused}>{back}</button>
+                <button onClick={props.pause}>{pause(props.isPaused)}</button>
+                <button onClick={props.forward} disabled={props.disableNext || props.isPaused}>{forward}</button>
 
                 {/* category ddl fits here  */}
-                <button>{qrcode}</button>
+                <button onClick={props.toggleQR} disabled={props.disableQR}>{qrcode}</button>
             </div>
         </div>
     );

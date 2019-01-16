@@ -1,8 +1,7 @@
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import * as React from "react";
-
-import './spinner.css';
+import * as React from 'react';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import './spinner.scss';
 
 export interface ISpinnerProps {
     spin?: boolean;
