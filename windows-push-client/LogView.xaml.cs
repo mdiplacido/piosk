@@ -38,5 +38,10 @@ namespace windows_push_client
         {
             this.LogTextBox.Document.Blocks.Clear();
         }
+
+        private void ClearLogButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            this.Clear();
+        }
     }
 }

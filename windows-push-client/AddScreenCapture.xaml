@@ -8,7 +8,7 @@
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid Background="White">
         <Button x:Name="AddScreenCapturePanelButton" Content="Add" Margin="113,128,0,0" Width="75" VerticalAlignment="Top" HorizontalAlignment="Left" IsEnabled="False" Click="AddScreenCapturePanelButton_Click"/>
-        <TextBox x:Name="UrlTextBox" Height="23" Margin="113,10,0,0" TextWrapping="Wrap" Text="https://" Width="439" TextChanged="UrlTextBox_TextChanged" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+        <TextBox x:Name="UrlTextBox" Height="23" Margin="113,10,0,0" Text="https://" Width="439" TextChanged="UrlTextBox_TextChanged" VerticalAlignment="Top" HorizontalAlignment="Left"/>
         <Label Content="Url" HorizontalAlignment="Left" Margin="83,10,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.459,0.592"/>
         <Label Content="Author" HorizontalAlignment="Left" Margin="63,35,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.42,0.714"/>
         <TextBox x:Name="AuthorTextBox" HorizontalAlignment="Left" Height="23" Margin="113,38,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="439" TextChanged="AuthorTextBox_TextChanged" />

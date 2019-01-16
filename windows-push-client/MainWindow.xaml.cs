@@ -41,6 +41,16 @@
             };
 
             this.CreateCapturePanels();
+            this.KeyDown += this.MainWindow_KeyDown;
+        }
+
+
+        private void MainWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.F11)
+            {
+                this.PauseResumeButton_Click(sender, e);
+            }
         }
 
         private void CreateCapturePanels()
@@ -152,11 +162,6 @@
             }
 
             this.screenCapturePanels.SelectedIndex = match.Index;
-        }
-
-        private void CleareLogsButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.logView.Clear();
         }
     }
 }

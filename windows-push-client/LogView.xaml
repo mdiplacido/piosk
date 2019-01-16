@@ -7,9 +7,10 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        <RichTextBox x:Name="LogTextBox" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Block.LineHeight="6">
+        <RichTextBox x:Name="LogTextBox" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Block.LineHeight="6" Margin="0,29,0,0">
             <FlowDocument>
             </FlowDocument>
         </RichTextBox>
+        <Button x:Name="ClearLogButton" Content="Clear Log" HorizontalAlignment="Left" Margin="0,4,0,0" VerticalAlignment="Top" Width="75" Click="ClearLogButton_Click"/>
     </Grid>
 </UserControl>
