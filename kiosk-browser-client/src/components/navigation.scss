@@ -1,3 +1,5 @@
+@import "../theme/common";
+
 .navigation-center-container {
     width: 100%;
     position: fixed;
@@ -33,7 +35,7 @@
     justify-content: center;
     align-items: center; 
     padding: 10px;
-    border-top: solid 5px #0078d4;
+    border-top: solid 5px $primary-blue;
 
     &:hover{
         border-top: solid 5px transparent;
@@ -47,7 +49,7 @@
         border-radius: 50%;
         display: inline-block;
         padding: 15px 20px;
-        background-color: #0078d4;
+        background-color: $primary-blue;
         color: #fff;
         border: none;
         box-shadow: rgba(0,0,0,0.15) 0px 3px 10px, rgba(0,0,0,0.22) 0px 3px 10px;

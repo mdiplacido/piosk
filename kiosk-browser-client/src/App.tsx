@@ -71,7 +71,7 @@ class App extends React.Component<any, IState> {
           <div className={`qr-box ${this.state.showQR ? 'open' : 'close'}`}>
             {
               this.state.hasQR && this.state.currentImage && this.state.currentImage.url ? 
-              (<QRCode value={this.state.currentImage.url} renderAs="svg" />) : 
+              (<QRCode value={this.state.currentImage.url} renderAs="svg" fgColor="#0078d4" bgColor="#fff" />) : 
               <span />
             }
           </div>

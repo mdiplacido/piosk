@@ -1,5 +1,7 @@
 ﻿namespace windows_push_client.Services
 {
+    using windows_push_client.Models;
+
     public enum PublishCompletionStatus
     {
         None = 0,
@@ -11,6 +13,6 @@
 
     public interface IPublisherService
     {
-        void Send(byte[] data, string fileName, PublishCompleteHandler complete);
+        void Send(PNGXPayload payload, string fileName, PublishCompleteHandler complete);
     }
 }   

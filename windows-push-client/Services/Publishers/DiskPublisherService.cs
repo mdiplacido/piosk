@@ -6,7 +6,7 @@
 
     public class DiskPublisherService : IPublisherService
     {
-        // eg. \var\jail\data\piosk_pickup\{0}.png
+        // eg. \var\jail\data\piosk_pickup\{0}.pngx
         private readonly Config config;
 
         public DiskPublisherService(Config config)
@@ -14,7 +14,7 @@
             this.config = config;
         }
 
-        public void Send(byte[] data, string fileName, PublishCompleteHandler complete)
+        public void Send(PNGXPayload payload, string fileName, PublishCompleteHandler complete)
         {
             if (complete == null)
             {
@@ -25,7 +25,7 @@
 
             try
             {
-                File.WriteAllBytes(fullPath, data);
+                File.WriteAllBytes(fullPath, payload.Serialize());
                 complete(PublishCompletionStatus.Success, $"Completed writing file {fileName} with success");
             }
             catch (System.IO.IOException ex)

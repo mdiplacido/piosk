@@ -127,7 +127,7 @@
 
         private byte[] TakeScreenshot()
         {
-            // we have to take a screenshot using the Graphics interface.  asking the control to return a bitmap
+            // we have to take a screen-shot using the Graphics interface.  asking the control to return a bitmap
             // does not work with the WebView component, at least not at the time I wrote this.
             // IMPORTANT: SCREENSHOT ONLY WORKS IF YOU ARE AT THE TERMINAL. WHAT I'VE BEEN DOING IS RUNNING
             // THIS PUSH CLIENT ON A VM AND LEAVING MY SESSION ATTACHED.  SEE DOCUMENTATION FOR MORE DETAILS.
@@ -166,9 +166,20 @@
             {
                 byte[] imageBytes = this.TakeScreenshot();
 
-                string name = Guid.NewGuid().ToString() + ".png";
+                string name = Guid.NewGuid().ToString() + ".pngx";
 
-                this.capturePublisher.Send(imageBytes, name, (status, message) =>
+                var elapsedTime = DateTime.UtcNow - new DateTime(1970, 1, 1);
+
+                var payload = new PNGXPayload()
+                {
+                    Author = this.Config.Author,
+                    BirthtimeMs = (long)elapsedTime.TotalMilliseconds,
+                    Data = imageBytes,
+                    Name = this.Config.Name,
+                    Url = this.Config.Url
+                };
+
+                this.capturePublisher.Send(payload, name, (status, message) =>
                 {
                     this.logger.Verbose("Capture publish complete for {0}, status: {1}, message: {2}", this.Config.PrettyName, status, message);
                 });
@@ -202,7 +213,7 @@
                 dpiY = 96.0f * (float)source.CompositionTarget.TransformToDevice.M22;
             }
 
-            return new Tuple<float, float>(dpiX, dpiY);         
+            return new Tuple<float, float>(dpiX, dpiY);
         }
     }
 }

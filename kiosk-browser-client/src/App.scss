@@ -1,3 +1,5 @@
+@import "./theme/common";
+
 body {
   background-color: #000;
 }
@@ -36,12 +38,16 @@ body {
   z-index: 1;
   transition: .5s ease-in-out;
 
-    &.open {
-      right: 10px; 
-    }
+  border: 5px solid $primary-blue;        
+  background-color: #fff;        
 
-    &.close {
-      right: -130px;
-    }
+  &.open {
+    padding: 5px;      
+    right: 10px; 
+  }
+
+  &.close {
+    right: -150px;
+  }
 }
 /* end qr code styles */
