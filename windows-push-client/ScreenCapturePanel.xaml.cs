@@ -48,6 +48,13 @@
             this.Config = config;
             this.Location.Text = config.Url;
             this.Viewport.NavigationCompleted += Viewport_NavigationCompleted;
+            this.Viewport.NewWindowRequested += Viewport_NewWindowRequested;
+        }
+
+        private void Viewport_NewWindowRequested(object sender, WebViewControlNewWindowRequestedEventArgs e)
+        {
+            this.logger.Info($"New window requested... for {e.Uri}, navigating to location in the current view");
+            this.Viewport.Navigate(e.Uri);
         }
 
         public void CaptureScreen(object source)
