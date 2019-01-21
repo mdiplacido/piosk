@@ -5,6 +5,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using System.Windows;
     using System.Windows.Controls;
     using windows_push_client.Models;
@@ -16,11 +17,15 @@
     public partial class MainWindow : Window
     {
         private readonly LoggingService loggingService = new LoggingService();
+        private readonly SecretService secrets = new SecretService();
+
         private ILoggingService featureLogger;
         private TimedCaptureService timedCaptureService;
         private ScreenCapturePublisher capturePublisher;
         private LogView logView;
         private Config config;
+        private ScreenCapturePanel currentCapturePanel;
+        private readonly Object visibilitySync = new Object();
 
         public MainWindow()
         {
@@ -34,7 +39,7 @@
 
             this.capturePublisher = new ScreenCapturePublisher(
                 new DiskPublisherService(this.config),
-                new SFTPPublisherService(new SFTPClientFactory(this.config), this.config, this.featureLogger),
+                new SFTPPublisherService(new SFTPClientFactory(this.config, this.secrets), this.config, this.featureLogger),
                 this.featureLogger
             )
             {
@@ -79,7 +84,8 @@
                     this.featureLogger,
                     this.timedCaptureService,
                     this.capturePublisher,
-                    this.HandleCapturePanelFocusRequest)
+                    this.HandleCapturePanelFocusRequest,
+                    this.HandleCapturePanelReleaseFocusRequest)
                 )
                 .Select(panel => new TabItem()
                 {
@@ -120,15 +126,16 @@
             }
         }
 
-        private void AddNewUserCreatedCapturePanel(ScreenCapturePanelConfig captureConfig)
+        private void AddNewUserCreatedCapturePanel(ScreenCapturePanelConfig config)
         {
             var panel = new ScreenCapturePanel(
                 this.config,
-                captureConfig,
+                config,
                 this.featureLogger,
                 this.timedCaptureService,
                 this.capturePublisher,
-                this.HandleCapturePanelFocusRequest);
+                this.HandleCapturePanelFocusRequest,
+                this.HandleCapturePanelReleaseFocusRequest);
 
             var tab = new TabItem()
             {
@@ -163,19 +170,42 @@
             this.PauseResumeButton.Content = this.timedCaptureService.IsEnabled ? "Stop" : "Start";
         }
 
-        private void HandleCapturePanelFocusRequest(ScreenCapturePanel panel)
+        private bool HandleCapturePanelFocusRequest(ScreenCapturePanel panel)
         {
-            var match = this.screenCapturePanels.Items
-                .Cast<TabItem>()
-                .Select((t, i) => new { Index = i, Tab = t })
-                .FirstOrDefault(t => t.Tab.Content == panel);
-
-            if (match == null)
+            lock(visibilitySync)
             {
-                throw new ApplicationException(string.Format("Unexpected state! Not able to find panel {0}", panel.Config.PrettyName));
-            }
+                if (this.currentCapturePanel != null && this.currentCapturePanel != panel)
+                {
+                    return false;
+                }
 
-            this.screenCapturePanels.SelectedIndex = match.Index;
+                this.currentCapturePanel = panel;
+
+                var match = this.screenCapturePanels.Items
+                    .Cast<TabItem>()
+                    .Select((t, i) => new { Index = i, Tab = t })
+                    .FirstOrDefault(t => t.Tab.Content == panel);
+
+                if (match == null)
+                {
+                    throw new ApplicationException(string.Format("Unexpected state! Not able to find panel {0}", panel.Config.PrettyName));
+                }
+
+                this.screenCapturePanels.SelectedIndex = match.Index;
+
+                return true;
+            }
+        }
+
+        private void HandleCapturePanelReleaseFocusRequest(ScreenCapturePanel panel)
+        {
+            lock (visibilitySync)
+            {
+                if (this.currentCapturePanel == panel)
+                {
+                    this.currentCapturePanel = null;
+                }
+            }
         }
 
         private IEnumerable<ScreenCapturePanel> FindAllCapturePanels()
@@ -198,6 +228,8 @@
                 JsonSerializer serializer = new JsonSerializer();
                 serializer.Serialize(file, panelConfigs);
             }
+
+            MessageBox.Show(this, "All capture configurations have been saved", "Configuration Saved", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private string GetAndEnsureFullPathToConfig() {
@@ -210,6 +242,18 @@
             }
 
             return fullPath;
+        }
+
+        private void SFTPPasswordSaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.secrets.SetSecret(this.config.SFTPUsername, this.SFTPPassword.Password);
+            MessageBox.Show(this, "The password has been saved", "Password Saved", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void SFTPPassword_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            var strongRe = new Regex("^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{6,})");
+            this.SavePasswordButton.IsEnabled = strongRe.IsMatch(this.SFTPPassword.Password);            
         }
     }
 }

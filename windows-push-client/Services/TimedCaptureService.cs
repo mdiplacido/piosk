@@ -33,7 +33,12 @@
         public void NotifyPanelProcessingComplete(ScreenCapturePanel panel)
         {
             this.logger.Info("Receiving completion notification from panel: {0}", panel.Config.PrettyName);
-            this.currentCapture = null;
+
+            if (this.currentCapture == panel)
+            {
+                this.currentCapture = null;
+            }
+
             this.ProcessPanelQueue();
         }
 

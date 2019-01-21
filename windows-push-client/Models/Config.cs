@@ -2,7 +2,6 @@
 {
     using System;
     using System.Configuration;
-    using System.Security;
 
     public class Config
     {
@@ -12,7 +11,6 @@
         public string SFTPAddress { get; set; }
         public bool EnablePublishToSFTP { get; set; }
         public bool EnablePublishToDisk { get; set; }
-        public string SFTPPassword { get; set; }
         public double MinAvailableSpaceOnPi { get; set; }
         public TimeSpan DefaultPageSettleDelay { get; set; }
 
@@ -36,7 +34,6 @@
                 // default is 50% available.
                 MinAvailableSpaceOnPi = minAvailableSpaceOnPi > 0 ? minAvailableSpaceOnPi / 100 : 50 / 100,
                 DefaultPageSettleDelay = defaultPageSettleDelaySeconds > 0 ? TimeSpan.FromSeconds(defaultPageSettleDelaySeconds) : TimeSpan.FromSeconds(30),
-                SFTPPassword = "BOB",
                 EnablePublishToSFTP = enableFtpPublishing,
                 EnablePublishToDisk = enableDiskPublishing,
             };

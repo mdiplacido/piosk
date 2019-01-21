@@ -6,19 +6,21 @@
     public class SFTPClientFactory
     {
         private readonly Config config;
+        private readonly SecretService secrets;
 
-        public SFTPClientFactory(Config config)
+        public SFTPClientFactory(Config config, SecretService secrets)
         {
             this.config = config;
+            this.secrets = secrets;
         }
 
         public SftpClient Create()
         {
-            var passwordText = new System.Net.NetworkCredential(string.Empty, this.config.SFTPPassword).Password;
-
+            var password = this.secrets.GetSecret(this.config.SFTPUsername);
+             
             var connectionInfo = new ConnectionInfo(this.config.SFTPAddress,
                                                     this.config.SFTPUsername,
-                                                    new PasswordAuthenticationMethod(this.config.SFTPUsername, passwordText));
+                                                    new PasswordAuthenticationMethod(this.config.SFTPUsername, password));
 
             return new SftpClient(connectionInfo);
         }
