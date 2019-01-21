@@ -11,7 +11,7 @@
         <TabControl x:Name="screenCapturePanels" Margin="0,0,0,0">
             <TabItem x:Name="Control" Header="Controller [F11 to toggle capture]">
                 <Grid x:Name="NavButtonGrid">
-                    <Button x:Name="SaveAllButton" Content="Save All" Margin="79,4,0,0" VerticalAlignment="Top" Width="75" Height="20" HorizontalAlignment="Left"/>
+                    <Button x:Name="SaveAllButton" Content="Save All" Margin="79,4,0,0" VerticalAlignment="Top" Width="75" Height="20" HorizontalAlignment="Left" Click="SaveAllButton_Click"/>
                     <Button x:Name="PauseResumeButton" Content="Start" Margin="0,4,0,0" VerticalAlignment="Top" Width="75" Click="PauseResumeButton_Click" Height="20" HorizontalAlignment="Left"/>
                 </Grid>
             </TabItem>

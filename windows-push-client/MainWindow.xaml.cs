@@ -1,7 +1,9 @@
 ﻿namespace windows_push_client
 {
+    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Windows;
     using System.Windows.Controls;
@@ -71,8 +73,9 @@
             this.timedCaptureService = new TimedCaptureService(this.featureLogger);
 
             this.LoadCapturePanelConfigData()
-                .Select(config => new ScreenCapturePanel(
-                    config,
+                .Select(captureConfig => new ScreenCapturePanel(
+                    this.config,
+                    captureConfig,
                     this.featureLogger,
                     this.timedCaptureService,
                     this.capturePublisher,
@@ -95,17 +98,33 @@
 
         private List<ScreenCapturePanelConfig> LoadCapturePanelConfigData()
         {
-            return new List<ScreenCapturePanelConfig>()
+            var fullPathToConfig = this.GetAndEnsureFullPathToConfig();
+
+            this.featureLogger.Verbose($"Attempting to load configuration from '{fullPathToConfig}'");
+
+            if (!File.Exists(fullPathToConfig))
             {
-                new ScreenCapturePanelConfig() { Url = "https://onlineclock.net/", Name = "Online Clock", Interval = TimeSpan.FromSeconds(5) },
-                new ScreenCapturePanelConfig() { Url = "http://www.clocktab.com/", Name = "Clock Tab", Interval = TimeSpan.FromSeconds(5) },
-            };
+                this.featureLogger.Info("No configuration found, please create new capture configuration");
+                return new List<ScreenCapturePanelConfig>();
+            }
+
+            try
+            {
+                var config = File.ReadAllText(fullPathToConfig);
+                return JsonConvert.DeserializeObject<List<ScreenCapturePanelConfig>>(config);
+            }
+            catch (Exception ex)
+            {
+                this.featureLogger.Error($"Got error '{ex.ToString()}' attempting to load configuration");
+                return new List<ScreenCapturePanelConfig>();
+            }
         }
 
-        private void AddNewUserCreatedCapturePanel(ScreenCapturePanelConfig config)
+        private void AddNewUserCreatedCapturePanel(ScreenCapturePanelConfig captureConfig)
         {
             var panel = new ScreenCapturePanel(
-                config,
+                this.config,
+                captureConfig,
                 this.featureLogger,
                 this.timedCaptureService,
                 this.capturePublisher,
@@ -127,12 +146,7 @@
 
         private void UpdateCaptureServiceWithPanels()
         {
-            var panels = this.screenCapturePanels.Items
-                .Cast<TabItem>()
-                .Select(tab => tab.Content as ScreenCapturePanel)
-                .Where(panel => panel != null)  // not all tabs are ScreenCapturePanel's
-                .ToArray();
-
+            var panels = this.FindAllCapturePanels().ToArray();
             this.timedCaptureService.SetPanels(panels);
         }
 
@@ -162,6 +176,40 @@
             }
 
             this.screenCapturePanels.SelectedIndex = match.Index;
+        }
+
+        private IEnumerable<ScreenCapturePanel> FindAllCapturePanels()
+        {
+            return this.screenCapturePanels.Items
+                .Cast<TabItem>()
+                .Select(tab => tab.Content as ScreenCapturePanel)
+                .Where(panel => panel != null);  // not all tabs are ScreenCapturePanel's
+        }
+
+        private void SaveAllButton_Click(object sender, RoutedEventArgs e)
+        {
+            // get info from all the panels and serialize and save to disk.
+            var panelConfigs = this.FindAllCapturePanels().Select(panel => panel.Config).ToArray();
+            var fullPath = this.GetAndEnsureFullPathToConfig();
+            this.featureLogger.Info($"Writing screen capture configuration to ${fullPath}");
+
+            using (StreamWriter file = File.CreateText(fullPath))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Serialize(file, panelConfigs);
+            }
+        }
+
+        private string GetAndEnsureFullPathToConfig() {
+            var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PioskPushClient");
+            var fullPath = Path.Combine(directory, "Config.json");
+
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            return fullPath;
         }
     }
 }

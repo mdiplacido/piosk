@@ -22,6 +22,7 @@
         private object captureSource;  // the thing that started the capture eg. user button click or timer
         public ScreenCapturePanelConfig Config { get; set; }
         private readonly ScreenCapturePublisher capturePublisher;
+        private readonly Config appConfig;
 
         public bool IsCaptureInProgress { get; private set; } = false;
 
@@ -34,6 +35,7 @@
         }
 
         public ScreenCapturePanel(
+            Config appConfig,
             ScreenCapturePanelConfig config,
             ILoggingService logger,
             TimedCaptureService captureService,
@@ -41,6 +43,7 @@
             Action<ScreenCapturePanel> requestFocus)
         {
             InitializeComponent();
+            this.appConfig = appConfig;
             this.capturePublisher = capturePublisher;
             this.requestFocus = requestFocus;
             this.captureService = captureService;
@@ -82,28 +85,20 @@
                 return;
             }
 
-            if (!this.IsCaptureSourceTimer)
-            {
-                this.logger.Verbose("Capture source is manual user click, running immediate capture");
-                this.HandleScreenCapture();
-            }
-            else
-            {
-                this.logger.Verbose("Capture source is timer, running delayed capture");
+            this.logger.Verbose($"running delayed capture with settle time of {this.appConfig.DefaultPageSettleDelay}...");
 
-                // we introduce an artificial delay before processing the capture.
-                // this is DUMB!, there's no definitive way to know if the page has "settled".
-                TimerUtility.RunDelayedAction(() =>
-                {
-                    this.requestFocus(this);
+            // we introduce an artificial delay before processing the capture.
+            // this is DUMB!, there's no definitive way to know if the page has "settled".
+            TimerUtility.RunDelayedAction(() =>
+            {
+                this.requestFocus(this);
 
                     // delay one more tick so we give the control time to render
                     TimerUtility.RunDelayedAction(() =>
-                    {
-                        this.HandleScreenCapture();
-                    }, TimeSpan.FromMilliseconds(100));
-                }, TimeSpan.FromSeconds(5));
-            }
+                {
+                    this.HandleScreenCapture();
+                }, TimeSpan.FromMilliseconds(100));
+            }, this.appConfig.DefaultPageSettleDelay);
         }
 
         private void Navigate_ButtonClick(object sender, RoutedEventArgs e)
