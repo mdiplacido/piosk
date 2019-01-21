@@ -18,12 +18,14 @@
             this.logger = logger.ScopeForFeature(this.GetType());
         }
 
-        public void Send(byte[] data, string fileName, PublishCompleteHandler complete)
+        public void Send(PNGXPayload payload, string fileName, PublishCompleteHandler complete)
         {
             try
             {
+                var rawPayload = payload.Serialize();
+
                 using (var client = this.clientFactory.Create())
-                using (var stream = new MemoryStream(data))
+                using (var stream = new MemoryStream(rawPayload))
                 {
                     client.Connect();
 
@@ -34,7 +36,7 @@
                         Path.Combine(this.config.SFTPPublishPath, fileName),
                         length =>
                         {
-                            if (length == (ulong)data.Length)
+                            if (length == (ulong)rawPayload.Length)
                             {
                                 complete(PublishCompletionStatus.Success, $"Successfully uploaded {fileName}");
                             }

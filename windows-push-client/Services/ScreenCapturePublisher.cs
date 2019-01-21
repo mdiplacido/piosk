@@ -1,6 +1,7 @@
 ﻿namespace windows_push_client.Services
 {
     using System;
+    using windows_push_client.Models;
 
     public class ScreenCapturePublisher : IPublisherService
     {
@@ -27,10 +28,10 @@
 
 
         // TODO: we should have an enqueue which writes the image to disk for publishing.
-        // and a disk watcher that then enque's and gets the connection and performs the publishing off
+        // and a disk watcher that then enqueues and gets the connection and performs the publishing off
         // of the UI thread.  This will allow capture to write to a share and a separate instance on another 
         // machine doing the publishing.
-        public void Send(byte[] data, string fileName, PublishCompleteHandler complete)
+        public void Send(PNGXPayload pngPayload, string fileName, PublishCompleteHandler complete)
         {
             var completionCount = 2;
             PublishCompletionStatus status = PublishCompletionStatus.None;
@@ -50,8 +51,8 @@
                 if (--completionCount < 1)
                 {
                     var elapsedTime = DateTime.UtcNow - startTime;
-                    var totalMbBytesSent = ((double)data.Length / (1024 * 1024)).ToString("0.###");
-                    complete(status, $"Final publish status is {status}, time elpased: {elapsedTime.TotalSeconds} seconds, image size {totalMbBytesSent}Mb, last message: {message}");
+                    var totalMbBytesSent = ((double)pngPayload.Data.Length / (1024 * 1024)).ToString("0.###");
+                    complete(status, $"Final publish status is {status}, time elapsed: {elapsedTime.TotalSeconds} seconds, image size {totalMbBytesSent}Mb, last message: {message}");
                 }
             }
 
@@ -65,7 +66,7 @@
             if (this.EnableDiskPublishing)
             {
                 this.disk.Send(
-                    data,
+                    pngPayload,
                     fileName,
                     (s, message) => safeDecrementAndTrySendCompletion(s, $"Completed writing file: {fileName}, status: {s}, message: {message}"));
             }
@@ -77,7 +78,7 @@
             if (this.EnableFtpPublishing)
             {
                 this.sftp.Send(
-                    data,
+                    pngPayload,
                     fileName,
                     (s, message) => safeDecrementAndTrySendCompletion(s, $"Completed sending ${fileName} over SFTP, status: {s}, message: {message}"));
             }

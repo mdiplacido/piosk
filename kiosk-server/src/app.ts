@@ -16,7 +16,9 @@ interface PathStatsPair {
 }
 
 const PATH_FILTER_PREDICATE =
-    (pathStats: PathStatsPair) => !!pathStats && pathStats.path.toLowerCase().endsWith(".png");
+    (pathStats: PathStatsPair) => !!pathStats && 
+        (pathStats.path.toLowerCase().endsWith(".png") 
+            || pathStats.path.toLowerCase().endsWith(".pngx"));
 
 export class App {
     private readonly logger: Logger;
@@ -135,7 +137,8 @@ export class App {
         const image: IImagePayload = {
             path,
             birthtimeMs: fStats.birthtimeMs,
-            author: "Unknown",
+            author: "Anonymous",
+            name: "",
             data: data.toString("base64"),
         };
 

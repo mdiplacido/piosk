@@ -9,10 +9,11 @@ export interface IKioskStatistics {
 }
 
 export interface IImagePayload {
-    birthtimeMs: number;
-    path: string;
     author: string;
+    birthtimeMs: number;
     data: string;  // eg base64 encoded image
+    name: string;  // think of this as the "channel" name    
+    path: string;
     url?: string;
 }
 
