@@ -154,7 +154,7 @@
 
                         // now we navigate as usual, navigate completion will acquire its own focus request.
                         doNavigate();
-                    }, TimeSpan.FromSeconds(2));
+                    }, TimeSpan.FromMilliseconds(2000));
                 }
                 else if (attempts > 0)
                 {
