@@ -63,7 +63,7 @@
         private void Viewport_NewWindowRequested(object sender, WebViewControlNewWindowRequestedEventArgs e)
         {
             this.logger.Info($"New window requested... for {e.Uri}, navigating to location in the current view");
-            this.Viewport.Navigate(e.Uri);
+            TimerUtility.RunDelayedAction(() => this.Viewport.Navigate(e.Uri), TimeSpan.FromMilliseconds(2000));            
         }
 
         public void CaptureScreen(object source)
