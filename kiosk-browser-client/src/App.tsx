@@ -25,6 +25,7 @@ interface IState {
   hasNext: boolean;
   hasQR: boolean;
   showQR: boolean;
+  slideshowEnabled: boolean;
 }
 
 class App extends React.Component<any, IState> {
@@ -40,6 +41,7 @@ class App extends React.Component<any, IState> {
     maxImages: 10,
     showNavigationBar: false,
     showQR: false,
+    slideshowEnabled: true,
   };
 
   private fadeNavTimer?: number;
@@ -88,10 +90,16 @@ class App extends React.Component<any, IState> {
             disablePrev={!this.state.hasPrev}
             disableQR={!this.state.hasQR}
             toggleQR={this.handleToggleQRCode}
+            slideshowEnabled={this.state.slideshowEnabled}
+            toggleSlideshow={this.handleToggleSlideshow}
           />
         </div>
       );
     }
+  }
+
+  private handleToggleSlideshow = () => {
+    this.setState(prev => ({ slideshowEnabled: !prev.slideshowEnabled }));
   }
 
   private handleBack = () => {
@@ -256,13 +264,13 @@ class App extends React.Component<any, IState> {
       console.log(`slideshow time remaining is ${timeRemaining}ms`);
 
       if (!timeRemaining) {
-        if (!this.state.isPaused) {
+        if (!this.state.isPaused && this.state.slideshowEnabled) {
           // cannot proceed, we are paused.
           // we will fire again in SlideShowIntervalMs
           console.log(`slide show timer moving forward`);
           this.move("forward", true /* isSlideShowCaller */);
         } else {
-          console.log("slide show timer came due, but the slide show is paused...");
+          console.log("slide show timer came due, but the slide show is paused or disabled...");
         }
 
         // if we moved or not we have to start a new interval of the slideshow timer

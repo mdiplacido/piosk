@@ -69,9 +69,8 @@
         }
     }
 
-    .close-button {
+    %simple-button {
         font-size: 24px;
-        padding-right: 10px;
         cursor: pointer;
         background-color: transparent;
         color: #666666;
@@ -80,6 +79,26 @@
         &:hover {
             color: #a6a6a6;
         }
+    }
+
+    .close-button {
+        @extend %simple-button;
+        padding-right: 10px;
+    }
+
+    .slideshow-enabled {
+        @extend %simple-button;
+        padding-left: 10px;    
+        color: #e7f0f0;   
+
+        &:hover {
+            color: #e7f0f0;   
+        } 
+    }
+
+    .slideshow-disabled {
+        @extend %simple-button;
+        padding-left: 10px;  
     }
     /* end button styles */
 }
