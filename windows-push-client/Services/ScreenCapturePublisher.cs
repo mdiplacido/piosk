@@ -80,7 +80,7 @@
                 this.sftp.Send(
                     pngPayload,
                     fileName,
-                    (s, message) => safeDecrementAndTrySendCompletion(s, $"Completed sending ${fileName} over SFTP, status: {s}, message: {message}"));
+                    (s, message) => safeDecrementAndTrySendCompletion(s, $"Completed sending {fileName} over SFTP, status: {s}, message: {message}"));
             }
             else
             {
