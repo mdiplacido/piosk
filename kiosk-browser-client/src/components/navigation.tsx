@@ -42,9 +42,9 @@ export const Navigation = (props: INavigation) => {
             <div className="navigation-container">
                 <span className='close-button' onClick={handleClose}>{close}</span>
 
-                <button onClick={props.back} disabled={props.disablePrev || props.isPaused}>{back}</button>
+                <button onClick={props.back} disabled={props.disablePrev}>{back}</button>
                 <button onClick={props.pause}>{pause(props.isPaused)}</button>
-                <button onClick={props.forward} disabled={props.disableNext || props.isPaused}>{forward}</button>
+                <button onClick={props.forward} disabled={props.disableNext}>{forward}</button>
 
                 {/* category ddl fits here  */}
                 <button onClick={props.toggleQR} disabled={props.disableQR}>{qrcode}</button>
