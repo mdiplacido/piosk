@@ -2,7 +2,6 @@
 {
     using System;
     using System.Configuration;
-    using System.Security;
 
     public class Config
     {
@@ -12,8 +11,8 @@
         public string SFTPAddress { get; set; }
         public bool EnablePublishToSFTP { get; set; }
         public bool EnablePublishToDisk { get; set; }
-        public string SFTPPassword { get; set; }
         public double MinAvailableSpaceOnPi { get; set; }
+        public TimeSpan DefaultPageSettleDelay { get; set; }
 
         public static Config Load()
         {
@@ -24,6 +23,8 @@
             // easy to configure on Raspbian at the moment.  We'll assuming that this client respects the quota.  
             Double.TryParse(ConfigurationManager.AppSettings["MinAvailableSpaceOnPi"], out double minAvailableSpaceOnPi);
 
+            Int32.TryParse(ConfigurationManager.AppSettings["DefaultPageSettleDelaySeconds"], out int defaultPageSettleDelaySeconds);
+
             return new Config()
             {
                 DiskPath = ConfigurationManager.AppSettings["DiskPublishPath"] ?? @"/var/jail/data/piosk_pickup/",
@@ -32,7 +33,7 @@
                 SFTPAddress = ConfigurationManager.AppSettings["SFTPAddress"] ?? @"192.168.42.1",
                 // default is 50% available.
                 MinAvailableSpaceOnPi = minAvailableSpaceOnPi > 0 ? minAvailableSpaceOnPi / 100 : 50 / 100,
-                SFTPPassword = "BOB",
+                DefaultPageSettleDelay = defaultPageSettleDelaySeconds > 0 ? TimeSpan.FromSeconds(defaultPageSettleDelaySeconds) : TimeSpan.FromSeconds(30),
                 EnablePublishToSFTP = enableFtpPublishing,
                 EnablePublishToDisk = enableDiskPublishing,
             };
@@ -47,7 +48,8 @@
                 SFTPAddress: {this.SFTPAddress}, 
                 EnablePublishToSFTP: {this.EnablePublishToSFTP}, 
                 EnablePublishToDisk: {this.EnablePublishToDisk},
-                MinAvailableSpaceOnPi: {this.MinAvailableSpaceOnPi * 100}%";
+                MinAvailableSpaceOnPi: {this.MinAvailableSpaceOnPi * 100}%
+                DefaultPageSettleDelaySeconds: {this.DefaultPageSettleDelay}";
         }
     }
 }

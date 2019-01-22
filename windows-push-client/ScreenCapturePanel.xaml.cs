@@ -18,10 +18,15 @@
     {
         private readonly ILoggingService logger;
         private readonly TimedCaptureService captureService;
-        private readonly Action<ScreenCapturePanel> requestFocus;
+        private readonly Func<ScreenCapturePanel, bool> requestFocus;
+        private readonly Action<ScreenCapturePanel> releaseFocus;
         private object captureSource;  // the thing that started the capture eg. user button click or timer
         public ScreenCapturePanelConfig Config { get; set; }
         private readonly ScreenCapturePublisher capturePublisher;
+        private readonly Config appConfig;
+        private bool hasBeenVisible = false;
+
+        const int DEFAULT_CAPTURE_MAX_RETRY_ATTEMPTS = 2;
 
         public bool IsCaptureInProgress { get; private set; } = false;
 
@@ -34,20 +39,31 @@
         }
 
         public ScreenCapturePanel(
+            Config appConfig,
             ScreenCapturePanelConfig config,
             ILoggingService logger,
             TimedCaptureService captureService,
             ScreenCapturePublisher capturePublisher,
-            Action<ScreenCapturePanel> requestFocus)
+            Func<ScreenCapturePanel, bool> requestFocus,
+            Action<ScreenCapturePanel> releaseFocus)
         {
             InitializeComponent();
+            this.appConfig = appConfig;
             this.capturePublisher = capturePublisher;
             this.requestFocus = requestFocus;
+            this.releaseFocus = releaseFocus;
             this.captureService = captureService;
             this.logger = logger.ScopeForFeature(this.GetType());
             this.Config = config;
             this.Location.Text = config.Url;
             this.Viewport.NavigationCompleted += Viewport_NavigationCompleted;
+            this.Viewport.NewWindowRequested += Viewport_NewWindowRequested;
+        }
+
+        private void Viewport_NewWindowRequested(object sender, WebViewControlNewWindowRequestedEventArgs e)
+        {
+            this.logger.Info($"New window requested... for {e.Uri}, navigating to location in the current view");
+            this.Viewport.Navigate(e.Uri);
         }
 
         public void CaptureScreen(object source)
@@ -75,28 +91,39 @@
                 return;
             }
 
-            if (!this.IsCaptureSourceTimer)
-            {
-                this.logger.Verbose("Capture source is manual user click, running immediate capture");
-                this.HandleScreenCapture();
-            }
-            else
-            {
-                this.logger.Verbose("Capture source is timer, running delayed capture");
+            this.Viewport_NavigationCompletedImpl();
+        }
 
-                // we introduce an artificial delay before processing the capture.
-                // this is DUMB!, there's no definitive way to know if the page has "settled".
-                TimerUtility.RunDelayedAction(() =>
+        private void Viewport_NavigationCompletedImpl(int attempts = ScreenCapturePanel.DEFAULT_CAPTURE_MAX_RETRY_ATTEMPTS)
+        {
+            this.logger.Verbose($"running delayed capture with settle time of {this.appConfig.DefaultPageSettleDelay}...");
+
+            // we introduce an artificial delay before processing the capture.
+            // this is DUMB!, there's no definitive way to know if the page has "settled".
+            TimerUtility.RunDelayedAction(() =>
+            {
+                if (this.requestFocus(this))
                 {
-                    this.requestFocus(this);
-
                     // delay one more tick so we give the control time to render
                     TimerUtility.RunDelayedAction(() =>
                     {
                         this.HandleScreenCapture();
-                    }, TimeSpan.FromMilliseconds(100));
-                }, TimeSpan.FromSeconds(5));
-            }
+                    }, TimeSpan.FromMilliseconds(2000));
+                }
+                else if (attempts > 0)
+                {
+                    this.logger.Warn($"Panel {this.Config.Name} attempting to perform screen capture, but another panel already is visible, will retry {attempts} attempts...");
+
+                    // TODO: randomize the retry time?
+                    this.Viewport_NavigationCompletedImpl(attempts - 1);
+                }
+                else
+                {
+                    // could not get focus or we ran out of attempts
+                    this.logger.Error($"Panel {this.Config.Name} failed to get focus after ${ScreenCapturePanel.DEFAULT_CAPTURE_MAX_RETRY_ATTEMPTS} attempts");
+                    this.cleanupCaptureRun(success: false);
+                }
+            }, this.appConfig.DefaultPageSettleDelay);
         }
 
         private void Navigate_ButtonClick(object sender, RoutedEventArgs e)
@@ -104,20 +131,46 @@
             this.Navigate();
         }
 
-        private void Navigate()
+        private void Navigate(int attempts = ScreenCapturePanel.DEFAULT_CAPTURE_MAX_RETRY_ATTEMPTS)
         {
             // this is needed for a weird case where this panel has never been made visible before and 
             // the capture timer is asking for capture, without being made visible the WebView will start but
             // never completes, so we conditionally make this visible to allow the WebView to render which
             // will unblock its navigation.
-            if (!this.IsVisible)
+            Action doNavigate = () =>
+            {
+                this.logger.Verbose("Navigating to {0} for {1}", this.Location.Text, this.Config.PrettyName);
+                this.Viewport.Navigate(this.Location.Text);
+            };
+
+            if (!hasBeenVisible && !this.IsVisible)
             {
                 this.logger.Info("Panel {0} is being asked to navigate, but it is not visible, forcing visibility", this.Config.PrettyName);
-                this.requestFocus(this);
-            }
+                if (this.requestFocus(this))
+                {
+                    this.hasBeenVisible = true;
+                    TimerUtility.RunDelayedAction(() => {
+                        this.releaseFocus(this);
 
-            this.logger.Verbose("Navigating to {0} for {1}", this.Location.Text, this.Config.PrettyName);
-            this.Viewport.Navigate(this.Location.Text);
+                        // now we navigate as usual, navigate completion will acquire its own focus request.
+                        doNavigate();
+                    }, TimeSpan.FromMilliseconds(2000));
+                }
+                else if (attempts > 0)
+                {
+                    this.logger.Warn($"Tried to force visibility for Panel {this.Config.Name} but another panel is visible, {attempts} retry attempts remaining...");
+                    TimerUtility.RunDelayedAction(() => this.Navigate(attempts - 1), TimeSpan.FromMilliseconds(2000));
+                }
+                else
+                {
+                    this.logger.Warn($"Tried to force visibility for Panel {this.Config.Name} but another panel is visible, aborting...");
+                    this.cleanupCaptureRun(success: false);
+                }
+            }
+            else
+            {
+                doNavigate();
+            }
         }
 
         private void CaptureScreen_Click(object sender, RoutedEventArgs e)
@@ -183,22 +236,36 @@
                 {
                     this.logger.Verbose("Capture publish complete for {0}, status: {1}, message: {2}", this.Config.PrettyName, status, message);
                 });
-            }
-            finally
-            {
-                this.IsCaptureInProgress = false;
-                this.logger.Verbose("Screen capture completed for {0}", this.Config.PrettyName);
-                this.Config.LastCapture = DateTime.UtcNow;
 
-                // order matters, we do this last because we want to mark the capture as "done" before
-                // we notify the capture service.
-                // we only notify if the source of the screen capture was the capture service, otherwise it was the user which means we do not need
-                // to notify that service
-                if (this.IsCaptureSourceTimer)
-                {
-                    this.captureService.NotifyPanelProcessingComplete(this);
-                }
+                this.cleanupCaptureRun(success: true);
             }
+            catch (Exception ex)
+            {
+                this.cleanupCaptureRun(success: false);
+                throw ex;
+            }
+        }
+
+        private void cleanupCaptureRun(bool success)
+        {
+            this.IsCaptureInProgress = false;
+            this.logger.Verbose("Screen capture completed for {0} with completion success: {1}", this.Config.PrettyName, success);
+
+            if (success)
+            {
+                this.Config.LastCapture = DateTime.UtcNow;
+            }
+
+            // order matters, we do this last because we want to mark the capture as "done" before
+            // we notify the capture service.
+            // we only notify if the source of the screen capture was the capture service, otherwise it was the user which means we do not need
+            // to notify that service
+            if (this.IsCaptureSourceTimer)
+            {
+                this.captureService.NotifyPanelProcessingComplete(this);
+            }
+
+            this.releaseFocus(this);
         }
 
         private Tuple<float, float> GetDPI()

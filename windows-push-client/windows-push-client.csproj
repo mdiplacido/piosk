@@ -35,6 +35,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CredentialManagement, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CredentialManagement.1.0.2\lib\net35\CredentialManagement.dll</HintPath>
+    </Reference>
     <Reference Include="Cyotek.Collections.Generic.CircularBuffer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=58daa28b0b2de221, processorArchitecture=MSIL">
       <HintPath>..\packages\Cyotek.CircularBuffer.1.0.2\lib\net20\Cyotek.Collections.Generic.CircularBuffer.dll</HintPath>
     </Reference>
@@ -111,6 +114,7 @@
     <Compile Include="Services\Publishers\SFTPClientFactory.cs" />
     <Compile Include="Services\Publishers\SFTPPublisherService.cs" />
     <Compile Include="Services\ScreenCapturePublisher.cs" />
+    <Compile Include="Services\SecretService.cs" />
     <Compile Include="Services\TimedCaptureService.cs" />
     <Compile Include="Utility\TimerUtility.cs" />
     <Page Include="AddScreenCapture.xaml">
