@@ -4,9 +4,7 @@ import { argv } from "yargs";
 
 import { App } from "./app";
 import { Config } from "./config/config";
-import { AggregateLogger } from "./logging/aggregate-logger";
-import { ConsoleLogger } from "./logging/console-logger";
-import { FileLogger } from "./logging/file-logger";
+import { AggregateLogger, ConsoleLogger, FileLogger } from "./logging";
 import { dumpSettings } from "./utility/dump-settings";
 
 // we read from a jailed location on the Pi, clients that push to the Pi push over SFTP and the SSHD jails these
@@ -21,25 +19,27 @@ const config: Config = {
     isReaperEnabled: _.isNil(argv.enableReaper) ? true : argv.enableReaper === "true",
     reapIntervalSeconds: +argv.reapIntervalSeconds || 60,
     pickupQuotaMb: +argv.pickupQuotaMb || 100,
+    maxLogSizeBytes: +argv.maxLogSizeBytes || 1024 ** 2 * 10, // default is 10meg
+    maxLogFiles: +argv.maxLogFiles || 3,
 };
 
-const fileLoggerImp = log4js
+const fileLog = log4js
     .configure({
-        appenders: { piosk: { type: 'file', filename: 'piosk.log' } },
+        appenders: { piosk: { type: 'file', filename: 'piosk.log', maxLogSize: config.maxLogSizeBytes, backups: config.maxLogFiles } },
         categories: { default: { appenders: ['piosk'], level: 'ALL' } }
-    })
-    .getLogger();
+    });
 
-const fileLogger = new FileLogger(fileLoggerImp, "Main");
+const fileLogImpl = fileLog.getLogger();
+
+const fileLogger = new FileLogger(fileLogImpl, "Main");
 const consoleLogger = new ConsoleLogger("Main");
 
 const logger = new AggregateLogger(consoleLogger, fileLogger);
 
 process.on('uncaughtException', (err) => {
-    // intentionally logging in one log statement.  seems that with multiple log statements
-    // the file does not not get the second log statement flushed to disk.
-    logger.error(`uncaughtException: ${err.message} stack: ${err.stack}`);
-    process.exit(1)
+    logger.error(`uncaughtException: ${err.message}`);
+    logger.error(`stack: ${err.stack}`);
+    fileLog.shutdown(() => process.exit(1));
 })
 
 dumpSettings(config, logger);
