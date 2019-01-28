@@ -21,7 +21,7 @@
 
         public ScreenCapturePublisher(DiskPublisherService disk, SFTPPublisherService sftp, ILoggingService logger)
         {
-            this.logger = logger.ScopeForFeature(this.GetType());
+            this.logger = logger.ScopeForFeature(this);
             this.disk = disk;
             this.sftp = sftp;
         }

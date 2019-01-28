@@ -15,7 +15,7 @@
         {
             this.clientFactory = clientFactory;
             this.config = config;
-            this.logger = logger.ScopeForFeature(this.GetType());
+            this.logger = logger.ScopeForFeature(this);
         }
 
         public void Send(PNGXPayload payload, string fileName, PublishCompleteHandler complete)
@@ -62,7 +62,7 @@
 
             if (currentAvailable <= this.config.MinAvailableSpaceOnPi)
             {
-                throw new ApplicationException($"Cannot continue, the server only has ${formattedCurrentAvailable}% space available!");
+                throw new ApplicationException($"Cannot continue, the server only has {formattedCurrentAvailable}% space available!");
             }
             else
             {

@@ -5,7 +5,17 @@
 
     public static class TimerUtility
     {
+        public static void RunSafeDelayedAction(Action code, TimeSpan delay, Action<Exception> errorHandler)
+        {
+            RunDelayedActionImpl(code, delay, errorHandler);
+        }
+
         public static void RunDelayedAction(Action code, TimeSpan delay)
+        {
+            RunDelayedActionImpl(code, delay, ex => throw ex);
+        }
+
+        private static void RunDelayedActionImpl(Action code, TimeSpan delay, Action<Exception> errorHandler)
         {
             // we introduce an artificial delay before processing the capture.
             // this is dumb, there's no definitive way to know if the page has "settled".
@@ -14,7 +24,15 @@
             timer.Tick += (s, args) =>
             {
                 timer.Stop();
-                code();
+
+                try
+                {
+                    code();
+                }
+                catch (Exception ex)
+                {
+                    errorHandler(ex);
+                }
             };
 
             timer.Start();

@@ -7,6 +7,7 @@
     using System.IO;
     using System.Windows;
     using System.Windows.Controls;
+    using System.Windows.Media;
     using windows_push_client.Models;
     using windows_push_client.Services;
     using windows_push_client.Utility;
@@ -25,10 +26,13 @@
         private readonly ScreenCapturePublisher capturePublisher;
         private readonly Config appConfig;
         private bool hasBeenVisible = false;
+        private int NavigationEventCounter = 0;
 
         const int DEFAULT_CAPTURE_MAX_RETRY_ATTEMPTS = 2;
 
         public bool IsCaptureInProgress { get; private set; } = false;
+
+        private SafeWebView SafeViewport;
 
         private bool IsCaptureSourceTimer
         {
@@ -53,17 +57,48 @@
             this.requestFocus = requestFocus;
             this.releaseFocus = releaseFocus;
             this.captureService = captureService;
-            this.logger = logger.ScopeForFeature(this.GetType());
+            this.logger = logger.ScopeForFeature(this);
             this.Config = config;
             this.Location.Text = config.Url;
-            this.Viewport.NavigationCompleted += Viewport_NavigationCompleted;
-            this.Viewport.NewWindowRequested += Viewport_NewWindowRequested;
+
+            this.SafeViewport = new SafeWebView(this.Viewport);
+            this.SafeViewport.NavigationStarting += Viewport_NavigationStarting;
+            this.SafeViewport.NavigationCompleted += Viewport_NavigationCompleted;
+            this.SafeViewport.NewWindowRequested += Viewport_NewWindowRequested;
+        }
+
+        public void Removing()
+        {
+            this.logger.Info("Disposing panel resources {0}", this.Config.PrettyName);
+            if (this.SafeViewport != null)
+            {
+                // not going to set this.Viewport to null, as some timer handler may want to access it, and we are okay 
+                // with that even though it is disposed.
+                this.PanelGrid.Children.Remove(this.SafeViewport.unsafeView);
+                this.SafeViewport.NavigationStarting -= Viewport_NavigationStarting;
+                this.SafeViewport.NavigationCompleted -= Viewport_NavigationCompleted;
+                this.SafeViewport.NewWindowRequested -= Viewport_NewWindowRequested;
+                this.SafeViewport.Dispose();
+
+                // clearing the pointer to the real Viewport.  the component should be able to function even if it is missing.
+                this.Viewport = null;
+            }
+        }
+
+        public void ResetState()
+        {
+            this.NavigationEventCounter = 0;
         }
 
         private void Viewport_NewWindowRequested(object sender, WebViewControlNewWindowRequestedEventArgs e)
         {
             this.logger.Info($"New window requested... for {e.Uri}, navigating to location in the current view");
-            TimerUtility.RunDelayedAction(() => this.Viewport.Navigate(e.Uri), TimeSpan.FromMilliseconds(2000));            
+            TimerUtility.RunDelayedAction(() => this.SafeViewport.Navigate(e.Uri), TimeSpan.FromMilliseconds(2000));
+        }
+
+        public bool NeedsRecycling()
+        {
+            return this.NavigationEventCounter >= this.Config.MaxCaptures;
         }
 
         public void CaptureScreen(object source)
@@ -79,6 +114,12 @@
             this.logger.Verbose("Starting screen capture for {0}, refreshing WebView...", this.Config.PrettyName);
             this.IsCaptureInProgress = true;
             this.Navigate();
+        }
+
+        private void Viewport_NavigationStarting(object sender, WebViewControlNavigationStartingEventArgs e)
+        {
+            this.NavigationEventCounter++;
+            this.logger.Info($"Current navigation event count for panel {this.Config.PrettyName} is {this.NavigationEventCounter}");
         }
 
         private void Viewport_NavigationCompleted(object sender, WebViewControlNavigationCompletedEventArgs e)
@@ -102,17 +143,22 @@
             // this is DUMB!, there's no definitive way to know if the page has "settled".
             TimerUtility.RunDelayedAction(() =>
             {
-                if (this.requestFocus(this))
+                if (this.requestFocus(this) && this.IsVisible)
                 {
                     // delay one more tick so we give the control time to render
-                    TimerUtility.RunDelayedAction(() =>
+                    TimerUtility.RunSafeDelayedAction(() =>
                     {
                         this.HandleScreenCapture();
-                    }, TimeSpan.FromMilliseconds(2000));
+                    },
+                    TimeSpan.FromMilliseconds(2000),
+                    (error) =>
+                    {
+                        // HandleScreenCapture should be safe.  no-op 
+                    });
                 }
                 else if (attempts > 0)
                 {
-                    this.logger.Warn($"Panel {this.Config.Name} attempting to perform screen capture, but another panel already is visible, will retry {attempts} attempts...");
+                    this.logger.Warn($"Panel {this.Config.PrettyName} attempting to perform screen capture, but another panel already is visible, will retry {attempts} attempts...");
 
                     // TODO: randomize the retry time?
                     this.Viewport_NavigationCompletedImpl(attempts - 1);
@@ -120,8 +166,8 @@
                 else
                 {
                     // could not get focus or we ran out of attempts
-                    this.logger.Error($"Panel {this.Config.Name} failed to get focus after ${ScreenCapturePanel.DEFAULT_CAPTURE_MAX_RETRY_ATTEMPTS} attempts");
-                    this.cleanupCaptureRun(success: false);
+                    this.logger.Error($"Panel {this.Config.PrettyName} failed to get focus after {ScreenCapturePanel.DEFAULT_CAPTURE_MAX_RETRY_ATTEMPTS} attempts");
+                    this.CleanupCaptureRun(success: false);
                 }
             }, this.appConfig.DefaultPageSettleDelay);
         }
@@ -140,7 +186,7 @@
             Action doNavigate = () =>
             {
                 this.logger.Verbose("Navigating to {0} for {1}", this.Location.Text, this.Config.PrettyName);
-                this.Viewport.Navigate(this.Location.Text);
+                this.SafeViewport.Navigate(this.Location.Text);
             };
 
             if (!hasBeenVisible && !this.IsVisible)
@@ -149,7 +195,8 @@
                 if (this.requestFocus(this))
                 {
                     this.hasBeenVisible = true;
-                    TimerUtility.RunDelayedAction(() => {
+                    TimerUtility.RunDelayedAction(() =>
+                    {
                         this.releaseFocus(this);
 
                         // now we navigate as usual, navigate completion will acquire its own focus request.
@@ -158,13 +205,13 @@
                 }
                 else if (attempts > 0)
                 {
-                    this.logger.Warn($"Tried to force visibility for Panel {this.Config.Name} but another panel is visible, {attempts} retry attempts remaining...");
+                    this.logger.Warn($"Tried to force visibility for Panel {this.Config.PrettyName} but another panel is visible, {attempts} retry attempts remaining...");
                     TimerUtility.RunDelayedAction(() => this.Navigate(attempts - 1), TimeSpan.FromMilliseconds(2000));
                 }
                 else
                 {
-                    this.logger.Warn($"Tried to force visibility for Panel {this.Config.Name} but another panel is visible, aborting...");
-                    this.cleanupCaptureRun(success: false);
+                    this.logger.Warn($"Tried to force visibility for Panel {this.Config.PrettyName} but another panel is visible, aborting...");
+                    this.CleanupCaptureRun(success: false);
                 }
             }
             else
@@ -187,8 +234,13 @@
             var topLeft = this.TopLeft();
             int StartX = (int)Math.Ceiling(topLeft.X);
             int StartY = (int)Math.Ceiling(topLeft.Y);
-            int Width = (int)Math.Ceiling(this.Viewport.ActualWidth);
-            int Height = (int)Math.Ceiling(this.Viewport.ActualHeight);
+            int Width = (int)Math.Ceiling(this.SafeViewport.ActualWidth);
+            int Height = (int)Math.Ceiling(this.SafeViewport.ActualHeight);
+
+            if (Width == 0 || Height == 0)
+            {
+                return new byte[0];
+            }
 
             // Bitmap in right size
             using (Bitmap screenshot = new Bitmap(Width, Height))
@@ -207,7 +259,7 @@
 
         private System.Windows.Point TopLeft()
         {
-            return this.Viewport.PointToScreen(new System.Windows.Point(0, 0));
+            return this.SafeViewport.PointToScreen(new System.Windows.Point(0, 0));
         }
 
         private void HandleScreenCapture()
@@ -218,6 +270,13 @@
             try
             {
                 byte[] imageBytes = this.TakeScreenshot();
+
+                if (imageBytes.Length == 0)
+                {
+                    this.logger.Warn($"Something wrong with capture for panel {this.Config.PrettyName}, image capture has zero bytes!");
+                    this.CleanupCaptureRun(success: false);
+                    return;
+                }
 
                 string name = Guid.NewGuid().ToString() + ".pngx";
 
@@ -237,16 +296,22 @@
                     this.logger.Verbose("Capture publish complete for {0}, status: {1}, message: {2}", this.Config.PrettyName, status, message);
                 });
 
-                this.cleanupCaptureRun(success: true);
+                this.CleanupCaptureRun(success: true);
+            }
+            catch (InvalidOperationException ex)
+            {
+                this.logger.Error("Could not capture visual for panel {0}, got error {1}", this.Config.PrettyName, ex.ToString());
+                this.CleanupCaptureRun(success: false);
             }
             catch (Exception ex)
             {
-                this.cleanupCaptureRun(success: false);
+                this.logger.Error("Could not capture visual for panel {0}, got unexpected error {1}", this.Config.PrettyName, ex.ToString());
+                this.CleanupCaptureRun(success: false);
                 throw ex;
             }
         }
 
-        private void cleanupCaptureRun(bool success)
+        private void CleanupCaptureRun(bool success)
         {
             this.IsCaptureInProgress = false;
             this.logger.Verbose("Screen capture completed for {0} with completion success: {1}", this.Config.PrettyName, success);
@@ -270,7 +335,7 @@
 
         private Tuple<float, float> GetDPI()
         {
-            PresentationSource source = PresentationSource.FromVisual(this.Viewport);
+            PresentationSource source = PresentationSource.FromVisual((Visual)this.SafeViewport.unsafeView ?? this);
 
             float dpiX = 96.0f, dpiY = 96.0f;
 

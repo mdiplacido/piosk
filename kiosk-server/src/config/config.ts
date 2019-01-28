@@ -4,4 +4,6 @@ export interface Config {
     readonly isReaperEnabled: boolean;
     readonly reapIntervalSeconds: number;
     readonly pickupQuotaMb: number;
+    readonly maxLogSizeBytes: number;
+    readonly maxLogFiles: number;
 }

@@ -5,6 +5,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Windows.Threading;
+    using windows_push_client.Utility;
 
     public class TimedCaptureService
     {
@@ -15,6 +16,8 @@
 
         private ScreenCapturePanel[] panelsToCapture = new ScreenCapturePanel[0];
 
+        public event Action NotifyPanelProcessingCompleteHandler;
+
         public bool IsEnabled
         {
             get
@@ -23,11 +26,32 @@
             }
         }
 
+        public bool IsRecycleNeeded()
+        {
+            return this.panelsToCapture.Any(p => p.NeedsRecycling());
+        }
+
+        public void ResetAllPanelCounters()
+        {
+            // there can be a race when we are recycling panels where a completion screen-shot thread
+            // can trigger back to back recycles (even though we may have just recreated the panel).
+            // this method clears all capture service watched panel counters
+            this.panelsToCapture.ToList().ForEach(p => p.ResetState());
+        }
+
         public TimedCaptureService(ILoggingService logger)
         {
             this.timer.Tick += CapturePanels_Tick;
-            this.logger = logger.ScopeForFeature(this.GetType());
+            this.logger = logger.ScopeForFeature(this);
             this.logger.Info("current timer IsEnabled '{0}'", this.timer.IsEnabled);
+        }
+
+        public void ForceStop()
+        {
+            if (this.IsEnabled)
+            {
+                this.Toggle();
+            }
         }
 
         public void NotifyPanelProcessingComplete(ScreenCapturePanel panel)
@@ -39,6 +63,8 @@
                 this.currentCapture = null;
             }
 
+            this.NotifyPanelProcessingCompleteHandler?.Invoke();
+       
             this.ProcessPanelQueue();
         }
 
@@ -60,6 +86,13 @@
         {
             this.panelsToCapture = panels;
 
+            // it's possible that old panels were in the queue but were removed during a recycle, we'll
+            // add the new versions back into the queue.  the ControllerService can be a caller to SetPanels which
+            // is how we would get in this state where the queue had old panels in it.
+            var queueSnapshot = this.panelCaptureQueue.ToList();
+
+            this.panelCaptureQueue.Clear();
+
             // compute the min interval
             var minimumInterval = this.panelsToCapture
                 .Select(panel => panel.Config.Interval)
@@ -72,6 +105,29 @@
             {
                 this.logger.Warn("TimedCaptureService: timer interval set to Zero, stopping timer");
                 this.timer.Stop();
+            }
+
+            if (queueSnapshot.Any())
+            {
+                this.logger.Warn("There were items in the queue while SetPanels was being called.  Will enqueue new panels for these items");
+                queueSnapshot.ForEach(oldPanel =>
+                {
+                    // probably not the most accurate way to do this, we could also just check the config pointer.
+                    // the assumption here is that the new panel list will always have a match for an old queued item
+                    // if we do not find a match then that queued item will not get run as we have already cleared it from
+                    // the queue.
+                    var match = this.panelsToCapture.FirstOrDefault(p => p.Config.Name == oldPanel.Config.Name);
+
+                    if (match != null)
+                    {
+                        logger.Info($"Enqueuing new panel replacement for existing queue item: '{oldPanel.Config.PrettyName}'");
+                        this.panelCaptureQueue.Enqueue(match);
+                    }
+                    else
+                    {
+                        this.logger.Warn($"Cannot find new panel for old panel in queue with name '{oldPanel.Config.PrettyName}, old queued item has been dropped'");
+                    }
+                });
             }
 
             this.LogInfo();

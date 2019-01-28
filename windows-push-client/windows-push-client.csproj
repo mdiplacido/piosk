@@ -105,9 +105,11 @@
     <Compile Include="Models\Config.cs" />
     <Compile Include="Models\PNGXPayload.cs" />
     <Compile Include="Models\ScreenCapturePanelConfig.cs" />
+    <Compile Include="SafeWebView.cs" />
     <Compile Include="ScreenCapturePanel.xaml.cs">
       <DependentUpon>ScreenCapturePanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Services\PanelRecycleService.cs" />
     <Compile Include="Services\Publishers\DiskPublisherService.cs" />
     <Compile Include="Services\LoggingService.cs" />
     <Compile Include="Services\Publishers\IPublisherService.cs" />
@@ -116,6 +118,7 @@
     <Compile Include="Services\ScreenCapturePublisher.cs" />
     <Compile Include="Services\SecretService.cs" />
     <Compile Include="Services\TimedCaptureService.cs" />
+    <Compile Include="Utility\ConcurrentQueueExtension.cs" />
     <Compile Include="Utility\TimerUtility.cs" />
     <Page Include="AddScreenCapture.xaml">
       <SubType>Designer</SubType>

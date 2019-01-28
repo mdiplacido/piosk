@@ -19,6 +19,8 @@ namespace windows_push_client
 
         private Action<ScreenCapturePanelConfig> saveHandler = config => { };
 
+        public Config Config { get; set; }
+
         public void SetSaveHandler(Action<ScreenCapturePanelConfig> handler)
         {
             this.saveHandler = handler;
@@ -102,7 +104,8 @@ namespace windows_push_client
                 Name = this.NameTextBox.Text,
                 Author = this.AuthorTextBox.Text,
                 Url = this.UrlTextBox.Text,
-                Interval = TimeSpan.FromSeconds(int.Parse(this.IntervalTextBox.Text))
+                Interval = TimeSpan.FromSeconds(int.Parse(this.IntervalTextBox.Text)),
+                MaxCaptures = this.Config.DefaultPanelMaxCapture
             });
 
             // reset

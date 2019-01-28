@@ -7,7 +7,7 @@
              xmlns:Controls="clr-namespace:Microsoft.Toolkit.Wpf.UI.Controls;assembly=Microsoft.Toolkit.Wpf.UI.Controls.WebView" x:Class="windows_push_client.ScreenCapturePanel"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <Grid>
+    <Grid x:Name="PanelGrid">
 
         <Controls:WebView x:Name="Viewport" Margin="0,26,0,0"/>
         <TextBox x:Name="Location" HorizontalAlignment="Left" Height="20" Text="https://www.microsoft.com" VerticalAlignment="Top" Width="166" Margin="0,1,0,0"/>

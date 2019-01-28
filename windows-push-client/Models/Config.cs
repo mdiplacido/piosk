@@ -12,6 +12,9 @@
         public bool EnablePublishToSFTP { get; set; }
         public bool EnablePublishToDisk { get; set; }
         public double MinAvailableSpaceOnPi { get; set; }
+        public long MaxLogFileSizeBytes { get; set; }
+        public int DefaultPanelMaxCapture { get; set; }
+        public int MaxLogLinesForDisplay { get; set; }
         public TimeSpan DefaultPageSettleDelay { get; set; }
 
         public static Config Load()
@@ -23,7 +26,12 @@
             // easy to configure on Raspbian at the moment.  We'll assuming that this client respects the quota.  
             Double.TryParse(ConfigurationManager.AppSettings["MinAvailableSpaceOnPi"], out double minAvailableSpaceOnPi);
 
+            Int64.TryParse(ConfigurationManager.AppSettings["MaxLogFileSizeBytes"], out long maxLogFileSizeBytes);
+            Int32.TryParse(ConfigurationManager.AppSettings["MaxLogLinesForDisplay"], out int maxLogLinesForDisplay);
+
             Int32.TryParse(ConfigurationManager.AppSettings["DefaultPageSettleDelaySeconds"], out int defaultPageSettleDelaySeconds);
+
+            Int32.TryParse(ConfigurationManager.AppSettings["DefaultPanelMaxCapture"], out int defaultPanelMaxCapture);
 
             return new Config()
             {
@@ -36,6 +44,9 @@
                 DefaultPageSettleDelay = defaultPageSettleDelaySeconds > 0 ? TimeSpan.FromSeconds(defaultPageSettleDelaySeconds) : TimeSpan.FromSeconds(30),
                 EnablePublishToSFTP = enableFtpPublishing,
                 EnablePublishToDisk = enableDiskPublishing,
+                MaxLogFileSizeBytes = maxLogFileSizeBytes > 0 ? maxLogFileSizeBytes : 1024 * 1024 * 10,
+                DefaultPanelMaxCapture = defaultPanelMaxCapture > 0 ? defaultPanelMaxCapture : 10,
+                MaxLogLinesForDisplay = maxLogLinesForDisplay > 0 ? maxLogLinesForDisplay : 1000,
             };
         }
 
@@ -48,8 +59,12 @@
                 SFTPAddress: {this.SFTPAddress}, 
                 EnablePublishToSFTP: {this.EnablePublishToSFTP}, 
                 EnablePublishToDisk: {this.EnablePublishToDisk},
-                MinAvailableSpaceOnPi: {this.MinAvailableSpaceOnPi * 100}%
-                DefaultPageSettleDelaySeconds: {this.DefaultPageSettleDelay}";
+                MinAvailableSpaceOnPi: {this.MinAvailableSpaceOnPi * 100}%,
+                DefaultPageSettleDelaySeconds: {this.DefaultPageSettleDelay},
+                MaxLogFileSizeBytes: {this.MaxLogFileSizeBytes},
+                DefaultPanelMaxCapture: {this.DefaultPanelMaxCapture},
+                MaxLogLinesForDisplay: {this.MaxLogLinesForDisplay},
+            ";
         }
     }
 }

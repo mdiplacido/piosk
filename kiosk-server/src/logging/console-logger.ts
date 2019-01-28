@@ -1,6 +1,7 @@
-import * as chalk from 'chalk';
+import * as chalk from "chalk";
 
-import { Logger } from './logger';
+import { handleOptionalParamLog } from "./log-util";
+import { Logger } from "./logger";
 
 /**
  * here order matters, the app when it boots will set this level, if set to none
@@ -83,11 +84,7 @@ export class ConsoleLogger implements Logger {
             messageWithPrefix = color.apply(color, [messageWithPrefix]);
         }
 
-        if (!optionalParams || optionalParams.length === 0) {
-            logFunc(messageWithPrefix);
-        } else {
-            logFunc.apply(console, [messageWithPrefix, ...optionalParams]);
-        }
+        handleOptionalParamLog(console, logFunc, messageWithPrefix, optionalParams);
     }
 
     private makeLogPrefix(message: string, level: LogLevel): string {

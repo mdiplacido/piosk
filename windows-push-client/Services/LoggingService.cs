@@ -4,6 +4,7 @@
     using System;
     using System.Reactive.Linq;
     using System.Reactive.Subjects;
+    using windows_push_client.Models;
 
     public interface ILoggingService
     {
@@ -12,7 +13,7 @@
         void Error(string message, params object[] args);
         void Warn(string message, params object[] args);
         void Info(string message, params object[] args);
-        ILoggingService ScopeForFeature(Type feature);
+        ILoggingService ScopeForFeature(object featureThing);
     }
 
     public class ScopedLoggingService : ILoggingService
@@ -34,35 +35,36 @@
             }
         }
 
-        public ILoggingService ScopeForFeature(Type feature)
+        public ILoggingService ScopeForFeature(object featureThing)
         {
-            return this.logger.ScopeForFeature(nameof(feature));
+            return this.logger.ScopeForFeature(featureThing.GetType().Name);
         }
 
         public void Error(string message, params object[] args)
         {
-            this.logger.AddMessage(this.MakeFormattedMessage("E", message, args));
+            this.logger.AddMessage(this.MakeFormattedMessage("Error", 1, message, args));
         }
 
         public void Info(string message, params object[] args)
         {
-            this.logger.AddMessage(this.MakeFormattedMessage("I", message, args));
+            this.logger.AddMessage(this.MakeFormattedMessage("Info", 2, message, args));
         }
 
         public void Verbose(string message, params object[] args)
         {
-            this.logger.AddMessage(this.MakeFormattedMessage("V", message, args));
+            this.logger.AddMessage(this.MakeFormattedMessage("Verbose", 1, message, args));
         }
 
         public void Warn(string message, params object[] args)
         {
-            this.logger.AddMessage(this.MakeFormattedMessage("W", message, args));
+            this.logger.AddMessage(this.MakeFormattedMessage("Warn", 2, message, args));
         }
 
-        private string MakeFormattedMessage(string type, string message, params object[] args)
+        private string MakeFormattedMessage(string type, int typeSpacing, string message, params object[] args)
         {
             var formattedMessage = string.Format(message, args);
-            var logSuffix = string.Format("[{0}][{1}][{2}] - ", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff"), type, this.feature);
+            var spacing = new String('\t', typeSpacing);
+            var logSuffix = string.Format("[{0}][{1}]{2}[{3}] - ", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff"), type, spacing, this.feature);
             return logSuffix + formattedMessage;
         }
     }
@@ -71,9 +73,11 @@
     {
         private readonly ReplaySubject<string> events = new ReplaySubject<string>(100);
         private readonly Logger diskLogger;
+        private readonly Config config;
 
-        public LoggingService()
+        public LoggingService(Config config)
         {
+            this.config = config;
             this.diskLogger = this.SetupNLog();
         }
 
@@ -99,16 +103,25 @@
         private Logger SetupNLog()
         {
             var config = new NLog.Config.LoggingConfiguration();
-            var logfile = new NLog.Targets.FileTarget("piosk-push-client") { FileName = "./piosk-push-client.log" };
+            var logfile = new NLog.Targets.FileTarget("piosk-push-client")
+            {
+                FileName = "./piosk-push-client.log",
+                ArchiveAboveSize = this.config.MaxLogFileSizeBytes,
+                MaxArchiveFiles = 3
+            };
             config.AddRuleForAllLevels(logfile);
             NLog.LogManager.Configuration = config;
 
             // NLog is our way to learn about application crashes as well
             var logger = LogManager.GetCurrentClassLogger();
 
-            AppDomain.CurrentDomain.UnhandledException += 
+            AppDomain.CurrentDomain.UnhandledException +=
                 (object sender, UnhandledExceptionEventArgs eArg) =>
-                    logger.Error(eArg.ExceptionObject?.ToString());
+                    {
+                        logger.Error(eArg.ExceptionObject?.ToString());
+                        LogManager.Flush();
+                        LogManager.Shutdown();
+                    };
 
             return logger;
         }
