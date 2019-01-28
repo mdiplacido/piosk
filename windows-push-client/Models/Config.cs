@@ -14,6 +14,7 @@
         public double MinAvailableSpaceOnPi { get; set; }
         public long MaxLogFileSizeBytes { get; set; }
         public int DefaultPanelMaxCapture { get; set; }
+        public int MaxLogLinesForDisplay { get; set; }
         public TimeSpan DefaultPageSettleDelay { get; set; }
 
         public static Config Load()
@@ -26,6 +27,7 @@
             Double.TryParse(ConfigurationManager.AppSettings["MinAvailableSpaceOnPi"], out double minAvailableSpaceOnPi);
 
             Int64.TryParse(ConfigurationManager.AppSettings["MaxLogFileSizeBytes"], out long maxLogFileSizeBytes);
+            Int32.TryParse(ConfigurationManager.AppSettings["MaxLogLinesForDisplay"], out int maxLogLinesForDisplay);
 
             Int32.TryParse(ConfigurationManager.AppSettings["DefaultPageSettleDelaySeconds"], out int defaultPageSettleDelaySeconds);
 
@@ -44,6 +46,7 @@
                 EnablePublishToDisk = enableDiskPublishing,
                 MaxLogFileSizeBytes = maxLogFileSizeBytes > 0 ? maxLogFileSizeBytes : 1024 * 1024 * 10,
                 DefaultPanelMaxCapture = defaultPanelMaxCapture > 0 ? defaultPanelMaxCapture : 10,
+                MaxLogLinesForDisplay = maxLogLinesForDisplay > 0 ? maxLogLinesForDisplay : 1000,
             };
         }
 
@@ -60,6 +63,7 @@
                 DefaultPageSettleDelaySeconds: {this.DefaultPageSettleDelay},
                 MaxLogFileSizeBytes: {this.MaxLogFileSizeBytes},
                 DefaultPanelMaxCapture: {this.DefaultPanelMaxCapture},
+                MaxLogLinesForDisplay: {this.MaxLogLinesForDisplay},
             ";
         }
     }

@@ -38,7 +38,7 @@
 
             InitializeComponent();
 
-            this.logView = new LogView(this.loggingService);
+            this.logView = new LogView(this.loggingService, this.config);
 
             this.capturePublisher = new ScreenCapturePublisher(
                 new DiskPublisherService(this.config),
