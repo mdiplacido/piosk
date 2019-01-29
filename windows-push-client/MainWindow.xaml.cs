@@ -75,6 +75,8 @@
             // hook the screen capture with our function
             (this.AddScreenCaptureComponent as AddScreenCapture).SetSaveHandler(this.AddNewUserCreatedCapturePanel);
 
+            (this.AddScreenCaptureComponent as AddScreenCapture).Config = this.config;
+
             // add the log viewer 
             this.screenCapturePanels.Items.Insert(0, new TabItem()
             {
