@@ -143,7 +143,8 @@
             // this is DUMB!, there's no definitive way to know if the page has "settled".
             TimerUtility.RunDelayedAction(() =>
             {
-                if (this.requestFocus(this) && this.IsVisible)
+                // note: removed && this.IsVisible() check here, maybe that is necessary?
+                if (this.requestFocus(this))
                 {
                     // delay one more tick so we give the control time to render
                     TimerUtility.RunSafeDelayedAction(() =>
@@ -154,6 +155,10 @@
                     (error) =>
                     {
                         // HandleScreenCapture should be safe.  no-op 
+                        if (this.IsCaptureInProgress)
+                        {
+                            this.CleanupCaptureRun(success: false);
+                        }
                     });
                 }
                 else if (attempts > 0)
