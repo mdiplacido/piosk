@@ -130,6 +130,17 @@
                 });
             }
 
+            // there could be something processing and now that panel has gone away.  lets just clear the current processing
+            // panel prop
+            if (this.currentCapture != null && 
+                this.panelsToCapture.FirstOrDefault(p => p == this.currentCapture) == null)
+            {
+                // it's possible with the recycle panels caller we could get into this state.
+                // if the user is adding a new panel then we shuldn't get here.
+                this.logger.Warn("clearing currentCapture, there is no matching panel after set panels");  
+                this.currentCapture = null;
+            }
+
             this.LogInfo();
         }
 
