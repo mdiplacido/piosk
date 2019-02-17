@@ -52,12 +52,23 @@ export class App extends React.Component<undefined, State> {
   }
 
   refresh = () => {
-    this.renderWindow.reload();
+    // using the refresh is not super reliable, it's much better just to reload the browser
+    // location
+    this.renderWindow.loadURL(this.state.url);
   }
 
   openWindow = () => {
-    this.renderWindow = new remote.BrowserWindow();
+    this.renderWindow = new remote.BrowserWindow({
+      webPreferences: {
+        nodeIntegration: false,
+        webSecurity: false /* probably should make this an option per capture */
+      }
+    });
     this.renderWindow.loadURL(this.state.url);
+
+    // todo: attaching the dev tools should be optional and may not be available depending on
+    // the build.
+    this.renderWindow.webContents.openDevTools();
   }
 
   screenshot = () => {
