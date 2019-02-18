@@ -14,7 +14,9 @@ import * as ReactDOM from 'react-dom';
 import {AppContainer} from 'react-hot-loader';
 
 let render = () => {
-  const { App } = require('./app');
+  // casing matters for the "App" file, on unix systems the file name must match exactly.
+  // iow, require('./app') is incorrect. 
+  const { App } = require('./App');
   ReactDOM.render(<AppContainer><App /></AppContainer>, document.getElementById('App'));
 }
 

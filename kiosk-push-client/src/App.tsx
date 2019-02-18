@@ -6,7 +6,7 @@ interface State {
   url: string;
 }
 
-export class App extends React.Component<undefined, State> {
+export class App extends React.Component<{}, State> {
   private renderWindow: BrowserWindow;
 
   constructor(props?: any, context?: any) {
@@ -18,23 +18,26 @@ export class App extends React.Component<undefined, State> {
 
   render() {
     return (
-      <div>
-        <h2>POC for screen capture</h2>
+      // going to remote the React.Fragment, just testing something
+      <React.Fragment>
+        <div>
+          <h2>POC for screen capture</h2>
 
-        current url: {this.state.url}
-        <br />
-        <button onClick={this.screenshot}>Screenshot</button>
-        <br />
-        <button onClick={this.openWindow}>Open new window</button>
-        <br />
-        <button onClick={this.refresh}>Refresh</button>
-        <br />
-        <button onClick={this.maximize}>Maximize</button>
-        <br />
-        <button onClick={this.loadNewUrl}>Change url</button> to: {this.state.url}
-        <br />
-        <input type='text' onChange={this.handleOnUrlChange} />
-      </div>
+          current url: {this.state.url}
+          <br />
+          <button onClick={this.screenshot}>Screenshot</button>
+          <br />
+          <button onClick={this.openWindow}>Open new window</button>
+          <br />
+          <button onClick={this.refresh}>Refresh</button>
+          <br />
+          <button onClick={this.maximize}>Maximize</button>
+          <br />
+          <button onClick={this.loadNewUrl}>Change url</button> to: {this.state.url}
+          <br />
+          <input type='text' onChange={this.handleOnUrlChange} />
+        </div>
+      </React.Fragment>
     );
   }
 
