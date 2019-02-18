@@ -2,44 +2,61 @@
   "env": {
     "development": {
       "text/typescript": {
-        "removeComments": false,
-        "preserveConstEnums": true,
+        "allowSyntheticDefaultImports": false,    
         "declaration": true,
+        "experimentalDecorators": true,
+        "inlineSourceMap": true,
+        "inlineSources": true,        
+        "importHelpers": true,
+        "jsx": "react",
+        "lib": [
+          "dom",
+          "dom.iterable",
+          "esnext"
+        ],    
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "noEmitHelpers": true,
         "noImplicitAny": true,
         "noImplicitReturns": true,
-        "suppressImplicitAnyIndexErrors": true,
-        "strictNullChecks": true,
-        "noUnusedLocals": true,
         "noImplicitThis": true,
+        "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "inlineSourceMap": true,
-        "inlineSources": true,
-        "importHelpers": true,
-        "noEmitHelpers": true,
-        "experimentalDecorators": true,
-        "target": "es2015",
-        "module": "commonjs",
-        "jsx": "react"
+        "preserveConstEnums": true,
+        "pretty": true,
+        "removeComments": false,
+        "sourceMap": true,
+        "strictNullChecks": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "target": "es2015"
       }
     },
     "production": {
       "text/typescript": {
-        "removeComments": false,
-        "preserveConstEnums": true,
+        "allowSyntheticDefaultImports": false,    
         "declaration": true,
+        "experimentalDecorators": true,
+        "lib": [
+          "dom",
+          "dom.iterable",
+          "esnext"
+        ],    
+        "importHelpers": true,
+        "jsx": "react",   
+        "moduleResolution": "node",
+        "noEmitHelpers": true,
         "noImplicitAny": true,
         "noImplicitReturns": true,
-        "suppressImplicitAnyIndexErrors": true,
-        "strictNullChecks": true,
-        "noUnusedLocals": true,
         "noImplicitThis": true,
+        "noUnusedLocals": true,
         "noUnusedParameters": true,
+        "preserveConstEnums": true,
+        "pretty": true,
+        "removeComments": false,
         "sourceMap": false,
-        "importHelpers": true,
-        "noEmitHelpers": true,
-        "experimentalDecorators": true,
-        "target": "es2015",
-        "jsx": "react"
+        "strictNullChecks": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "target": "es2015"
       }
     }
   }
