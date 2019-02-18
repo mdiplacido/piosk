@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Controller } from '../App';
+import { Controller } from '../../App';
 import { ChangeEvent } from 'react';
 
 export interface MainContainerProps {

@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as React from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
-import MainContainer from './containers/main.container';
+import MainContainer from './containers/main/main.container';
 
 interface State {
   url: string;
