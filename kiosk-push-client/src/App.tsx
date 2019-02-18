@@ -1,12 +1,13 @@
 import { BrowserWindow, remote } from 'electron';
-import * as fs from 'fs';
 import * as React from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, NavLink, Route, Switch } from 'react-router-dom';
 
 import MainContainer from './containers/main/main.container';
+import TestSFTPContainer from './containers/sftp/test-sftp.container';
 
 interface State {
   url: string;
+  image?: Electron.NativeImage;
 }
 
 export interface Controller {
@@ -20,17 +21,24 @@ export interface Controller {
 export class App extends React.Component<{}, State> implements Controller {
   private renderWindow: BrowserWindow;
 
-  state = {
+  state: Readonly<State> = {
     url: 'http://www.clocktab.com/'
   };
 
   render() {
     return (
-      // going to remote the React.Fragment, just testing something
       <BrowserRouter>
-        <Switch>
-          <Route render={() => <MainContainer url={this.state.url} controller={this}></MainContainer>} />
-        </Switch>
+        <React.Fragment>
+          <nav>
+            <NavLink to='/' activeClassName='active'>Home</NavLink>
+            {' | '}
+            <NavLink to='/test-sftp' activeClassName='active'>Test SFTP</NavLink>
+          </nav>
+          <Switch>
+            <Route path='/test-sftp' render={() => <TestSFTPContainer image={this.state.image}></TestSFTPContainer>} />
+            <Route render={() => <MainContainer url={this.state.url} controller={this}></MainContainer>} />
+          </Switch>
+        </React.Fragment>
       </BrowserRouter>
     );
   }
@@ -62,10 +70,10 @@ export class App extends React.Component<{}, State> implements Controller {
   }
 
   screenshot = () => {
-    this.renderWindow.capturePage(img =>
-      fs.writeFile('/var/jail/data/piosk_pickup/test.png', img.toPNG(),
-        () => {
-          // callback, no-op for now
-        }));
+    this.renderWindow.capturePage(image => this.setState({ image }));
+    // fs.writeFile('/var/jail/data/piosk_pickup/test.png', img.toPNG(),
+    //   () => {
+    //     // callback, no-op for now
+    //   }));
   }
 }
