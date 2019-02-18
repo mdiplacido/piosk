@@ -1,63 +1,50 @@
-import * as React from 'react';
-import { remote, BrowserWindow } from 'electron';
+import { BrowserWindow, remote } from 'electron';
 import * as fs from 'fs';
+import * as React from 'react';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
+
+import MainContainer from './containers/main.container';
 
 interface State {
   url: string;
 }
 
-export class App extends React.Component<{}, State> {
+export interface Controller {
+  screenshot: () => void;
+  openWindow: () => void;
+  loadUrl: () => void;
+  maximize: () => void;
+  urlChange: (url: string) => void;
+}
+
+export class App extends React.Component<{}, State> implements Controller {
   private renderWindow: BrowserWindow;
 
-  constructor(props?: any, context?: any) {
-    super(props, context);
-    this.state = {
-      url: 'http://www.clocktab.com/'
-    };
-  }
+  state = {
+    url: 'http://www.clocktab.com/'
+  };
 
   render() {
     return (
       // going to remote the React.Fragment, just testing something
-      <React.Fragment>
-        <div>
-          <h2>POC for screen capture</h2>
-
-          current url: {this.state.url}
-          <br />
-          <button onClick={this.screenshot}>Screenshot</button>
-          <br />
-          <button onClick={this.openWindow}>Open new window</button>
-          <br />
-          <button onClick={this.refresh}>Refresh</button>
-          <br />
-          <button onClick={this.maximize}>Maximize</button>
-          <br />
-          <button onClick={this.loadNewUrl}>Change url</button> to: {this.state.url}
-          <br />
-          <input type='text' onChange={this.handleOnUrlChange} />
-        </div>
-      </React.Fragment>
+      <BrowserRouter>
+        <Switch>
+          <Route render={() => <MainContainer url={this.state.url} controller={this}></MainContainer>} />
+        </Switch>
+      </BrowserRouter>
     );
   }
 
-  handleOnUrlChange = (event: any) => {
-    const target = event.target as HTMLInputElement;
-    this.setState({ url: target.value });
+  urlChange = (url: string) => {
+    this.setState({ url });
   }
 
-  loadNewUrl = () => {
+  loadUrl = () => {
     this.renderWindow.loadURL(this.state.url);
   }
 
   maximize = () => {
     this.renderWindow.setFullScreen(true);
-  }
-
-  refresh = () => {
-    // using the refresh is not super reliable, it's much better just to reload the browser
-    // location
-    this.renderWindow.loadURL(this.state.url);
   }
 
   openWindow = () => {
