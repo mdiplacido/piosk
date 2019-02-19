@@ -20,7 +20,7 @@
       "check-whitespace",
       "check-open-brace"],
     "quotemark": [true,
-      "single",
+      "double",
       "avoid-escape"],
     "semicolon": [true, "always"],
     "typedef-whitespace": [true, {

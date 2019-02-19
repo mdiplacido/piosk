@@ -1,9 +1,10 @@
-import { BrowserWindow, remote } from 'electron';
-import * as React from 'react';
-import { BrowserRouter, NavLink, Route, Switch } from 'react-router-dom';
+import { createMuiTheme, CssBaseline, MuiThemeProvider } from "@material-ui/core";
+import { BrowserWindow, remote } from "electron";
+import * as React from "react";
+import { HashRouter } from "react-router-dom";
 
-import MainContainer from './containers/main/main.container';
-import TestSFTPContainer from './containers/sftp/test-sftp.container';
+import AppRoutes from "./app.routes";
+import NavBar from "./components/common/nav-bar";
 
 interface State {
   url: string;
@@ -18,28 +19,41 @@ export interface Controller {
   urlChange: (url: string) => void;
 }
 
+const theme = createMuiTheme({
+  typography: {
+    useNextVariants: true,
+  },
+  palette: {
+    type: "light",
+    primary: {
+      main: "#0078d4"
+    }
+  }
+});
+
 export class App extends React.Component<{}, State> implements Controller {
   private renderWindow: BrowserWindow;
 
   state: Readonly<State> = {
-    url: 'http://www.clocktab.com/'
+    url: "http://www.clocktab.com/"
   };
 
   render() {
     return (
-      <BrowserRouter>
-        <React.Fragment>
-          <nav>
-            <NavLink to='/' activeClassName='active'>Home</NavLink>
-            {' | '}
-            <NavLink to='/test-sftp' activeClassName='active'>Test SFTP</NavLink>
-          </nav>
-          <Switch>
-            <Route path='/test-sftp' render={() => <TestSFTPContainer image={this.state.image}></TestSFTPContainer>} />
-            <Route render={() => <MainContainer url={this.state.url} controller={this}></MainContainer>} />
-          </Switch>
-        </React.Fragment>
-      </BrowserRouter>
+      <MuiThemeProvider theme={theme}>
+        <CssBaseline />
+        {/* intentionally using hash router.  electron expects the file to be on disk
+        so development is tricky with the BrowserRouter. */}
+        <HashRouter>
+          <React.Fragment>
+            <NavBar />
+            <AppRoutes
+              controller={this}
+              image={this.state.image}
+              url={this.state.url} />
+          </React.Fragment>
+        </HashRouter>
+      </MuiThemeProvider>
     );
   }
 
