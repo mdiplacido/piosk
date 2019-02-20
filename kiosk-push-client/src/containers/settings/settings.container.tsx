@@ -1,11 +1,7 @@
 import * as React from "react";
 
-import {
-    ConfigContext,
-    ConfigProviderProps,
-    withConfig,
-} from "../../providers/config/config.provider";
-import { ConfigStore } from "../../providers/config/config";
+import PageContainer from "../../components/common/page-container";
+import { ConfigProviderProps, withConfig } from "../../providers/config/config.provider";
 
 export interface SettingsProps extends ConfigProviderProps {
 }
@@ -18,20 +14,11 @@ const Settings = (props: SettingsProps) => {
     };
 
     return (
-        <ConfigContext.Consumer>
-            {
-                (config: ConfigStore) => {
-                    return (<div>
-                        {JSON.stringify(config.state)}
-                        {JSON.stringify(props.config.state)}
-
-                        <br />
-
-                        <button onClick={updateConfig}>Change</button>
-                    </div>);
-                }
-            }
-        </ConfigContext.Consumer>
+        <PageContainer title="Settings">
+            {JSON.stringify(props.config.state)}
+            <br />
+            <button onClick={updateConfig}>Change</button>
+        </PageContainer>
     );
 };
 

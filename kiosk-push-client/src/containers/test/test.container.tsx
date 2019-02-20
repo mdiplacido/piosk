@@ -1,7 +1,8 @@
-import { withStyles, Grid, Typography, Divider, Button, TextField } from "@material-ui/core";
+import { Button, TextField, withStyles } from "@material-ui/core";
 import * as React from "react";
 import { ChangeEvent } from "react";
 
+import PageContainer from "../../components/common/page-container";
 import containerStyles, { ContainerStyleProps } from "../../components/common/styles";
 
 // tslint:disable:no-require-imports
@@ -30,44 +31,34 @@ class TestContainer extends React.Component<TestContainerProps, State> {
     const { classes } = this.props;
 
     return (
-      <div className={classes.root}>
-        <Grid container spacing={16}>
-          <Grid item xs={12}>
-            <Typography className={classes.header} variant="h2" gutterBottom>
-              Test
-              </Typography>
-            <Divider variant="middle" />
-          </Grid>
-          <Grid item xs={12} className={classes["content-row"]}>
-            <TextField
-              id="username"
-              label="Username"
-              className={classes.textField}
-              value={this.state.username}
-              onChange={this.onUsernameChange}
-              margin="normal"
-            />
-            <br />
-            <TextField
-              id="password"
-              label="Password"
-              type="password"
-              className={classes.textField}
-              value={this.state.password}
-              onChange={this.onPasswordChange}
-              margin="normal"
-            />
-            <br />
-            <Button disabled={!this.canUpload()} onClick={this.upload} variant="contained" color="primary" className={classes.button}>
-              Test Upload Image
-            </Button>
-          </Grid>
-        </Grid>
-      </div>
+      <PageContainer title="Test">
+        <TextField
+          id="username"
+          label="Username"
+          className={classes.textField}
+          value={this.state.username}
+          onChange={this.onUsernameChange}
+          margin="normal"
+        />
+        <br />
+        <TextField
+          id="password"
+          label="Password"
+          type="password"
+          className={classes.textField}
+          value={this.state.password}
+          onChange={this.onPasswordChange}
+          margin="normal"
+        />
+        <br />
+        <Button disabled={!this.canUpload()} onClick={this.upload} variant="contained" color="primary" className={classes.button}>
+          Test Upload Image
+        </Button>
+      </PageContainer>
     );
   }
 
-  private canUpload = () => !!this.props.image && !!this.state.password.trim() && !! this.state.username.trim();
+  private canUpload = () => !!this.props.image && !!this.state.password.trim() && !!this.state.username.trim();
 
   private onUsernameChange = (event: ChangeEvent<HTMLInputElement>) => {
     this.setState({ username: event.target.value });
