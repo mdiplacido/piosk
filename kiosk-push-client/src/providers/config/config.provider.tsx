@@ -33,10 +33,17 @@ class ConfigProvider extends React.Component<{}, ConfigState> implements ConfigS
         this.setState(newState);
     }
 
+    all = () => {
+        return Object
+            .keys(this.state)
+            .map(k => ({ key: k, value: this.state[k] }));
+    }
+
     render(): JSX.Element {
         const store: ConfigStore = {
             state: this.state,
-            update: this.update
+            update: this.update,
+            all: this.all
         };
 
         return (

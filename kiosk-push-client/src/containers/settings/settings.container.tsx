@@ -1,25 +1,38 @@
+import { Table, TableBody, TableCell, TableHead, TableRow, withStyles } from "@material-ui/core";
 import * as React from "react";
 
 import PageContainer from "../../components/common/page-container";
+import containerStyles, { ContainerStyleProps } from "../../components/common/styles";
 import { ConfigProviderProps, withConfig } from "../../providers/config/config.provider";
 
 export interface SettingsProps extends ConfigProviderProps {
 }
 
-let counter = 0;
-
-const Settings = (props: SettingsProps) => {
-    const updateConfig = () => {
-        props.config.update({ sftpUsername: "marco" + (++counter) } as any);
-    };
+const Settings = (props: SettingsProps & ContainerStyleProps) => {
+    const { classes } = props;
 
     return (
         <PageContainer title="Settings">
-            {JSON.stringify(props.config.state)}
-            <br />
-            <button onClick={updateConfig}>Change</button>
+            <Table className={classes.table}>
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Key</TableCell>
+                        <TableCell align="right">Value</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {props.config.all().map(c => (
+                        <TableRow key={c.key}>
+                            <TableCell component="th" scope="row">
+                                {c.key}
+                            </TableCell>
+                            <TableCell align="right">{c.value.toString()}</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
         </PageContainer>
     );
 };
 
-export default withConfig(Settings);
+export default withConfig(withStyles(containerStyles)(Settings));

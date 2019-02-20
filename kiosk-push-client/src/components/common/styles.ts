@@ -1,9 +1,6 @@
-import { Theme, createStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Theme, WithStyles } from "@material-ui/core";
 
-export interface ContainerStyleProps extends WithStyles<typeof containerStyles> {
-}
-
-const containerStyles = (theme: Theme) => createStyles({
+export const containerStyles = (theme: Theme) => createStyles({
     root: {
         flexGrow: 1,
         overflow: "hidden",
@@ -18,7 +15,12 @@ const containerStyles = (theme: Theme) => createStyles({
     button: {
     },
     textField: {
+    },
+    table: {
     }
 });
+
+export interface ContainerStyleProps extends WithStyles<typeof containerStyles> {
+}
 
 export default containerStyles;

@@ -16,4 +16,5 @@ export type UpdateConfigStateArg = Pick<ConfigState, keyof ConfigState> | Config
 export interface ConfigStore {
     state: ConfigState;
     update: (newState: UpdateConfigStateArg) => void;
+    all: () => Array<{key: string, value: any}>;
 }
