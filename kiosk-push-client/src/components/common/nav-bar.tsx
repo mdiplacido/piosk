@@ -28,10 +28,9 @@ const NavBar = (props: NavBarProps) => {
                         Piosk Push Client
                     </Typography>
                     <Button color="inherit" onClick={() => history.push("/")}>Controller</Button>
-                    <Button color="inherit">Capture List</Button>
                     <Button color="inherit" onClick={() => history.push("/settings")}>Settings</Button>
                     <Button color="inherit" onClick={() => history.push("/test")}>Test</Button>
-                    <Button color="inherit">Logs</Button>
+                    <Button color="inherit" onClick={() => history.push("/logs")}>Logs</Button>
                 </Toolbar>
             </AppBar>
         </div>
