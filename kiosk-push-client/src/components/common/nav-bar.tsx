@@ -20,6 +20,8 @@ const NavBar = (props: NavBarProps) => {
     const { classes } = props;
     const { history } = props;
 
+    const navigateTo = (path: string) => () => { history.push(path); };
+
     return (
         <div>
             <AppBar position="static">
@@ -27,11 +29,10 @@ const NavBar = (props: NavBarProps) => {
                     <Typography variant="h5" color="inherit" className={classes.grow}>
                         Piosk Push Client
                     </Typography>
-                    <Button color="inherit" onClick={() => history.push("/")}>Controller</Button>
-                    <Button color="inherit">Capture List</Button>
-                    <Button color="inherit">Settings</Button>
-                    <Button color="inherit" onClick={() => history.push("/test")}>Test</Button>
-                    <Button color="inherit">Logs</Button>
+                    <Button color="inherit" onClick={navigateTo("/")}>Controller</Button>
+                    <Button color="inherit" onClick={navigateTo("/settings")}>Settings</Button>
+                    <Button color="inherit" onClick={navigateTo("/test")}>Test</Button>
+                    <Button color="inherit" onClick={navigateTo("/logs")}>Logs</Button>
                 </Toolbar>
             </AppBar>
         </div>

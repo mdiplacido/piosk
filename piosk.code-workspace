@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "kiosk-server"
+		},
+		{
+			"path": "kiosk-push-client"
 		}
 	],
 	"settings": {
