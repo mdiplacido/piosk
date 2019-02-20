@@ -5,6 +5,7 @@ import { HashRouter } from "react-router-dom";
 
 import AppRoutes from "./app.routes";
 import NavBar from "./components/common/nav-bar";
+import ConfigProvider from "./providers/config/config.provider";
 
 interface State {
   url: string;
@@ -40,20 +41,22 @@ export class App extends React.Component<{}, State> implements Controller {
 
   render() {
     return (
-      <MuiThemeProvider theme={theme}>
-        <CssBaseline />
-        {/* intentionally using hash router.  electron expects the file to be on disk
+      <ConfigProvider>
+        <MuiThemeProvider theme={theme}>
+          <CssBaseline />
+          {/* intentionally using hash router.  electron expects the file to be on disk
         so development is tricky with the BrowserRouter. */}
-        <HashRouter>
-          <React.Fragment>
-            <NavBar />
-            <AppRoutes
-              controller={this}
-              image={this.state.image}
-              url={this.state.url} />
-          </React.Fragment>
-        </HashRouter>
-      </MuiThemeProvider>
+          <HashRouter>
+            <React.Fragment>
+              <NavBar />
+              <AppRoutes
+                controller={this}
+                image={this.state.image}
+                url={this.state.url} />
+            </React.Fragment>
+          </HashRouter>
+        </MuiThemeProvider>
+      </ConfigProvider>
     );
   }
 

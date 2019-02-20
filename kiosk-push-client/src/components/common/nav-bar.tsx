@@ -29,7 +29,7 @@ const NavBar = (props: NavBarProps) => {
                     </Typography>
                     <Button color="inherit" onClick={() => history.push("/")}>Controller</Button>
                     <Button color="inherit">Capture List</Button>
-                    <Button color="inherit">Settings</Button>
+                    <Button color="inherit" onClick={() => history.push("/settings")}>Settings</Button>
                     <Button color="inherit" onClick={() => history.push("/test")}>Test</Button>
                     <Button color="inherit">Logs</Button>
                 </Toolbar>
