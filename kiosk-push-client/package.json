@@ -56,6 +56,7 @@
     "@types/react-router": "^4.4.4",
     "@types/react-router-dom": "^4.3.1",
     "@types/ssh2-sftp-client": "^2.4.1",
+    "classnames": "^2.2.6",
     "electron-compile": "^6.4.4",
     "electron-devtools-installer": "^2.2.4",
     "electron-squirrel-startup": "^1.0.0",
@@ -73,6 +74,7 @@
     "typeface-roboto": "0.0.54"
   },
   "devDependencies": {
+    "@types/classnames": "^2.2.7",
     "babel-plugin-transform-async-to-generator": "^6.24.1",
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
