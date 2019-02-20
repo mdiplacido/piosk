@@ -1,12 +1,14 @@
 import { createMuiTheme, CssBaseline, MuiThemeProvider } from "@material-ui/core";
 import { BrowserWindow, remote } from "electron";
 import * as React from "react";
+import { Provider } from "react-redux";
 import { HashRouter } from "react-router-dom";
 
 import AppRoutes from "./app.routes";
 import NavBar from "./components/common/nav-bar";
 import PublisherProvider from "./providers/capture-publisher/publisher.provider";
 import ConfigProvider from "./providers/config/config.provider";
+import configureStore from "./store/configure-store";
 
 interface State {
   url: string;
@@ -33,6 +35,8 @@ const theme = createMuiTheme({
   }
 });
 
+const store = configureStore();
+
 export class App extends React.Component<{}, State> implements Controller {
   private renderWindow: BrowserWindow;
 
@@ -42,24 +46,26 @@ export class App extends React.Component<{}, State> implements Controller {
 
   render() {
     return (
-      <ConfigProvider>
-        <PublisherProvider>
-          <MuiThemeProvider theme={theme}>
-            <CssBaseline />
-            {/* intentionally using hash router.  electron expects the file to be on disk
+      <Provider store={store}>
+        <ConfigProvider>
+          <PublisherProvider>
+            <MuiThemeProvider theme={theme}>
+              <CssBaseline />
+              {/* intentionally using hash router.  electron expects the file to be on disk
         so development is tricky with the BrowserRouter. */}
-            <HashRouter>
-              <React.Fragment>
-                <NavBar />
-                <AppRoutes
-                  controller={this}
-                  image={this.state.image}
-                  url={this.state.url} />
-              </React.Fragment>
-            </HashRouter>
-          </MuiThemeProvider>
-        </PublisherProvider>
-      </ConfigProvider>
+              <HashRouter>
+                <React.Fragment>
+                  <NavBar />
+                  <AppRoutes
+                    controller={this}
+                    image={this.state.image}
+                    url={this.state.url} />
+                </React.Fragment>
+              </HashRouter>
+            </MuiThemeProvider>
+          </PublisherProvider>
+        </ConfigProvider>
+      </Provider>
     );
   }
 
