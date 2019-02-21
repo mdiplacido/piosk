@@ -1,12 +1,20 @@
 import { createMuiTheme, CssBaseline, MuiThemeProvider } from "@material-ui/core";
 import { BrowserWindow, remote } from "electron";
 import * as React from "react";
+import { connect } from "react-redux";
 import { HashRouter } from "react-router-dom";
 
 import AppRoutes from "./app.routes";
 import NavBar from "./components/common/nav-bar";
 import PublisherProvider from "./providers/capture-publisher/publisher.provider";
 import ConfigProvider from "./providers/config/config.provider";
+import { IConfigActionsProp, mapConfigActionsToProps } from "./store/config/actions";
+import { isConfigLoadingSelector } from "./store/loading.selectors";
+import IState from "./store/state";
+
+// tslint:disable:no-var-requires
+// tslint:disable:no-require-imports
+const LoadingOverlay = require("react-loading-overlay").default as typeof React.Component;
 
 interface State {
   url: string;
@@ -33,15 +41,27 @@ const theme = createMuiTheme({
   }
 });
 
-export class App extends React.Component<{}, State> implements Controller {
+export interface IAppStateProps {
+  isConfigLoading: boolean;
+}
+
+export type AppProps = IAppStateProps & IConfigActionsProp;
+
+export class App extends React.Component<AppProps, State> implements Controller {
   private renderWindow: BrowserWindow;
 
   state: Readonly<State> = {
     url: "http://www.clocktab.com/"
   };
 
+  componentDidMount(): void {
+    this.props.configActions.loadConfig();
+  }
+
   render() {
     return (
+      // note: REDUX provider is located in the bootstrapping index.html, this is done because App depends on
+      // the provider so we we need to hoist it up one level
       <ConfigProvider>
         <PublisherProvider>
           <MuiThemeProvider theme={theme}>
@@ -49,13 +69,20 @@ export class App extends React.Component<{}, State> implements Controller {
             {/* intentionally using hash router.  electron expects the file to be on disk
         so development is tricky with the BrowserRouter. */}
             <HashRouter>
-              <React.Fragment>
+              <LoadingOverlay
+                active={this.props.isConfigLoading}
+                spinner
+                text="Loading..."
+              >
                 <NavBar />
-                <AppRoutes
-                  controller={this}
-                  image={this.state.image}
-                  url={this.state.url} />
-              </React.Fragment>
+                {
+                  !this.props.isConfigLoading &&
+                  <AppRoutes
+                    controller={this}
+                    image={this.state.image}
+                    url={this.state.url} />
+                }
+              </LoadingOverlay>
             </HashRouter>
           </MuiThemeProvider>
         </PublisherProvider>
@@ -97,3 +124,12 @@ export class App extends React.Component<{}, State> implements Controller {
     //   }));
   }
 }
+
+function mapStateToProps(state: IState): IAppStateProps {
+  return {
+    isConfigLoading: isConfigLoadingSelector(state)
+  } as IAppStateProps;
+}
+
+// tslint:disable-next-line:max-line-length
+export default connect<IAppStateProps, IConfigActionsProp, AppProps, IState>(mapStateToProps, mapConfigActionsToProps)(App);

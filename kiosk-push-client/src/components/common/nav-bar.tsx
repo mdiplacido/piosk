@@ -9,6 +9,9 @@ import { withRouter, RouteComponentProps } from "react-router-dom";
 const styles = {
     grow: {
         flexGrow: 1,
+    },
+    appBar: {
+        "min-width": "600px"
     }
 };
 
@@ -24,7 +27,7 @@ const NavBar = (props: NavBarProps) => {
 
     return (
         <div>
-            <AppBar position="static">
+            <AppBar position="static" className={classes.appBar}>
                 <Toolbar>
                     <Typography variant="h5" color="inherit" className={classes.grow}>
                         Piosk Push Client
