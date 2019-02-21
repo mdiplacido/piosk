@@ -56,6 +56,9 @@ export class App extends React.Component<AppProps, State> implements Controller 
 
   componentDidMount(): void {
     this.props.configActions.loadConfig();
+
+    // TODO: remove this, the effects will handle success or fail.
+    setTimeout(() => this.props.configActions.loadConfigSuccess(), 3000);
   }
 
   render() {

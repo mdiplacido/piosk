@@ -19,12 +19,20 @@ export function loadConfig(): ILoadConfigAction {
     };
 }
 
+export function loadConfigSuccess(): ILoadConfigSuccessAction {
+    return {
+        type: ConfigActionTypes.LoadSuccess
+    };
+}
+
 export interface IConfigActionCreator extends ActionCreatorsMapObject<ConfigActions> {
     loadConfig: () => ILoadConfigAction;
+    loadConfigSuccess: () => ILoadConfigSuccessAction;
 }
 
 export const ConfigActionCreatorFactory: () => IConfigActionCreator = () => ({
-    loadConfig: loadConfig
+    loadConfig: loadConfig,
+    loadConfigSuccess: loadConfigSuccess
 });
 
 export interface IConfigActionsProp {
