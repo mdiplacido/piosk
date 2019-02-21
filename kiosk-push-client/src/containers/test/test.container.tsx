@@ -23,10 +23,6 @@ import {
 } from "../../providers/capture-publisher/publisher.provider";
 import { ConfigProviderProps, withConfig } from "../../providers/config/config.provider";
 
-export interface TestContainerProps extends WithStyles<typeof styles>, PublisherProviderProps, ConfigProviderProps {
-  image?: Electron.NativeImage;
-}
-
 export interface State {
   password: string;
   username: string;
@@ -64,6 +60,9 @@ const styles = (theme: Theme) => ({
   }),
 });
 
+export interface TestContainerProps extends WithStyles<typeof styles>, PublisherProviderProps, ConfigProviderProps {
+  image?: Electron.NativeImage;
+}
 class TestContainer extends React.Component<TestContainerProps, State> {
   mounted = false;
 

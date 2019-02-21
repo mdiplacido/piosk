@@ -4,7 +4,7 @@ import immutableStateInvariantMiddleware from "redux-immutable-state-invariant";
 
 import initialStoreState from "./initial-state";
 import rootReducer from "./reducer";
-import { IState } from "./state";
+import IState from "./state";
 
 // TODO: are folks conditionally adding the immutableStateInvariantMiddleware for
 // prod vs. dev builds? -marcodi
