@@ -1,6 +1,7 @@
 import ConfigState from "./config/state";
 
 export enum ConfigStatus {
+    None = "none",
     Missing = "missing",
     Success = "success"
 }

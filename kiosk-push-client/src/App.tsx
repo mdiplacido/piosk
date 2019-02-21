@@ -76,10 +76,13 @@ export class App extends React.Component<AppProps, State> implements Controller 
                 text="Loading..."
               >
                 <NavBar />
-                <AppRoutes
-                  controller={this}
-                  image={this.state.image}
-                  url={this.state.url} />
+                {
+                  !this.props.isConfigLoading &&
+                  <AppRoutes
+                    controller={this}
+                    image={this.state.image}
+                    url={this.state.url} />
+                }
               </LoadingOverlay>
             </HashRouter>
           </MuiThemeProvider>

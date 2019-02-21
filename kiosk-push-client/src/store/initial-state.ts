@@ -1,4 +1,4 @@
-import { IState } from "./state";
+import IState, { ConfigStatus } from "./state";
 import { ConfigState } from "../providers/config/config";
 
 const initialState: IState = {
@@ -7,7 +7,8 @@ const initialState: IState = {
         config: {
             loading: false,
             loaded: false,
-            failed: false
+            failed: false,
+            status: ConfigStatus.None
         }
     }
 };

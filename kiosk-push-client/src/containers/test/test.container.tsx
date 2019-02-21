@@ -65,6 +65,8 @@ const styles = (theme: Theme) => ({
 });
 
 class TestContainer extends React.Component<TestContainerProps, State> {
+  mounted = false;
+
   constructor(props: TestContainerProps) {
     super(props);
     this.state = {
@@ -74,6 +76,14 @@ class TestContainer extends React.Component<TestContainerProps, State> {
       success: false,
       failed: false
     };
+  }
+
+  componentDidMount(): void {
+    this.mounted = true;
+  }
+
+  componentWillUnmount(): void {
+    this.mounted = false;
   }
 
   render() {
@@ -150,6 +160,11 @@ class TestContainer extends React.Component<TestContainerProps, State> {
   private upload = (publisher: IPublisherService) => {
     this.setState({ saving: true, success: false, failed: false }, () => {
       const image = this.props.image as Electron.NativeImage;
+
+      // here is an example of a memory leak. if we fire this and then the user moves to a different
+      // view the call back would still happen but the current component is now unmounted.
+      // todo: convert this to react hooks pattern... where we cancel.  option REDUX with side-effects
+      // and cancellation would work too.
       publisher
         .sendImage(image)
         .then(result => {
@@ -164,7 +179,9 @@ class TestContainer extends React.Component<TestContainerProps, State> {
   }
 
   setResult = (success: boolean) => {
-    this.setState({ success, failed: !success, saving: false });
+    if (this.mounted) {
+      this.setState({ success, failed: !success, saving: false });
+    }
   }
 }
 
