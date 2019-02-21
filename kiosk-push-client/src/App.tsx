@@ -1,7 +1,6 @@
 import { createMuiTheme, CssBaseline, MuiThemeProvider } from "@material-ui/core";
 import { BrowserWindow, remote } from "electron";
 import * as React from "react";
-import LoadingOverlayImpl from "react-loading-overlay";
 import { connect } from "react-redux";
 import { HashRouter } from "react-router-dom";
 
@@ -15,7 +14,7 @@ import IState from "./store/state";
 
 // tslint:disable:no-var-requires
 // tslint:disable:no-require-imports
-const LoadingOverlay = LoadingOverlayImpl as typeof React.Component;
+const LoadingOverlay = require("react-loading-overlay").default as typeof React.Component;
 
 interface State {
   url: string;

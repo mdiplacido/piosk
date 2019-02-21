@@ -12,20 +12,21 @@
 
 <script>window.exports = module.exports</script>
 <script type="text/tsx">
+
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import {AppContainer} from 'react-hot-loader';
-import { Provider } from "react-redux";
+import { Provider } from 'react-redux';
 
 let render = () => {
-  const configureStore = require("./store/configure-store").default;
+  const configureStore = require('./store/configure-store').default;
   const store = configureStore();
 
   // THIS IS IMPORTANT: we load the app lazily in this render function (take note we are using the default export)
   // we do this so we load the latest version of app specific code.
   // casing matters for the "App" file, on unix systems the file name must match exactly.
   // iow, require('./app') is incorrect.   
-  const App = require("./App").default;  
+  const App = require('./App').default;  
 
   ReactDOM.render(
     <AppContainer>
