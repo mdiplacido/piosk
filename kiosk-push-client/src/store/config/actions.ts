@@ -27,12 +27,10 @@ export function loadConfigSuccess(): ILoadConfigSuccessAction {
 
 export interface IConfigActionCreator extends ActionCreatorsMapObject<ConfigActions> {
     loadConfig: () => ILoadConfigAction;
-    loadConfigSuccess: () => ILoadConfigSuccessAction;
 }
 
 export const ConfigActionCreatorFactory: () => IConfigActionCreator = () => ({
-    loadConfig: loadConfig,
-    loadConfigSuccess: loadConfigSuccess
+    loadConfig: loadConfig
 });
 
 export interface IConfigActionsProp {
