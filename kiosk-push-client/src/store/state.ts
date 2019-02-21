@@ -1,12 +1,22 @@
 import ConfigState from "./config/state";
 
+export enum ConfigStatus {
+    Missing = "missing",
+    Success = "success"
+}
+
+export interface IStoreEntityStatus<T extends string> {
+    loading: boolean;
+    loaded: boolean;
+    failed: boolean;
+    status: T;
+}
+
+export type ConfigEntityStatus = IStoreEntityStatus<ConfigStatus>;
+
 // tslint:disable-next-line:no-empty-interface
-export interface IState extends ConfigState {
+export default interface IState extends ConfigState {
     loadStatus: {
-        config: {
-            loading: boolean;
-            loaded: boolean;
-            failed: boolean;
-        }
-    }
+        config: ConfigEntityStatus
+    };
 }

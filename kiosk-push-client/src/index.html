@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <link rel="stylesheet" href="app.css">
 </head>
-<body style="overflow: hidden; background-color: rgba(0,0,0,0); margin: 0" >
+
+<body style="overflow: hidden; background-color: rgba(0,0,0,0); margin: 0">
   <div id="App"></div>
 </body>
 
@@ -13,15 +15,28 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import {AppContainer} from 'react-hot-loader';
+import { Provider } from "react-redux";
 
 let render = () => {
+  const configureStore = require("./store/configure-store").default;
+  const store = configureStore();
+
+  // THIS IS IMPORTANT: we load the app lazily in this render function (take note we are using the default export)
+  // we do this so we load the latest version of app specific code.
   // casing matters for the "App" file, on unix systems the file name must match exactly.
-  // iow, require('./app') is incorrect. 
-  const { App } = require('./App');
-  ReactDOM.render(<AppContainer><App /></AppContainer>, document.getElementById('App'));
+  // iow, require('./app') is incorrect.   
+  const App = require("./App").default;  
+
+  ReactDOM.render(
+    <AppContainer>
+        <Provider store={store}>     
+          <App /> 
+        </Provider>          
+    </AppContainer>, document.getElementById('App'));
 }
 
 render();
 if (module.hot) { module.hot.accept(render); }
 </script>
+
 </html>

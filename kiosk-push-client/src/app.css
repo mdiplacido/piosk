@@ -1,1 +1,18 @@
 @import "../node_modules/typeface-roboto/index.css";
+
+html, body {
+    height: 100%;
+    overflow: auto;
+}
+
+#App, ._loading_overlay_wrapper {
+    height: 100%;
+}
+
+._loading_overlay_content {
+    font-size: 1.75rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.00833em;
+}
