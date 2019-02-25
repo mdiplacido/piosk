@@ -2,6 +2,7 @@
 import * as React from "react";
 import { connect } from "react-redux";
 
+import { mapConfigActionsToProps, IConfigActionsProp } from "../../store/config/actions";
 import selectConfig from "../../store/config/selectors";
 import IState from "../../store/state";
 import { getDisplayName } from "../util";
@@ -34,8 +35,8 @@ export interface IConfigStateProps {
     config: ConfigState;
 }
 
-class ConfigProvider extends React.Component<ConfigProviderProps> implements ConfigStore {
-    constructor(props: ConfigProviderProps) {
+class ConfigProvider extends React.Component<ConfigProviderProps & IConfigActionsProp> implements ConfigStore {
+    constructor(props: ConfigProviderProps & IConfigActionsProp) {
         super(props);
     }
 
@@ -46,7 +47,7 @@ class ConfigProvider extends React.Component<ConfigProviderProps> implements Con
     }
 
     update = (newState: UpdateConfigStateArg) => {
-        // dispatch optimistic write
+        this.props.configActions.saveConfig(newState as Partial<ConfigState>);
     }
 
     all = () => {
@@ -88,10 +89,9 @@ export function withConfig<T extends Object = {}>(
 }
 
 function mapStateToProps(state: IState): ConfigProviderProps {
-    console.log("got here");
     return {
         config: selectConfig(state)
     } as ConfigProviderProps;
 }
 
-export default connect(mapStateToProps)(ConfigProvider);
+export default connect(mapStateToProps, mapConfigActionsToProps)(ConfigProvider);

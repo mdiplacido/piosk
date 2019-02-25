@@ -11,7 +11,7 @@ export interface ConfigState {
     defaultPageSettleDelayMilliseconds: number;
 }
 
-export type UpdateConfigStateArg = Pick<ConfigState, keyof ConfigState> | ConfigState | null;
+export type UpdateConfigStateArg = Partial<ConfigState> | ConfigState | null;
 
 export interface ConfigStore {
     settings: ConfigState;

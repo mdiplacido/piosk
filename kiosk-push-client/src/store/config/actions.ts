@@ -5,6 +5,10 @@ export enum ConfigActionTypes {
     Load = "CONFIG_LOAD",
     LoadSuccess = "CONFIG_LOAD_SUCCESS",
     LoadFailure = "CONFIG_LOAD_FAILURE",
+
+    Save = "CONFIG_SAVE",
+    SaveSuccess = "CONFIG_SAVE_SUCCESS",
+    SaveFailure = "CONFIG_SAVE_FAILURE",
 }
 
 export interface ILoadConfigAction extends AnyAction {
@@ -18,6 +22,21 @@ export interface ILoadConfigSuccessAction extends AnyAction {
 
 export interface ILoadConfigFailureAction extends AnyAction {
     type: ConfigActionTypes.LoadFailure;
+    error: any;
+}
+
+export interface ISaveConfigAction extends AnyAction {
+    type: ConfigActionTypes.Save;
+    config: ConfigState;
+}
+
+export interface ISaveConfigSuccessAction extends AnyAction {
+    type: ConfigActionTypes.SaveSuccess;
+    config: ConfigState;
+}
+
+export interface ISaveConfigFailureAction extends AnyAction {
+    type: ConfigActionTypes.SaveFailure;
     error: any;
 }
 
@@ -41,12 +60,35 @@ export function loadConfigFailure(error: any): ILoadConfigFailureAction {
     };
 }
 
+export function saveConfig(config: ConfigState): ISaveConfigAction {
+    return {
+        type: ConfigActionTypes.Save,
+        config
+    };
+}
+
+export function saveConfigSuccess(config: ConfigState): ISaveConfigSuccessAction {
+    return {
+        type: ConfigActionTypes.SaveSuccess,
+        config
+    };
+}
+
+export function saveConfigFailure(error: any): ISaveConfigFailureAction {
+    return {
+        type: ConfigActionTypes.SaveFailure,
+        error
+    };
+}
+
 export interface IConfigActionCreator extends ActionCreatorsMapObject<ConfigActions> {
     loadConfig: () => ILoadConfigAction;
+    saveConfig: (state: Partial<ConfigState>) => ISaveConfigAction;
 }
 
 export const ConfigActionCreatorFactory: () => IConfigActionCreator = () => ({
-    loadConfig: loadConfig
+    loadConfig,
+    saveConfig
 });
 
 export interface IConfigActionsProp {
@@ -59,4 +101,6 @@ export function mapConfigActionsToProps(dispatch: Dispatch): IConfigActionsProp 
     };
 }
 
-export type ConfigActions = ILoadConfigAction | ILoadConfigSuccessAction | ILoadConfigFailureAction;
+export type ConfigActions =
+    ILoadConfigAction | ILoadConfigSuccessAction | ILoadConfigFailureAction |
+    ISaveConfigAction | ISaveConfigSuccessAction | ISaveConfigFailureAction;

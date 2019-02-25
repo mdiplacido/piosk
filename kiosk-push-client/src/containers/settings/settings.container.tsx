@@ -1,4 +1,4 @@
-import { Table, TableBody, TableCell, TableHead, TableRow, withStyles } from "@material-ui/core";
+import { Table, TableBody, TableCell, TableHead, TableRow, withStyles, Button } from "@material-ui/core";
 import * as React from "react";
 
 import PageContainer from "../../components/common/page-container";
@@ -9,7 +9,14 @@ export interface SettingsProps extends ConfigConsumerProps {
 }
 
 const Settings = (props: SettingsProps & ContainerStyleProps) => {
-    const { classes } = props;
+    const { classes, config } = props;
+
+    const onSave = () => {
+        config.update({
+            localPublishPath: "bob",
+            maxLogFileSizeBytes: 1024
+        });
+    };
 
     return (
         <PageContainer title="Settings">
@@ -31,6 +38,13 @@ const Settings = (props: SettingsProps & ContainerStyleProps) => {
                     ))}
                 </TableBody>
             </Table>
+            <br />
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={onSave}>
+                Save Config
+            </Button>
         </PageContainer>
     );
 };
