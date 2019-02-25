@@ -1,8 +1,10 @@
 import { ActionCreatorsMapObject, AnyAction, bindActionCreators, Dispatch } from "redux";
+import { ConfigState } from "../../providers/config/config";
 
 export enum ConfigActionTypes {
     Load = "CONFIG_LOAD",
     LoadSuccess = "CONFIG_LOAD_SUCCESS",
+    LoadFailure = "CONFIG_LOAD_FAILURE",
 }
 
 export interface ILoadConfigAction extends AnyAction {
@@ -11,6 +13,12 @@ export interface ILoadConfigAction extends AnyAction {
 
 export interface ILoadConfigSuccessAction extends AnyAction {
     type: ConfigActionTypes.LoadSuccess;
+    config: ConfigState;
+}
+
+export interface ILoadConfigFailureAction extends AnyAction {
+    type: ConfigActionTypes.LoadFailure;
+    error: any;
 }
 
 export function loadConfig(): ILoadConfigAction {
@@ -19,9 +27,17 @@ export function loadConfig(): ILoadConfigAction {
     };
 }
 
-export function loadConfigSuccess(): ILoadConfigSuccessAction {
+export function loadConfigSuccess(config: ConfigState): ILoadConfigSuccessAction {
     return {
-        type: ConfigActionTypes.LoadSuccess
+        type: ConfigActionTypes.LoadSuccess,
+        config
+    };
+}
+
+export function loadConfigFailure(error: any): ILoadConfigFailureAction {
+    return {
+        type: ConfigActionTypes.LoadFailure,
+        error
     };
 }
 
@@ -43,4 +59,4 @@ export function mapConfigActionsToProps(dispatch: Dispatch): IConfigActionsProp 
     };
 }
 
-export type ConfigActions = ILoadConfigAction | ILoadConfigSuccessAction;
+export type ConfigActions = ILoadConfigAction | ILoadConfigSuccessAction | ILoadConfigFailureAction;

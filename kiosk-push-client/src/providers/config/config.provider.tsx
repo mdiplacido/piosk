@@ -1,11 +1,19 @@
 // following "Provider pattern" here: https://github.com/sw-yx/react-typescript-cheatsheet
 import * as React from "react";
+import { connect } from "react-redux";
 
-import { ConfigState, ConfigStore, UpdateConfigStateArg } from "./config";
+import IState from "../../store/state";
 import { getDisplayName } from "../util";
+import { ConfigState, ConfigStore, UpdateConfigStateArg } from "./config";
+
+import selectConfig from "../../store/config/selectors";
+
+export interface ConfigConsumerProps {
+    config: ConfigStore;
+}
 
 export interface ConfigProviderProps {
-    config: ConfigStore;
+    config: ConfigState;
 }
 
 const defaultConfig: ConfigState = {
@@ -23,10 +31,16 @@ const defaultConfig: ConfigState = {
 
 export const ConfigContext = React.createContext<ConfigStore>({} as ConfigStore);
 
-class ConfigProvider extends React.Component<{}, ConfigState> implements ConfigStore {
-    constructor(props: {}) {
+export interface IConfigStateProps {
+    config: ConfigState;
+}
+
+class ConfigProvider extends React.Component<ConfigProviderProps, ConfigState> implements ConfigStore {
+    constructor(props: ConfigProviderProps) {
         super(props);
-        this.state = defaultConfig;
+        this.state = props.config &&
+            Object.keys(props.config).length &&
+            props.config || defaultConfig;
     }
 
     update = (newState: UpdateConfigStateArg) => {
@@ -55,9 +69,9 @@ class ConfigProvider extends React.Component<{}, ConfigState> implements ConfigS
 }
 
 export function withConfig<T extends Object = {}>(
-    Component: React.ComponentClass<ConfigProviderProps & T> | React.FC<ConfigProviderProps & T>
-): React.RefForwardingComponent<typeof Component, ConfigProviderProps & T> {
-    const c: React.RefForwardingComponent<typeof Component, ConfigProviderProps & T> = (props: T) => {
+    Component: React.ComponentClass<ConfigConsumerProps & T> | React.FC<ConfigConsumerProps & T>
+): React.RefForwardingComponent<typeof Component, ConfigConsumerProps & T> {
+    const c: React.RefForwardingComponent<typeof Component, ConfigConsumerProps & T> = (props: T) => {
         return (
             <ConfigContext.Consumer>
                 {
@@ -71,4 +85,10 @@ export function withConfig<T extends Object = {}>(
     return c;
 }
 
-export default ConfigProvider;
+function mapStateToProps(state: IState): ConfigProviderProps {
+    return {
+        config: selectConfig(state)
+    } as ConfigProviderProps;
+}
+
+export default connect(mapStateToProps)(ConfigProvider);

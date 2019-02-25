@@ -3,9 +3,9 @@ import * as React from "react";
 
 import PageContainer from "../../components/common/page-container";
 import containerStyles, { ContainerStyleProps } from "../../components/common/styles";
-import { ConfigProviderProps, withConfig } from "../../providers/config/config.provider";
+import { ConfigConsumerProps, withConfig } from "../../providers/config/config.provider";
 
-export interface SettingsProps extends ConfigProviderProps {
+export interface SettingsProps extends ConfigConsumerProps {
 }
 
 const Settings = (props: SettingsProps & ContainerStyleProps) => {
