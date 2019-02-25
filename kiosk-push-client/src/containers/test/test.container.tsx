@@ -70,7 +70,7 @@ class TestContainer extends React.Component<TestContainerProps, State> {
     super(props);
     this.state = {
       password: props.publisherStore.publisher.currentPassword,
-      username: props.config.state.sftpUsername,
+      username: props.config.settings.sftpUsername,
       saving: false,
       success: false,
       failed: false

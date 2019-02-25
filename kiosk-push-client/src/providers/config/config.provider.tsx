@@ -2,11 +2,10 @@
 import * as React from "react";
 import { connect } from "react-redux";
 
+import selectConfig from "../../store/config/selectors";
 import IState from "../../store/state";
 import { getDisplayName } from "../util";
 import { ConfigState, ConfigStore, UpdateConfigStateArg } from "./config";
-
-import selectConfig from "../../store/config/selectors";
 
 export interface ConfigConsumerProps {
     config: ConfigStore;
@@ -35,27 +34,30 @@ export interface IConfigStateProps {
     config: ConfigState;
 }
 
-class ConfigProvider extends React.Component<ConfigProviderProps, ConfigState> implements ConfigStore {
+class ConfigProvider extends React.Component<ConfigProviderProps> implements ConfigStore {
     constructor(props: ConfigProviderProps) {
         super(props);
-        this.state = props.config &&
-            Object.keys(props.config).length &&
-            props.config || defaultConfig;
+    }
+
+    get settings(): ConfigState {
+        return this.props.config &&
+            Object.keys(this.props.config).length &&
+            this.props.config || defaultConfig;
     }
 
     update = (newState: UpdateConfigStateArg) => {
-        this.setState(newState);
+        // dispatch optimistic write
     }
 
     all = () => {
         return Object
-            .keys(this.state)
-            .map(k => ({ key: k, value: this.state[k] }));
+            .keys(this.settings)
+            .map(k => ({ key: k, value: this.settings[k] }));
     }
 
     render(): JSX.Element {
         const store: ConfigStore = {
-            state: this.state,
+            settings: this.settings,
             update: this.update,
             all: this.all
         };
@@ -86,6 +88,7 @@ export function withConfig<T extends Object = {}>(
 }
 
 function mapStateToProps(state: IState): ConfigProviderProps {
+    console.log("got here");
     return {
         config: selectConfig(state)
     } as ConfigProviderProps;

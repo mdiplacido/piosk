@@ -4,10 +4,8 @@ import { ConfigActions, ConfigActionTypes } from "./actions";
 
 export default function configReducer(state = initialState.config, action: ConfigActions): ConfigState {
     switch (action.type) {
-        case ConfigActionTypes.LoadSuccess: {
+        case ConfigActionTypes.LoadSuccess:
             return action.config;
-        }
-
         default:
             return state;
     }
