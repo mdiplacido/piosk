@@ -12,7 +12,9 @@
 	],
 	"settings": {
 		"cSpell.words": [
+			"Classname",
 			"Snackbar",
+			"Unmount",
 			"appenders",
 			"piosk",
 			"pngx",

@@ -25,6 +25,9 @@
     "suppressImplicitAnyIndexErrors": true,
     "target": "es2015"
   },
+  "exclude": [
+    "out"
+  ],
   "formatCodeOptions": {
     "indentSize": 2,
     "tabSize": 2

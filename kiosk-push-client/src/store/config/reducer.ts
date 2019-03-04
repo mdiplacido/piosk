@@ -6,6 +6,8 @@ export default function configReducer(state = initialState.config, action: Confi
     switch (action.type) {
         case ConfigActionTypes.LoadSuccess:
             return action.config;
+        case ConfigActionTypes.SaveSuccess:
+            return action.config;
         default:
             return state;
     }

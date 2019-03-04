@@ -1,5 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableRow, withStyles } from "@material-ui/core";
 import * as React from "react";
+import { useState } from "react";
 import { connect } from "react-redux";
 
 import PageContainer from "../../components/common/page-container";
@@ -20,11 +21,24 @@ export interface SettingsProps extends ConfigConsumerProps, ConfigProviderSaving
 const Settings = (props: SettingsProps & ContainerStyleProps) => {
     const { classes, config, saving, saved } = props;
 
+    const [currentConfigState, setCurrentConfigState] = useState(config);
+
     const onSave = () => {
-        config.update({
-            localPublishPath: "bob",
-            maxLogFileSizeBytes: 1024
-        });
+        config.update(currentConfigState.settings);
+    };
+
+    const updateConfigState = (key: string, value: string) => {
+        const lowerValue = value.toLowerCase();
+        const coercedValue = lowerValue === "true" ?
+            true :
+            lowerValue === "false" ?
+                false :
+                isNaN(+lowerValue) ?
+                    value :
+                    +lowerValue;
+
+        const settings = { ...currentConfigState.settings, [key]: coercedValue };
+        setCurrentConfigState({ ...currentConfigState, settings });
     };
 
     return (
@@ -33,16 +47,23 @@ const Settings = (props: SettingsProps & ContainerStyleProps) => {
                 <TableHead>
                     <TableRow>
                         <TableCell>Key</TableCell>
-                        <TableCell align="right">Value</TableCell>
+                        <TableCell align="left">Value</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {props.config.all().map(c => (
+                    {currentConfigState.all().map(c => (
                         <TableRow key={c.key}>
                             <TableCell component="th" scope="row">
                                 {c.key}
                             </TableCell>
-                            <TableCell align="right">{c.value.toString()}</TableCell>
+                            <TableCell align="left">
+                                <input
+                                    size={100}
+                                    type="text"
+                                    name={c.key}
+                                    defaultValue={c.value}
+                                    onChange={e => updateConfigState(c.key, e.target.value)} />
+                            </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
