@@ -1,15 +1,24 @@
-import { Table, TableBody, TableCell, TableHead, TableRow, withStyles, Button } from "@material-ui/core";
+import { Table, TableBody, TableCell, TableHead, TableRow, withStyles } from "@material-ui/core";
 import * as React from "react";
+import { connect } from "react-redux";
 
 import PageContainer from "../../components/common/page-container";
+import SpinnerButton from "../../components/common/spinner-button";
 import containerStyles, { ContainerStyleProps } from "../../components/common/styles";
 import { ConfigConsumerProps, withConfig } from "../../providers/config/config.provider";
+import { configSavedSelector, configSavingSelector } from "../../store/loading.selectors";
+import IState from "../../store/state";
 
-export interface SettingsProps extends ConfigConsumerProps {
+export interface ConfigProviderSavingProps {
+    saving: boolean;
+    saved: boolean;
+}
+
+export interface SettingsProps extends ConfigConsumerProps, ConfigProviderSavingProps {
 }
 
 const Settings = (props: SettingsProps & ContainerStyleProps) => {
-    const { classes, config } = props;
+    const { classes, config, saving, saved } = props;
 
     const onSave = () => {
         config.update({
@@ -39,14 +48,18 @@ const Settings = (props: SettingsProps & ContainerStyleProps) => {
                 </TableBody>
             </Table>
             <br />
-            <Button
-                variant="contained"
-                color="primary"
-                onClick={onSave}>
+            <SpinnerButton onClickHandler={onSave} disabled={saving} spinning={saving} success={saved}>
                 Save Config
-            </Button>
+            </SpinnerButton>
         </PageContainer>
     );
 };
 
-export default withConfig(withStyles(containerStyles)(Settings));
+function withStateProps(state: IState): ConfigProviderSavingProps {
+    return {
+        saving: configSavingSelector(state),
+        saved: configSavedSelector(state)
+    };
+}
+
+export default connect(withStateProps)(withConfig(withStyles(containerStyles)(Settings)));

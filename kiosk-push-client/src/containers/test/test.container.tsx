@@ -1,19 +1,10 @@
-import {
-  Button,
-  CircularProgress,
-  createStyles,
-  Snackbar,
-  TextField,
-  Theme,
-  WithStyles,
-  withStyles,
-} from "@material-ui/core";
+import { createStyles, Snackbar, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { green } from "@material-ui/core/colors";
-import classNames from "classnames";
 import * as React from "react";
 import { ChangeEvent } from "react";
 
 import PageContainer from "../../components/common/page-container";
+import SpinnerButton from "../../components/common/spinner-button";
 import containerStyles from "../../components/common/styles";
 import {
   IPublisherService,
@@ -89,11 +80,6 @@ class TestContainer extends React.Component<TestContainerProps, State> {
     const { classes, publisherStore: publisherStore } = this.props;
     const { success, failed, saving } = this.state;
 
-    const buttonClassname = classNames({
-      [classes.buttonSuccess]: success,
-      [classes.button]: true
-    });
-
     const onUpload = () => this.upload(publisherStore.publisher);
 
     const onPasswordChangeWithPub =
@@ -121,19 +107,13 @@ class TestContainer extends React.Component<TestContainerProps, State> {
             margin="normal"
           />
           <br />
-          <div className={classes.wrapperRoot}>
-            <div className={classes.wrapper}>
-              <Button
-                variant="contained"
-                color="primary"
-                disabled={!this.canUpload() || saving}
-                className={buttonClassname}
-                onClick={onUpload}>
-                Test Upload Image
-              </Button>
-              {saving && <CircularProgress size={24} className={classes.buttonProgress} />}
-            </div>
-          </div>
+          <SpinnerButton
+            onClickHandler={onUpload}
+            spinning={saving}
+            success={success}
+            disabled={!this.canUpload() || saving}>
+            Test Upload Image
+          </SpinnerButton>
         </PageContainer>
         <Snackbar
           anchorOrigin={{

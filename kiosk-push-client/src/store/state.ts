@@ -10,6 +10,8 @@ export enum ConfigStatus {
 export interface IStoreEntityStatus<T extends string> {
     loading: boolean;
     loaded: boolean;
+    saving: boolean;
+    saved: boolean;
     failed: boolean;
     status: T;
     error?: any;
