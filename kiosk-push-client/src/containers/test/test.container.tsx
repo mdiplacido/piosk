@@ -51,8 +51,11 @@ const styles = (theme: Theme) => ({
   }),
 });
 
-export interface TestContainerProps extends WithStyles<typeof styles>, PublisherProviderProps, ConfigConsumerProps {
+export interface TestContainerImageProp {
   image?: Electron.NativeImage;
+}
+
+export interface TestContainerProps extends WithStyles<typeof styles>, PublisherProviderProps, ConfigConsumerProps, TestContainerImageProp {
 }
 class TestContainer extends React.Component<TestContainerProps, State> {
   mounted = false;
@@ -164,4 +167,4 @@ class TestContainer extends React.Component<TestContainerProps, State> {
   }
 }
 
-export default withConfig(withPublisher(withStyles(styles)(TestContainer)));
+export default withConfig<TestContainerImageProp>(withPublisher(withStyles(styles)(TestContainer)));

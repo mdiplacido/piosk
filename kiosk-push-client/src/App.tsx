@@ -62,7 +62,7 @@ export class App extends React.Component<AppProps, State> implements Controller 
   }
 
   componentDidMount(): void {
-    this.props.loggerActions.next("App mounted, dispatching load config", LoggerSeverity.Verbose);
+    this.props.loggerActions.next("App mounted, dispatching load config...", LoggerSeverity.Verbose);
     this.props.configActions.loadConfig();
   }
 

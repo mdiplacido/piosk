@@ -3,7 +3,10 @@ import { ConfigState } from "../providers/config/config";
 
 const initialState: IState = {
     config: {} as ConfigState,
-    logs: [],
+    logs: {
+        nextSequenceId: 1,
+        entries: []
+    },
     loadStatus: {
         config: {
             loading: false,

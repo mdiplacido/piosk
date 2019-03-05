@@ -1,5 +1,7 @@
 import { ActionCreatorsMapObject, AnyAction, bindActionCreators, Dispatch } from "redux";
 
+import { ILogEntry } from "./state";
+
 export enum LoggerActionTypes {
     Next = "LOGGER_NEXT",
 }
@@ -14,11 +16,7 @@ export enum LoggerSeverity {
 
 export interface INextLogAction extends AnyAction {
     type: LoggerActionTypes.Next;
-    payload: {
-        message: string;
-        severity: LoggerSeverity;
-        stamp: Date;
-    };
+    payload: ILogEntry;
 }
 
 export function nextLogMessage(message: string, severity: LoggerSeverity): INextLogAction {
