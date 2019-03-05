@@ -1,9 +1,8 @@
 import { createSelector } from "reselect";
 
-import IState from "./../state";
+import rootSelector from "../selectors";
 
-const stateSelector = createSelector((state: IState) => state, s => s);
-const logSelector = createSelector(stateSelector, s => s.logs);
+const logSelector = createSelector(rootSelector, s => s.logs);
 const entries = createSelector(logSelector, l => l.entries);
 
 export default createSelector(entries, e => e);
