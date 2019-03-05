@@ -1,8 +1,8 @@
 import { createSelector } from "reselect";
 
-import IState from "./../state";
+import rootSelector from "../selectors";
 
-const configSelector = (state: IState) => state.config;
+const configSelector = createSelector(rootSelector, s => s.config);
 
 // tslint:disable-next-line:max-line-length
 export default createSelector(configSelector, c => c);
