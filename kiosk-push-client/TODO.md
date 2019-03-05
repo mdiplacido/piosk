@@ -8,3 +8,4 @@
 - for save settings feature:
     - show error toast loading and saving config.
     - try implementing the spinner button debounce using hooks
+    - experiment with how the redux-observable effects can get access to things like config...
