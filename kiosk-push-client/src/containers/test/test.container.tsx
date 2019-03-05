@@ -1,19 +1,10 @@
-import {
-  Button,
-  CircularProgress,
-  createStyles,
-  Snackbar,
-  TextField,
-  Theme,
-  WithStyles,
-  withStyles,
-} from "@material-ui/core";
+import { createStyles, Snackbar, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { green } from "@material-ui/core/colors";
-import classNames from "classnames";
 import * as React from "react";
 import { ChangeEvent } from "react";
 
 import PageContainer from "../../components/common/page-container";
+import SpinnerButton from "../../components/common/spinner-button";
 import containerStyles from "../../components/common/styles";
 import {
   IPublisherService,
@@ -21,7 +12,7 @@ import {
   PublisherProviderProps,
   withPublisher,
 } from "../../providers/capture-publisher/publisher.provider";
-import { ConfigProviderProps, withConfig } from "../../providers/config/config.provider";
+import { ConfigConsumerProps, withConfig } from "../../providers/config/config.provider";
 
 export interface State {
   password: string;
@@ -60,8 +51,11 @@ const styles = (theme: Theme) => ({
   }),
 });
 
-export interface TestContainerProps extends WithStyles<typeof styles>, PublisherProviderProps, ConfigProviderProps {
+export interface TestContainerImageProp {
   image?: Electron.NativeImage;
+}
+
+export interface TestContainerProps extends WithStyles<typeof styles>, PublisherProviderProps, ConfigConsumerProps, TestContainerImageProp {
 }
 class TestContainer extends React.Component<TestContainerProps, State> {
   mounted = false;
@@ -70,7 +64,7 @@ class TestContainer extends React.Component<TestContainerProps, State> {
     super(props);
     this.state = {
       password: props.publisherStore.publisher.currentPassword,
-      username: props.config.state.sftpUsername,
+      username: props.config.settings.sftpUsername,
       saving: false,
       success: false,
       failed: false
@@ -88,11 +82,6 @@ class TestContainer extends React.Component<TestContainerProps, State> {
   render() {
     const { classes, publisherStore: publisherStore } = this.props;
     const { success, failed, saving } = this.state;
-
-    const buttonClassname = classNames({
-      [classes.buttonSuccess]: success,
-      [classes.button]: true
-    });
 
     const onUpload = () => this.upload(publisherStore.publisher);
 
@@ -121,19 +110,13 @@ class TestContainer extends React.Component<TestContainerProps, State> {
             margin="normal"
           />
           <br />
-          <div className={classes.wrapperRoot}>
-            <div className={classes.wrapper}>
-              <Button
-                variant="contained"
-                color="primary"
-                disabled={!this.canUpload() || saving}
-                className={buttonClassname}
-                onClick={onUpload}>
-                Test Upload Image
-              </Button>
-              {saving && <CircularProgress size={24} className={classes.buttonProgress} />}
-            </div>
-          </div>
+          <SpinnerButton
+            onClickHandler={onUpload}
+            spinning={saving}
+            success={success}
+            disabled={!this.canUpload() || saving}>
+            Test Upload Image
+          </SpinnerButton>
         </PageContainer>
         <Snackbar
           anchorOrigin={{
@@ -184,4 +167,4 @@ class TestContainer extends React.Component<TestContainerProps, State> {
   }
 }
 
-export default withConfig(withPublisher(withStyles(styles)(TestContainer)));
+export default withConfig<TestContainerImageProp>(withPublisher(withStyles(styles)(TestContainer)));

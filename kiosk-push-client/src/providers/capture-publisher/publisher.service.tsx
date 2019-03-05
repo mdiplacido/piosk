@@ -19,9 +19,9 @@ export class PublisherService implements IPublisherService {
         return new Promise<PublisherCompletionEvent>((resolve, reject) => {
             client
                 .connect({
-                    host: this.config.state.sftpAddress,
+                    host: this.config.settings.sftpAddress,
                     port: "22",
-                    username: this.config.state.sftpUsername,
+                    username: this.config.settings.sftpUsername,
                     password: this.password
                 })
                 .then(() => {

@@ -10,7 +10,9 @@ import PublisherProvider from "./providers/capture-publisher/publisher.provider"
 import ConfigProvider from "./providers/config/config.provider";
 import { IConfigActionsProp, mapConfigActionsToProps } from "./store/config/actions";
 import { isConfigLoadingSelector } from "./store/loading.selectors";
+import { mapLoggerActionsToProps, ILoggerActionsProp, LoggerSeverity } from "./store/logger/actions";
 import IState from "./store/state";
+import { combineActionPropMappers } from "./store/utility";
 
 // tslint:disable:no-var-requires
 // tslint:disable:no-require-imports
@@ -45,16 +47,22 @@ export interface IAppStateProps {
   isConfigLoading: boolean;
 }
 
-export type AppProps = IAppStateProps & IConfigActionsProp;
+type AppActionsProps = IConfigActionsProp & ILoggerActionsProp;
+
+export type AppProps = IAppStateProps & AppActionsProps;
 
 export class App extends React.Component<AppProps, State> implements Controller {
   private renderWindow: BrowserWindow;
 
-  state: Readonly<State> = {
-    url: "http://www.clocktab.com/"
-  };
+  constructor(props: AppProps) {
+    super(props);
+    this.state = {
+      url: "http://www.clocktab.com/"
+    };
+  }
 
   componentDidMount(): void {
+    this.props.loggerActions.next("App mounted, dispatching load config...", LoggerSeverity.Verbose);
     this.props.configActions.loadConfig();
   }
 
@@ -131,5 +139,7 @@ function mapStateToProps(state: IState): IAppStateProps {
   } as IAppStateProps;
 }
 
+const propMapper = combineActionPropMappers<AppActionsProps>(mapConfigActionsToProps, mapLoggerActionsToProps);
+
 // tslint:disable-next-line:max-line-length
-export default connect<IAppStateProps, IConfigActionsProp, AppProps, IState>(mapStateToProps, mapConfigActionsToProps)(App);
+export default connect<IAppStateProps, AppActionsProps, AppProps, IState>(mapStateToProps, propMapper)(App);
