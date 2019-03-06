@@ -1,7 +1,8 @@
-import { createStyles, Snackbar, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { createStyles, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { green } from "@material-ui/core/colors";
 import * as React from "react";
 import { ChangeEvent } from "react";
+import { connect } from "react-redux";
 
 import PageContainer from "../../components/common/page-container";
 import SpinnerButton from "../../components/common/spinner-button";
@@ -13,13 +14,17 @@ import {
   withPublisher,
 } from "../../providers/capture-publisher/publisher.provider";
 import { ConfigConsumerProps, withConfig } from "../../providers/config/config.provider";
+import { LoggerSeverity } from "../../store/logger/actions";
+import {
+  INotificationsActionsProp,
+  mapNotificationActionsToProps,
+} from "../../store/notifications/actions";
 
 export interface State {
   password: string;
   username: string;
   saving: boolean;
   success: boolean;
-  failed: boolean;
 }
 
 const styles = (theme: Theme) => ({
@@ -57,17 +62,16 @@ export interface TestContainerImageProp {
 
 export interface TestContainerProps extends WithStyles<typeof styles>, PublisherProviderProps, ConfigConsumerProps, TestContainerImageProp {
 }
-class TestContainer extends React.Component<TestContainerProps, State> {
+class TestContainer extends React.Component<TestContainerProps & INotificationsActionsProp, State> {
   mounted = false;
 
-  constructor(props: TestContainerProps) {
+  constructor(props: TestContainerProps & INotificationsActionsProp) {
     super(props);
     this.state = {
       password: props.publisherStore.publisher.currentPassword,
       username: props.config.settings.sftpUsername,
       saving: false,
-      success: false,
-      failed: false
+      success: false
     };
   }
 
@@ -81,7 +85,7 @@ class TestContainer extends React.Component<TestContainerProps, State> {
 
   render() {
     const { classes, publisherStore: publisherStore } = this.props;
-    const { success, failed, saving } = this.state;
+    const { success, saving } = this.state;
 
     const onUpload = () => this.upload(publisherStore.publisher);
 
@@ -118,15 +122,6 @@ class TestContainer extends React.Component<TestContainerProps, State> {
             Test Upload Image
           </SpinnerButton>
         </PageContainer>
-        <Snackbar
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "left",
-          }}
-          open={success || failed}
-          autoHideDuration={6000}
-          message={failed ? "Failed to upload image" : "Image uploaded"}
-        />
       </React.Fragment>
     );
   }
@@ -140,7 +135,7 @@ class TestContainer extends React.Component<TestContainerProps, State> {
   }
 
   private upload = (publisher: IPublisherService) => {
-    this.setState({ saving: true, success: false, failed: false }, () => {
+    this.setState({ saving: true, success: false }, () => {
       const image = this.props.image as Electron.NativeImage;
 
       // here is an example of a memory leak. if we fire this and then the user moves to a different
@@ -154,6 +149,11 @@ class TestContainer extends React.Component<TestContainerProps, State> {
           console.log(`${JSON.stringify(result)} + ${image.toPNG().length}`);
         })
         .catch(err => {
+          this.props.notificationActions.next(
+            JSON.stringify(err),
+            LoggerSeverity.Error,
+          );
+
           this.setResult(false);
           console.error(err);
         });
@@ -162,9 +162,9 @@ class TestContainer extends React.Component<TestContainerProps, State> {
 
   setResult = (success: boolean) => {
     if (this.mounted) {
-      this.setState({ success, failed: !success, saving: false });
+      this.setState({ success, saving: false });
     }
   }
 }
 
-export default withConfig<TestContainerImageProp>(withPublisher(withStyles(styles)(TestContainer)));
+export default connect(null, mapNotificationActionsToProps)(withConfig<TestContainerImageProp>(withPublisher(withStyles(styles)(TestContainer))));

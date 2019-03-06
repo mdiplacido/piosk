@@ -6,11 +6,16 @@ import { HashRouter } from "react-router-dom";
 
 import AppRoutes from "./app.routes";
 import NavBar from "./components/common/nav-bar";
+import Notification from "./components/common/notification";
 import PublisherProvider from "./providers/capture-publisher/publisher.provider";
 import ConfigProvider from "./providers/config/config.provider";
 import { IConfigActionsProp, mapConfigActionsToProps } from "./store/config/actions";
 import { isConfigLoadingSelector } from "./store/loading.selectors";
-import { mapLoggerActionsToProps, ILoggerActionsProp, LoggerSeverity } from "./store/logger/actions";
+import {
+  ILoggerActionsProp,
+  LoggerSeverity,
+  mapLoggerActionsToProps,
+} from "./store/logger/actions";
 import IState from "./store/state";
 import { combineActionPropMappers } from "./store/utility";
 
@@ -90,6 +95,7 @@ export class App extends React.Component<AppProps, State> implements Controller 
                     image={this.state.image}
                     url={this.state.url} />
                 }
+                <Notification />
               </LoadingOverlay>
             </HashRouter>
           </MuiThemeProvider>
