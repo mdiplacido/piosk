@@ -5,6 +5,8 @@ import { catchError, delay, map, mapTo, mergeMap, withLatestFrom } from "rxjs/op
 
 import { readJson, saveJson } from "../../common/io/file-system";
 import { ConfigState } from "../../providers/config/config";
+import { LoggerSeverity, nextLogMessage } from "../logger/actions";
+import { nextNotification } from "../notifications/actions";
 import IState from "../state";
 import {
     ConfigActionTypes,
@@ -34,11 +36,18 @@ export const saveConfigEpic =
             mergeMap(([action, state]) =>
                 saveJson("./config.json", { ...state.config, ...action.config })
                     .pipe(
-                        mapTo({ ...state.config, ...action.config })
-                    ),
+                        mapTo({ ...state.config, ...action.config }),
+                    )
             ),
-            map((config: ConfigState) => saveConfigSuccess(config)),
-            catchError(err => observableOf(saveConfigFailure(err)))
+            mergeMap((config: ConfigState) => [
+                saveConfigSuccess(config),
+                nextNotification("Configuration save complete", LoggerSeverity.Info)
+            ]),
+            catchError(err => observableOf(
+                saveConfigFailure(err),
+                nextLogMessage(JSON.stringify(err), LoggerSeverity.Error),
+                nextNotification("Failed to save config, see error log", LoggerSeverity.Error)
+            ))
         );
 
 export default combineEpics(loadConfigEpic, saveConfigEpic);
