@@ -1,23 +1,50 @@
-import { Button, Table, TableBody, TableCell, TableHead, TableRow, withStyles } from "@material-ui/core";
+import {
+    Button,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    withStyles,
+} from "@material-ui/core";
 import * as React from "react";
 import { connect } from "react-redux";
 
 import PageContainer from "../../components/common/page-container";
 import containerStyles, { ContainerStyleProps } from "../../components/common/styles";
 import { withConfig } from "../../providers/config/config.provider";
-import { ILoggerActionsProp, mapLoggerActionsToProps, LoggerSeverity } from "../../store/logger/actions";
+import {
+    ILoggerActionsProp,
+    LoggerSeverity,
+    mapLoggerActionsToProps,
+} from "../../store/logger/actions";
 import logsSelector from "../../store/logger/selectors";
 import { ILogEntry } from "../../store/logger/state";
+import {
+    INotificationsActionsProp,
+    mapNotificationActionsToProps,
+} from "../../store/notifications/actions";
 import IState from "../../store/state";
+import { combineActionPropMappers } from "../../store/utility";
+import { useState } from "react";
 
 type LogStateProps = { logs: ILogEntry[] };
 
 type LogProps = ContainerStyleProps & LogStateProps;
 
-const Logs = (props: LogProps & ILoggerActionsProp) => {
+type ConnectedLogProps = LogProps & ILoggerActionsProp & INotificationsActionsProp;
+
+const Logs = (props: ConnectedLogProps) => {
     const { classes } = props;
 
+    const severityValues = Object.values(LoggerSeverity);
+    const [counter, setCounter] = useState(0);
+
     const dispatchTestLogMessage = () => props.loggerActions.next("Test message", LoggerSeverity.None);
+    const dispatchTestNotification = () => {
+        setCounter(counter + 1);
+        props.notificationActions.next("Test message", severityValues[counter % severityValues.length]);
+    };
 
     return (
         <PageContainer title="Logs">
@@ -54,7 +81,14 @@ const Logs = (props: LogProps & ILoggerActionsProp) => {
                 variant="contained"
                 color="primary"
                 onClick={dispatchTestLogMessage}>
-                Test
+                Test Logger
+            </Button>
+            &nbsp;
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={dispatchTestNotification}>
+                Test Notifications
             </Button>
         </PageContainer>
     );
@@ -68,4 +102,6 @@ function withStateProps(state: IState) {
 
 const logsWithStyles = withStyles(containerStyles)(Logs);
 
-export default connect(withStateProps, mapLoggerActionsToProps)(withConfig<LogProps | any>(logsWithStyles));
+const combinedActionMapper = combineActionPropMappers<ConnectedLogProps>(mapLoggerActionsToProps, mapNotificationActionsToProps);
+
+export default connect(withStateProps, combinedActionMapper)(withConfig<LogProps | any>(logsWithStyles));

@@ -7,6 +7,10 @@ const initialState: IState = {
         nextSequenceId: 1,
         entries: []
     },
+    notifications: {
+        nextSequenceId: 1,
+        entries: []
+    },
     loadStatus: {
         config: {
             loading: false,

@@ -1,5 +1,7 @@
+
 import ConfigState from "./config/state";
 import LogState from "./logger/state";
+import NotificationState from "./notifications/state";
 
 export enum ConfigStatus {
     None = "none",
@@ -30,5 +32,5 @@ export interface LoadStatusState {
 }
 
 // tslint:disable-next-line:no-empty-interface
-export default interface IState extends ConfigState, LoadStatusState, LogState {
+export default interface IState extends ConfigState, LoadStatusState, LogState, NotificationState {
 }
