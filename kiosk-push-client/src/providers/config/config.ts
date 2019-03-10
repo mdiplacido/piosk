@@ -2,6 +2,7 @@ export interface ICaptureConfig {
     name: string;
     url: string;
     author: string;
+    description: string;
     captureIntervalSeconds: number;
     lastCapture: Date;
 }
@@ -24,6 +25,7 @@ export type UpdateConfigStateArg = Partial<ConfigState> | ConfigState | null;
 
 export interface ConfigStore {
     settings: ConfigState;
+    captureConfigs: () => ICaptureConfig[];
     update: (newState: UpdateConfigStateArg) => void;
-    all: (includeCapture: boolean) => Array<{key: string, value: any}>;
+    all: (includeCapture: boolean) => Array<{ key: string, value: any }>;
 }

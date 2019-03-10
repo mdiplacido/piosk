@@ -19,6 +19,8 @@
 			"piosk",
 			"pngx",
 			"reselect"
-		]
+		],
+		"typescriptHero.imports.disableImportsSorting": true,
+		"typescript.extension.sortImports.maxNamedImportsInSingleLine": 1
 	}
 }

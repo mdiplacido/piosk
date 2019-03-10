@@ -1,12 +1,18 @@
-// following "Provider pattern" here: https://github.com/sw-yx/react-typescript-cheatsheet
 import * as React from "react";
-import { connect } from "react-redux";
-
-import { mapConfigActionsToProps, IConfigActionsProp } from "../../store/config/actions";
-import selectConfig from "../../store/config/selectors";
 import IState from "../../store/state";
+import selectConfig from "../../store/config/selectors";
+import {
+    ConfigState,
+    ConfigStore,
+    UpdateConfigStateArg
+    } from "./config";
+import { connect } from "react-redux";
 import { getDisplayName } from "../util";
-import { ConfigState, ConfigStore, UpdateConfigStateArg } from "./config";
+import {
+    IConfigActionsProp,
+    mapConfigActionsToProps
+    } from "../../store/config/actions";
+// following "Provider pattern" here: https://github.com/sw-yx/react-typescript-cheatsheet
 
 export interface ConfigConsumerProps {
     config: ConfigStore;
@@ -58,11 +64,16 @@ class ConfigProvider extends React.Component<ConfigProviderProps & IConfigAction
             .map(k => ({ key: k, value: this.settings[k] }));
     }
 
+    captureConfigs = () => {
+        return this.settings.captureConfigs;
+    }
+
     render(): JSX.Element {
         const store: ConfigStore = {
             settings: this.settings,
             update: this.update,
-            all: this.all
+            all: this.all,
+            captureConfigs: this.captureConfigs,
         };
 
         return (

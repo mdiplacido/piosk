@@ -106,9 +106,6 @@
       "mjs"
     ],
     "globals": {
-      "ts-jest": {
-        "tsConfigFile": "/Users/marcodiplacido/Source/piosk/kiosk-browser-client/tsconfig.test.json"
-      }
     }
   },
   "babel": {

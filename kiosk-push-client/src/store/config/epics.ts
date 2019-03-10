@@ -5,6 +5,7 @@ import { catchError, delay, map, mapTo, mergeMap, withLatestFrom } from "rxjs/op
 
 import { readJson, saveJson } from "../../common/io/file-system";
 import { ConfigState } from "../../providers/config/config";
+import { IEpicDependencies } from "../epic-dependencies";
 import { LoggerSeverity, nextLogMessage } from "../logger/actions";
 import { nextNotification } from "../notifications/actions";
 import IState from "../state";
@@ -18,20 +19,20 @@ import {
 } from "./actions";
 
 export const loadConfigEpic =
-    (action$: Observable<Action>) =>
+    (action$: Observable<Action>, _state$: Observable<IState>, dependencies: IEpicDependencies) =>
         action$.pipe(
             ofType(ConfigActionTypes.Load),
-            delay(3000),
+            delay(dependencies.testDelayMilliseconds),
             mergeMap(() => readJson("./config.json") as Observable<ConfigState>),
             map(config => loadConfigSuccess(config)),
             catchError(err => observableOf(loadConfigFailure(err))),
         );
 
 export const saveConfigEpic =
-    (action$: Observable<ISaveConfigAction>, state$: Observable<IState>) =>
+    (action$: Observable<ISaveConfigAction>, state$: Observable<IState>, dependencies: IEpicDependencies) =>
         action$.pipe(
             ofType(ConfigActionTypes.Save),
-            delay(3000),
+            delay(dependencies.testDelayMilliseconds),
             withLatestFrom(state$),
             mergeMap(([action, state]) =>
                 saveJson("./config.json", { ...state.config, ...action.config })

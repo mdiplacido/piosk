@@ -1,39 +1,34 @@
-import { createMuiTheme, CssBaseline, MuiThemeProvider } from "@material-ui/core";
-import { BrowserWindow, remote } from "electron";
 import * as React from "react";
-import { connect } from "react-redux";
-import { HashRouter } from "react-router-dom";
-
 import AppRoutes from "./app.routes";
+import ConfigProvider from "./providers/config/config.provider";
+import IState from "./store/state";
 import NavBar from "./components/common/nav-bar";
 import Notification from "./components/common/notification";
 import PublisherProvider from "./providers/capture-publisher/publisher.provider";
-import ConfigProvider from "./providers/config/config.provider";
-import { IConfigActionsProp, mapConfigActionsToProps } from "./store/config/actions";
-import { isConfigLoadingSelector } from "./store/loading.selectors";
+import { combineActionPropMappers } from "./store/utility";
+import { connect } from "react-redux";
+import {
+  createMuiTheme,
+  CssBaseline,
+  MuiThemeProvider
+  } from "@material-ui/core";
+import { HashRouter } from "react-router-dom";
+import {
+  IConfigActionsProp,
+  mapConfigActionsToProps
+  } from "./store/config/actions";
 import {
   ILoggerActionsProp,
   LoggerSeverity,
-  mapLoggerActionsToProps,
-} from "./store/logger/actions";
-import IState from "./store/state";
-import { combineActionPropMappers } from "./store/utility";
+  mapLoggerActionsToProps
+  } from "./store/logger/actions";
+import { isConfigLoadingSelector } from "./store/loading.selectors";
 
 // tslint:disable:no-var-requires
 // tslint:disable:no-require-imports
 const LoadingOverlay = require("react-loading-overlay").default as typeof React.Component;
 
 interface State {
-  url: string;
-  image?: Electron.NativeImage;
-}
-
-export interface Controller {
-  screenshot: () => void;
-  openWindow: () => void;
-  loadUrl: () => void;
-  maximize: () => void;
-  urlChange: (url: string) => void;
 }
 
 const theme = createMuiTheme({
@@ -56,14 +51,10 @@ type AppActionsProps = IConfigActionsProp & ILoggerActionsProp;
 
 export type AppProps = IAppStateProps & AppActionsProps;
 
-export class App extends React.Component<AppProps, State> implements Controller {
-  private renderWindow: BrowserWindow;
-
+export class App extends React.Component<AppProps, State> {
   constructor(props: AppProps) {
     super(props);
-    this.state = {
-      url: "http://www.clocktab.com/"
-    };
+    this.state = {};
   }
 
   componentDidMount(): void {
@@ -90,10 +81,7 @@ export class App extends React.Component<AppProps, State> implements Controller 
                 <NavBar />
                 {
                   !this.props.isConfigLoading &&
-                  <AppRoutes
-                    controller={this}
-                    image={this.state.image}
-                    url={this.state.url} />
+                  <AppRoutes />
                 }
                 <Notification />
               </LoadingOverlay>
@@ -102,40 +90,6 @@ export class App extends React.Component<AppProps, State> implements Controller 
         </PublisherProvider>
       </ConfigProvider>
     );
-  }
-
-  urlChange = (url: string) => {
-    this.setState({ url });
-  }
-
-  loadUrl = () => {
-    this.renderWindow.loadURL(this.state.url);
-  }
-
-  maximize = () => {
-    this.renderWindow.setFullScreen(true);
-  }
-
-  openWindow = () => {
-    this.renderWindow = new remote.BrowserWindow({
-      webPreferences: {
-        nodeIntegration: false,
-        webSecurity: false /* probably should make this an option per capture */
-      }
-    });
-    this.renderWindow.loadURL(this.state.url);
-
-    // todo: attaching the dev tools should be optional and may not be available depending on
-    // the build.
-    this.renderWindow.webContents.openDevTools();
-  }
-
-  screenshot = () => {
-    this.renderWindow.capturePage(image => this.setState({ image }));
-    // fs.writeFile('/var/jail/data/piosk_pickup/test.png', img.toPNG(),
-    //   () => {
-    //     // callback, no-op for now
-    //   }));
   }
 }
 
