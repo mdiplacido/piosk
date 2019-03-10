@@ -51,21 +51,23 @@ const Settings = (props: SettingsProps & ContainerStyleProps) => {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {currentConfigState.all().map(c => (
-                        <TableRow key={c.key}>
-                            <TableCell component="th" scope="row">
-                                {c.key}
-                            </TableCell>
-                            <TableCell align="left">
-                                <input
-                                    size={100}
-                                    type="text"
-                                    name={c.key}
-                                    defaultValue={c.value}
-                                    onChange={e => updateConfigState(c.key, e.target.value)} />
-                            </TableCell>
-                        </TableRow>
-                    ))}
+                    {currentConfigState
+                        .all(false)  // do not include capture config
+                        .map(c => (
+                            <TableRow key={c.key}>
+                                <TableCell component="th" scope="row">
+                                    {c.key}
+                                </TableCell>
+                                <TableCell align="left">
+                                    <input
+                                        size={100}
+                                        type="text"
+                                        name={c.key}
+                                        defaultValue={c.value}
+                                        onChange={e => updateConfigState(c.key, e.target.value)} />
+                                </TableCell>
+                            </TableRow>
+                        ))}
                 </TableBody>
             </Table>
             <br />

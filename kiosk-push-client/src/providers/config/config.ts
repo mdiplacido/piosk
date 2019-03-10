@@ -25,5 +25,5 @@ export type UpdateConfigStateArg = Partial<ConfigState> | ConfigState | null;
 export interface ConfigStore {
     settings: ConfigState;
     update: (newState: UpdateConfigStateArg) => void;
-    all: () => Array<{key: string, value: any}>;
+    all: (includeCapture: boolean) => Array<{key: string, value: any}>;
 }

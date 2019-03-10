@@ -26,7 +26,8 @@ const defaultConfig: ConfigState = {
     minAvailableSpaceOnPiPercent: 50 / 100,
     defaultPageSettleDelayMilliseconds: 30,
     maxLogFileSizeBytes: 1024 * 1024 * 10,
-    maxLogLinesForDisplay: 1000
+    maxLogLinesForDisplay: 1000,
+    captureConfigs: []
 };
 
 export const ConfigContext = React.createContext<ConfigStore>({} as ConfigStore);
@@ -50,9 +51,10 @@ class ConfigProvider extends React.Component<ConfigProviderProps & IConfigAction
         this.props.configActions.saveConfig(newState as Partial<ConfigState>);
     }
 
-    all = () => {
+    all = (includeCapture = true) => {
         return Object
             .keys(this.settings)
+            .filter(k => includeCapture || k !== "captureConfigs")
             .map(k => ({ key: k, value: this.settings[k] }));
     }
 
