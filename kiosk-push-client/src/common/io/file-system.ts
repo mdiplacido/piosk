@@ -7,4 +7,4 @@ export const readJson =
 
 export const saveJson =
     (file: string, object: any, options?: fs.WriteOptions) =>
-        from(fs.writeJson(file, object, options));
+        from(fs.writeFile(file, JSON.stringify(object, null, 2), options));

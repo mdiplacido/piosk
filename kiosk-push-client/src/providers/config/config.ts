@@ -1,3 +1,11 @@
+export interface ICaptureConfig {
+    name: string;
+    url: string;
+    author: string;
+    captureIntervalSeconds: number;
+    lastCapture: Date;
+}
+
 export interface ConfigState {
     localPublishPath: string;
     sftpPublishPath: string;
@@ -9,6 +17,7 @@ export interface ConfigState {
     maxLogFileSizeBytes: number;
     maxLogLinesForDisplay: number;
     defaultPageSettleDelayMilliseconds: number;
+    captureConfigs: ICaptureConfig[];
 }
 
 export type UpdateConfigStateArg = Partial<ConfigState> | ConfigState | null;
