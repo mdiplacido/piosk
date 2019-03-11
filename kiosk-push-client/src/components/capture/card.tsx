@@ -9,8 +9,10 @@ import {
     withStyles,
 } from "@material-ui/core";
 import * as React from "react";
+import * as moment from "moment";
 
 import { ICaptureConfig } from "../../providers/config/config";
+import Clock, { getClockParamsFromConfig } from "../countdown/clock";
 
 export interface CaptureCardProps extends WithStyles<typeof styles> {
     captureConfig: ICaptureConfig;
@@ -41,8 +43,12 @@ const CaptureCard = (props: CaptureCardProps) => {
                     <Typography component="p">
                         {capture.url}
                     </Typography>
+                    <br />
                     <Typography component="p">
-                        Last capture {capture.lastCapture || "n/a"}
+                        Last capture {moment(capture.lastCapture).format("MMMM Do YYYY, h:mm:ss a") || "n/a"}
+                    </Typography>
+                    <Typography component="p">
+                        Next capture: <Clock {...getClockParamsFromConfig(capture)} />
                     </Typography>
                 </CardContent>
             </CardActionArea>
@@ -52,6 +58,9 @@ const CaptureCard = (props: CaptureCardProps) => {
                 </Button>
                 <Button size="small" color="primary">
                     Capture
+                </Button>
+                <Button size="small" color="primary">
+                    Delete
                 </Button>
             </CardActions>
         </Card>
