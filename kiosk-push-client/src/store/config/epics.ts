@@ -18,17 +18,21 @@ import {
     saveConfigSuccess,
 } from "./actions";
 
-export const loadConfigEpic =
+export const loadConfigEpic$ =
     (action$: Observable<Action>, _state$: Observable<IState>, dependencies: IEpicDependencies) =>
         action$.pipe(
             ofType(ConfigActionTypes.Load),
             delay(dependencies.testDelayMilliseconds),
             mergeMap(() => readJson("./config.json") as Observable<ConfigState>),
             map(config => loadConfigSuccess(config)),
-            catchError(err => observableOf(loadConfigFailure(err))),
+            catchError(err => observableOf(
+                loadConfigFailure(err),
+                nextLogMessage(JSON.stringify(err), LoggerSeverity.Error),
+                nextNotification("Failed to load config, see error log", LoggerSeverity.Error)
+            )),
         );
 
-export const saveConfigEpic =
+export const saveConfigEpic$ =
     (action$: Observable<ISaveConfigAction>, state$: Observable<IState>, dependencies: IEpicDependencies) =>
         action$.pipe(
             ofType(ConfigActionTypes.Save),
@@ -51,4 +55,4 @@ export const saveConfigEpic =
             ))
         );
 
-export default combineEpics(loadConfigEpic, saveConfigEpic);
+export default combineEpics(loadConfigEpic$, saveConfigEpic$);
