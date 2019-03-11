@@ -46,7 +46,7 @@ const CaptureCard = (props: CaptureCardProps) => {
                     </Typography>
                     <br />
                     <Typography component="p">
-                        Last capture {moment(capture.lastCapture).format("MMMM Do YYYY, h:mm:ss a") || "n/a"}
+                        Last capture {capture.lastCapture && moment(capture.lastCapture).format("MMMM Do YYYY, h:mm:ss a") || "n/a"}
                     </Typography>
                     <Typography component="p">
                         Next capture: <Clock {...getClockParamsFromConfig(now, capture)} />
