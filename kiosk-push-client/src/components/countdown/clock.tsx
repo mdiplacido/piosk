@@ -33,8 +33,7 @@ const calcHours = calcTime(MillisecondsInHour);
 const calcMinutes = calcTime(MillisecondsInMinute);
 const calcSeconds = calcTime(MillisecondsInSecond);
 
-export function getClockParamsFromConfig(config: ICaptureConfig) {
-    const now = new Date();
+export function getClockParamsFromConfig(now: Date, config: ICaptureConfig) {
     const interval = config.captureIntervalSeconds * 1000;
     // if we we don't have a last capture we just compute it now - interval, this will show the time
     // as elapsed eg. 00:00:00

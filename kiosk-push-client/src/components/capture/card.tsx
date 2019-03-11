@@ -16,6 +16,7 @@ import Clock, { getClockParamsFromConfig } from "../countdown/clock";
 
 export interface CaptureCardProps extends WithStyles<typeof styles> {
     captureConfig: ICaptureConfig;
+    now: Date;
 }
 
 const styles = {
@@ -28,7 +29,7 @@ const styles = {
 };
 
 const CaptureCard = (props: CaptureCardProps) => {
-    const { classes, captureConfig: capture } = props;
+    const { classes, captureConfig: capture, now } = props;
 
     return (
         <Card className={classes.card}>
@@ -48,7 +49,7 @@ const CaptureCard = (props: CaptureCardProps) => {
                         Last capture {moment(capture.lastCapture).format("MMMM Do YYYY, h:mm:ss a") || "n/a"}
                     </Typography>
                     <Typography component="p">
-                        Next capture: <Clock {...getClockParamsFromConfig(capture)} />
+                        Next capture: <Clock {...getClockParamsFromConfig(now, capture)} />
                     </Typography>
                 </CardContent>
             </CardActionArea>
