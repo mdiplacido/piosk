@@ -11,3 +11,6 @@
     - show message when no capture cards configured.
     - show spinner when creating or updating capture information
     - show inline error if the capture name is already taken
+    - add edit capture config
+    - implement rest of the processing logic
+    - allow vertical scroll
