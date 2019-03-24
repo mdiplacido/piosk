@@ -16,12 +16,12 @@ import {
   Theme,
   WithStyles,
   withStyles
-  } from "@material-ui/core/styles";
+} from "@material-ui/core/styles";
 import {
   Fab,
   TextField,
   Tooltip
-  } from "@material-ui/core";
+} from "@material-ui/core";
 import { ICaptureConfig } from "../../providers/config/config";
 import { TransitionProps } from "@material-ui/core/transitions/transition";
 
@@ -49,13 +49,14 @@ function Transition(props: TransitionProps) {
 
 type CaptureCreateDialogProps = WithStyles<typeof styles>;
 
-type CaptureCreateDialogState = { open: boolean } & { config: ICaptureConfig };
+type CaptureCreateDialogState = { open: boolean, canSave: boolean } & { config: ICaptureConfig };
 
 class CaptureCreateDialog extends React.Component<CaptureCreateDialogProps, CaptureCreateDialogState> {
   constructor(props: any) {
     super(props);
     this.state = {
       open: false,
+      canSave: false,
       config: {
         name: "",
         url: "http://",
@@ -87,7 +88,15 @@ class CaptureCreateDialog extends React.Component<CaptureCreateDialogProps, Capt
             prev.config[name] :
             value
       }
-    }));
+    }), () => {
+      const { name, description, url, author } = this.state.config;
+      this.setState({
+        canSave: !!name.trim().length
+          && !!description.trim().length
+          && !!url.trim().length
+          && !!author.trim().length
+      });
+    });
   }
 
   render() {
@@ -114,13 +123,14 @@ class CaptureCreateDialog extends React.Component<CaptureCreateDialogProps, Capt
               <Typography variant="h6" color="inherit" className={classes.flex}>
                 Create Capture Config
               </Typography>
-              <Button color="inherit" onClick={this.handleClose}>
+              <Button color="inherit" onClick={this.handleClose} disabled={!this.state.canSave}>
                 save
               </Button>
             </Toolbar>
           </AppBar>
           <PageContainer>
             <TextField
+              required
               id="name"
               label="Name"
               className={classes.textField}
@@ -130,6 +140,7 @@ class CaptureCreateDialog extends React.Component<CaptureCreateDialogProps, Capt
             />
             <br />
             <TextField
+              required
               id="author"
               label="Author"
               className={classes.textField}
@@ -139,6 +150,7 @@ class CaptureCreateDialog extends React.Component<CaptureCreateDialogProps, Capt
             />
             <br />
             <TextField
+              required
               id="description"
               label="Description"
               className={classes.textField}
@@ -148,6 +160,7 @@ class CaptureCreateDialog extends React.Component<CaptureCreateDialogProps, Capt
             />
             <br />
             <TextField
+              required
               id="url"
               label="Url"
               className={classes.textField}
