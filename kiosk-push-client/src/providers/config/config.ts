@@ -1,11 +1,19 @@
 export enum CaptureStatus {
     None = "none",
-    Processing = "processing",
+    PickedUp = "pickedUp",
+    Loading = "loading",
+    Settling = "settling",
+    Capturing = "capturing",
+    Completed = "completed",
+    Failed = "failed",
     Paused = "paused",
-    Scheduled = "scheduled"
 }
 
-export const PickupStates = [CaptureStatus.None, CaptureStatus.Scheduled];
+export const PickupStates = [
+    CaptureStatus.None,
+    CaptureStatus.Completed,
+    CaptureStatus.Failed
+];
 
 export interface ICaptureConfig {
     name: string;

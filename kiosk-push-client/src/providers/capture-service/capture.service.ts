@@ -32,7 +32,7 @@ export class CaptureService {
                 ...p,
                 additionalData: {
                     ...p.additionalData,
-                    status: CaptureStatus.Processing
+                    status: CaptureStatus.PickedUp
                 }
             }))
         };
