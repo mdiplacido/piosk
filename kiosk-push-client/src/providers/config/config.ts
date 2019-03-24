@@ -1,3 +1,12 @@
+export enum CaptureStatus {
+    None = "none",
+    Processing = "processing",
+    Paused = "paused",
+    Scheduled = "scheduled"
+}
+
+export const PickupStates = [CaptureStatus.None, CaptureStatus.Scheduled];
+
 export interface ICaptureConfig {
     name: string;
     url: string;
@@ -6,7 +15,7 @@ export interface ICaptureConfig {
     captureIntervalSeconds: number;
     lastCapture?: Date;
     additionalData?: {
-        processing: boolean;
+        status: CaptureStatus;
     };
 }
 

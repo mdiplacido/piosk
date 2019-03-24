@@ -51,6 +51,9 @@ const CaptureCard = (props: CaptureCardProps) => {
                     <Typography component="p">
                         Next capture: <Clock {...getClockParamsFromConfig(now, capture)} />
                     </Typography>
+                    <Typography component="p">
+                        Status <strong>{capture.additionalData && capture.additionalData.status || "unknown"}</strong>
+                    </Typography>
                 </CardContent>
             </CardActionArea>
             <CardActions>

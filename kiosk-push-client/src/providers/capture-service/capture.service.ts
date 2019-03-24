@@ -1,23 +1,22 @@
+import { CaptureStatus, ICaptureConfig, PickupStates } from "./../config/config";
 import {
     ConfigState,
     ConfigStore
-    } from "../config/config";
+} from "../config/config";
 import {
     ILoggerActionCreator,
     LoggerSeverity
-    } from "../../store/logger/actions";
+} from "../../store/logger/actions";
 
 export class CaptureService {
     // private renderWindow: BrowserWindow;
 
     public process(configStore: ConfigStore, loggerActions: ILoggerActionCreator) {
+        const now = new Date();
+
         const pending = configStore
             .captureConfigs()
-            .filter(c =>
-                (!c.lastCapture || new Date(c.lastCapture) < new Date())
-                &&
-                (!c.additionalData || c.additionalData && !c.additionalData.processing)
-            );
+            .filter(c => this.canPickup(c, now));
 
         if (!pending.length) {
             loggerActions.next("no pending captures to process", LoggerSeverity.Verbose);
@@ -33,12 +32,23 @@ export class CaptureService {
                 ...p,
                 additionalData: {
                     ...p.additionalData,
-                    processing: true
+                    status: CaptureStatus.Processing
                 }
             }))
         };
 
         configStore.update(configChange, true /* silent */);
+    }
+
+    private canPickup(captureConfig: ICaptureConfig, now: Date): boolean {
+        return (!captureConfig.lastCapture || new Date(captureConfig.lastCapture) < now)
+            &&
+            (
+                !captureConfig.additionalData ||
+                !captureConfig.additionalData.status ||
+                PickupStates.some(
+                    s => s === (captureConfig.additionalData && captureConfig.additionalData.status || CaptureStatus.None))
+            );
     }
 
     public loadUrl() {
