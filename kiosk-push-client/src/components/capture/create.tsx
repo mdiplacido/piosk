@@ -1,21 +1,29 @@
-import { Fab, TextField, Tooltip } from "@material-ui/core";
+import * as React from "react";
+import AddIcon from "@material-ui/icons/Add";
 import AppBar from "@material-ui/core/AppBar";
 import Button from "@material-ui/core/Button";
+import CloseIcon from "@material-ui/icons/Close";
 import Dialog from "@material-ui/core/Dialog";
 import IconButton from "@material-ui/core/IconButton";
-import Slide from "@material-ui/core/Slide";
-import { createStyles, Theme, WithStyles, withStyles } from "@material-ui/core/styles";
-import Toolbar from "@material-ui/core/Toolbar";
-import { TransitionProps } from "@material-ui/core/transitions/transition";
-import Typography from "@material-ui/core/Typography";
-import AddIcon from "@material-ui/icons/Add";
-import CloseIcon from "@material-ui/icons/Close";
-import * as React from "react";
-import { ChangeEvent } from "react";
 import PageContainer from "../common/page-container";
-
-import { ICaptureConfig } from "../../providers/config/config";
+import Slide from "@material-ui/core/Slide";
+import Toolbar from "@material-ui/core/Toolbar";
+import Typography from "@material-ui/core/Typography";
+import { ChangeEvent } from "react";
 import { containerStyles } from "../common/styles";
+import {
+  createStyles,
+  Theme,
+  WithStyles,
+  withStyles
+  } from "@material-ui/core/styles";
+import {
+  Fab,
+  TextField,
+  Tooltip
+  } from "@material-ui/core";
+import { ICaptureConfig } from "../../providers/config/config";
+import { TransitionProps } from "@material-ui/core/transitions/transition";
 
 const styles = (theme: Theme) => createStyles({
   appBar: {
@@ -66,13 +74,18 @@ class CaptureCreateDialog extends React.Component<CaptureCreateDialogProps, Capt
     this.setState({ open: false });
   }
 
-  setField = (name: string) => (event: ChangeEvent<HTMLInputElement>) => {
+  setField = (name: string, minimum?: number) => (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
+    const type = event.target.type;
     this.setState(prev => ({
       ...prev,
       config: {
         ...prev.config,
-        [name]: value
+        [name]: type !== "number" ?
+          value :
+          minimum != null && +value < minimum ?
+            prev.config[name] :
+            value
       }
     }));
   }
@@ -143,6 +156,18 @@ class CaptureCreateDialog extends React.Component<CaptureCreateDialogProps, Capt
               margin="normal"
             />
             <br />
+            <TextField
+              id="captureIntervalSeconds"
+              label="Interval (seconds)"
+              value={this.state.config.captureIntervalSeconds}
+              onChange={this.setField("captureIntervalSeconds", 60 /* minimum */)}
+              type="number"
+              className={classes.textField}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              margin="normal"
+            />
           </PageContainer>
         </Dialog>
       </div>
