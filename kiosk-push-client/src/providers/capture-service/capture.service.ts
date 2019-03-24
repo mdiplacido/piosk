@@ -1,4 +1,4 @@
-import { ConfigStore } from "../config/config";
+import { ConfigStore, ConfigState } from "../config/config";
 
 export class CaptureService {
     // private renderWindow: BrowserWindow;
@@ -21,12 +21,17 @@ export class CaptureService {
             console.log(`Processing capture config '${captureConfig.name}'`);
         }
 
-        configStore.update({
-            captureConfigs: [
-                ...configStore.captureConfigs().filter(c => !pending.some(p => p.name === c.name)),
-                ...pending
-            ]
-        });
+        const configChange: Partial<ConfigState> = {
+            captureConfigs: pending.map(p => ({
+                ...p,
+                additionalData: {
+                    ...p.additionalData,
+                    processing: true
+                }
+            }))
+        };
+
+        configStore.update(configChange, true /* silent */);
     }
 
     public loadUrl() {

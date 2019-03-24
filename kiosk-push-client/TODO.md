@@ -8,5 +8,6 @@
 - for save settings feature:
     - try implementing the spinner button debounce using hooks
     - experiment with how the redux-observable effects can get access to things like config... we can use dependencies, redux itself, another way?
-    - hookup the add capture card button
     - show message when no capture cards configured.
+    - show spinner when creating or updating capture information
+    - show inline error if the capture name is already taken

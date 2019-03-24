@@ -24,11 +24,10 @@ export interface ConfigState {
     captureConfigs: ICaptureConfig[];
 }
 
-export type UpdateConfigStateArg = Partial<ConfigState> | ConfigState | null;
-
 export interface ConfigStore {
     settings: ConfigState;
     captureConfigs: () => ICaptureConfig[];
-    update: (newState: UpdateConfigStateArg) => void;
+    update: (newState: ConfigState | Partial<ConfigState>, silent?: boolean) => void;
+    saveCaptureConfig: (config: ICaptureConfig) => void;
     all: (includeCapture: boolean) => Array<{ key: string, value: any }>;
 }

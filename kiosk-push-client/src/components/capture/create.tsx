@@ -5,23 +5,30 @@ import Button from "@material-ui/core/Button";
 import CloseIcon from "@material-ui/icons/Close";
 import Dialog from "@material-ui/core/Dialog";
 import IconButton from "@material-ui/core/IconButton";
+import IState from "../../store/state";
 import PageContainer from "../common/page-container";
 import Slide from "@material-ui/core/Slide";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
+import { captureConfigNamesSelector } from "../../store/config/selectors";
 import { ChangeEvent } from "react";
+import {
+  ConfigConsumerProps,
+  withConfig
+  } from "../../providers/config/config.provider";
+import { connect } from "react-redux";
 import { containerStyles } from "../common/styles";
 import {
   createStyles,
   Theme,
   WithStyles,
   withStyles
-} from "@material-ui/core/styles";
+  } from "@material-ui/core/styles";
 import {
   Fab,
   TextField,
   Tooltip
-} from "@material-ui/core";
+  } from "@material-ui/core";
 import { ICaptureConfig } from "../../providers/config/config";
 import { TransitionProps } from "@material-ui/core/transitions/transition";
 
@@ -47,9 +54,15 @@ function Transition(props: TransitionProps) {
   return <Slide direction="up" {...props} />;
 }
 
-type CaptureCreateDialogProps = WithStyles<typeof styles>;
+type ConfigConsumerWithCaptureNames = ConfigConsumerProps & { captureConfigNames: string[] };
 
-type CaptureCreateDialogState = { open: boolean, canSave: boolean } & { config: ICaptureConfig };
+type CaptureCreateDialogProps = WithStyles<typeof styles> & ConfigConsumerWithCaptureNames;
+
+type CaptureCreateDialogState = {
+  open: boolean, canSave: boolean
+} & {
+  config: ICaptureConfig
+};
 
 class CaptureCreateDialog extends React.Component<CaptureCreateDialogProps, CaptureCreateDialogState> {
   constructor(props: any) {
@@ -75,6 +88,10 @@ class CaptureCreateDialog extends React.Component<CaptureCreateDialogProps, Capt
     this.setState({ open: false });
   }
 
+  save = () => {
+    this.props.config.saveCaptureConfig(this.state.config);
+  }
+
   setField = (name: string, minimum?: number) => (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     const type = event.target.type;
@@ -90,11 +107,15 @@ class CaptureCreateDialog extends React.Component<CaptureCreateDialogProps, Capt
       }
     }), () => {
       const { name, description, url, author } = this.state.config;
+      const nameTaken = this.props.captureConfigNames
+        .some(n => n.toLowerCase() === name.toLowerCase());
+
       this.setState({
         canSave: !!name.trim().length
           && !!description.trim().length
           && !!url.trim().length
           && !!author.trim().length
+          && !nameTaken
       });
     });
   }
@@ -123,7 +144,7 @@ class CaptureCreateDialog extends React.Component<CaptureCreateDialogProps, Capt
               <Typography variant="h6" color="inherit" className={classes.flex}>
                 Create Capture Config
               </Typography>
-              <Button color="inherit" onClick={this.handleClose} disabled={!this.state.canSave}>
+              <Button color="inherit" onClick={this.save} disabled={!this.state.canSave}>
                 save
               </Button>
             </Toolbar>
@@ -188,4 +209,10 @@ class CaptureCreateDialog extends React.Component<CaptureCreateDialogProps, Capt
   }
 }
 
-export default withStyles(styles)(CaptureCreateDialog);
+function mapStateToProps(state: IState) {
+  return {
+    captureConfigNames: captureConfigNamesSelector(state),
+  };
+}
+
+export default connect(mapStateToProps)(withStyles(styles)(withConfig(CaptureCreateDialog)));

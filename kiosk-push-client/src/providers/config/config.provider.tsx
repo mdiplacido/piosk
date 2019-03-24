@@ -4,7 +4,7 @@ import selectConfig from "../../store/config/selectors";
 import {
     ConfigState,
     ConfigStore,
-    UpdateConfigStateArg
+    ICaptureConfig
     } from "./config";
 import { connect } from "react-redux";
 import { getDisplayName } from "../util";
@@ -12,6 +12,7 @@ import {
     IConfigActionsProp,
     mapConfigActionsToProps
     } from "../../store/config/actions";
+
 // following "Provider pattern" here: https://github.com/sw-yx/react-typescript-cheatsheet
 
 export interface ConfigConsumerProps {
@@ -53,8 +54,27 @@ class ConfigProvider extends React.Component<ConfigProviderProps & IConfigAction
             this.props.config || defaultConfig;
     }
 
-    update = (newState: UpdateConfigStateArg) => {
-        this.props.configActions.saveConfig(newState as Partial<ConfigState>);
+    saveCaptureConfig = (config: ICaptureConfig) => {
+        this.update({ captureConfigs: [config] });
+    }
+
+    update = (newState: Partial<ConfigState>, silent = false) => {
+        const current = this.settings;
+        const newCaptureConfigs = newState.captureConfigs || [];
+        const currentCaptureConfigs = current.captureConfigs
+            .filter(cc => newCaptureConfigs
+                .every(ncc => ncc.name.toLowerCase() !== cc.name.toLowerCase()));
+
+        const mergedState = {
+            ...current,
+            ...newState,
+            captureConfigs: [
+                ...currentCaptureConfigs,
+                ...newCaptureConfigs
+            ]
+        };
+
+        this.props.configActions.saveConfig(mergedState, silent);
     }
 
     all = (includeCapture = true) => {
@@ -71,6 +91,7 @@ class ConfigProvider extends React.Component<ConfigProviderProps & IConfigAction
     render(): JSX.Element {
         const store: ConfigStore = {
             settings: this.settings,
+            saveCaptureConfig: this.saveCaptureConfig,
             update: this.update,
             all: this.all,
             captureConfigs: this.captureConfigs,

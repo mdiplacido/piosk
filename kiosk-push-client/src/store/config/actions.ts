@@ -1,4 +1,9 @@
-import { ActionCreatorsMapObject, AnyAction, bindActionCreators, Dispatch } from "redux";
+import {
+    ActionCreatorsMapObject,
+    AnyAction,
+    bindActionCreators,
+    Dispatch
+    } from "redux";
 import { ConfigState } from "../../providers/config/config";
 
 export enum ConfigActionTypes {
@@ -28,6 +33,7 @@ export interface ILoadConfigFailureAction extends AnyAction {
 export interface ISaveConfigAction extends AnyAction {
     type: ConfigActionTypes.Save;
     config: ConfigState;
+    silent?: boolean;
 }
 
 export interface ISaveConfigSuccessAction extends AnyAction {
@@ -60,10 +66,11 @@ export function loadConfigFailure(error: any): ILoadConfigFailureAction {
     };
 }
 
-export function saveConfig(config: ConfigState): ISaveConfigAction {
+export function saveConfig(config: ConfigState, silent = false): ISaveConfigAction {
     return {
         type: ConfigActionTypes.Save,
-        config
+        config,
+        silent
     };
 }
 
@@ -83,12 +90,12 @@ export function saveConfigFailure(error: any): ISaveConfigFailureAction {
 
 export interface IConfigActionCreator extends ActionCreatorsMapObject<ConfigActions> {
     loadConfig: () => ILoadConfigAction;
-    saveConfig: (state: Partial<ConfigState>) => ISaveConfigAction;
+    saveConfig: (state: ConfigState, silent?: boolean) => ISaveConfigAction;
 }
 
 export const ConfigActionCreatorFactory: () => IConfigActionCreator = () => ({
     loadConfig,
-    saveConfig
+    saveConfig,
 });
 
 export interface IConfigActionsProp {

@@ -1,14 +1,33 @@
+import IState from "../state";
 import { Action } from "redux";
-import { combineEpics, ofType } from "redux-observable";
-import { Observable, of as observableOf } from "rxjs";
-import { catchError, delay, map, mapTo, mergeMap, withLatestFrom } from "rxjs/operators";
-
-import { readJson, saveJson } from "../../common/io/file-system";
+import {
+    catchError,
+    delay,
+    map,
+    mapTo,
+    mergeMap,
+    withLatestFrom
+} from "rxjs/operators";
+import {
+    combineEpics,
+    ofType
+} from "redux-observable";
 import { ConfigState } from "../../providers/config/config";
 import { IEpicDependencies } from "../epic-dependencies";
-import { LoggerSeverity, nextLogMessage } from "../logger/actions";
+import {
+    LoggerSeverity,
+    nextLogMessage
+} from "../logger/actions";
 import { nextNotification } from "../notifications/actions";
-import IState from "../state";
+import {
+    Observable,
+    of as observableOf
+} from "rxjs";
+import {
+    readJson,
+    saveJson
+} from "../../common/io/file-system";
+
 import {
     ConfigActionTypes,
     ISaveConfigAction,
@@ -32,6 +51,11 @@ export const loadConfigEpic$ =
             )),
         );
 
+const trimAdditionalData = (config: ConfigState) => ({
+    ...config,
+    captureConfigs: config.captureConfigs.map(c => ({ ...c, additionalData: undefined }))
+});
+
 export const saveConfigEpic$ =
     (action$: Observable<ISaveConfigAction>, state$: Observable<IState>, dependencies: IEpicDependencies) =>
         action$.pipe(
@@ -39,14 +63,15 @@ export const saveConfigEpic$ =
             delay(dependencies.testDelayMilliseconds),
             withLatestFrom(state$),
             mergeMap(([action, state]) =>
-                saveJson("./config.json", { ...state.config, ...action.config })
+                saveJson("./config.json", { ...trimAdditionalData(state.config), ...trimAdditionalData(action.config) })
                     .pipe(
-                        mapTo({ ...state.config, ...action.config }),
+                        mapTo({ config: { ...state.config, ...action.config }, silent: !!action.silent }),
                     )
             ),
-            mergeMap((config: ConfigState) => [
+            mergeMap(({ config, silent }) => [
                 saveConfigSuccess(config),
-                nextNotification("Configuration save complete", LoggerSeverity.Info)
+                !silent && nextNotification("Configuration save complete", LoggerSeverity.Info)
+                || nextLogMessage("Background configuration save complete", LoggerSeverity.Info)
             ]),
             catchError(err => observableOf(
                 saveConfigFailure(err),
