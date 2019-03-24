@@ -1,9 +1,16 @@
-import { ConfigStore, ConfigState } from "../config/config";
+import {
+    ConfigState,
+    ConfigStore
+    } from "../config/config";
+import {
+    ILoggerActionCreator,
+    LoggerSeverity
+    } from "../../store/logger/actions";
 
 export class CaptureService {
     // private renderWindow: BrowserWindow;
 
-    public process(configStore: ConfigStore) {
+    public process(configStore: ConfigStore, loggerActions: ILoggerActionCreator) {
         const pending = configStore
             .captureConfigs()
             .filter(c =>
@@ -13,12 +20,12 @@ export class CaptureService {
             );
 
         if (!pending.length) {
-            console.log("no pending captures to process");
+            loggerActions.next("no pending captures to process", LoggerSeverity.Verbose);
             return;
         }
 
         for (const captureConfig of pending) {
-            console.log(`Processing capture config '${captureConfig.name}'`);
+            loggerActions.next(`Processing capture config '${captureConfig.name}'`, LoggerSeverity.Info);
         }
 
         const configChange: Partial<ConfigState> = {

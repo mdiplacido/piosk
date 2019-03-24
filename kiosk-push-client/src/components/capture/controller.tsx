@@ -3,20 +3,29 @@ import { CaptureServiceContext } from "../../providers/capture-service/provider"
 import {
     ConfigConsumerProps,
     withConfig
-} from "../../providers/config/config.provider";
+    } from "../../providers/config/config.provider";
+import { connect } from "react-redux";
+import {
+    ILoggerActionsProp,
+    mapLoggerActionsToProps,
+    LoggerSeverity
+    } from "../../store/logger/actions";
 import {
     useContext,
-    useEffect,
-} from "react";
+    useEffect
+    } from "react";
 
-const CaptureController = (props: ConfigConsumerProps) => {
+type CaptureControllerProps = ILoggerActionsProp & ConfigConsumerProps;
+
+const CaptureController = (props: CaptureControllerProps) => {
     const captureService = useContext(CaptureServiceContext);
 
     useEffect(() => {
-        console.log("initializing the capture service timer");
+        props.loggerActions.next("initializing the capture service timer", LoggerSeverity.Info);
+
         const handle = window.setInterval(() => {
-            console.log("checking for pending captures...");
-            captureService.process(props.config);
+            props.loggerActions.next("checking for pending captures...", LoggerSeverity.Verbose);
+            captureService.process(props.config, props.loggerActions);
         }, 2000);
 
         return () => {
@@ -30,4 +39,4 @@ const CaptureController = (props: ConfigConsumerProps) => {
 };
 
 // using both HOC and useContext in this file, for fun.
-export default withConfig(CaptureController);
+export default connect(null, mapLoggerActionsToProps)(withConfig(CaptureController));
