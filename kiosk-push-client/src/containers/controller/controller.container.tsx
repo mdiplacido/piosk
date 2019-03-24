@@ -1,7 +1,7 @@
 import * as React from "react";
-import AddIcon from "@material-ui/icons/Add";
 import CaptureCard from "../../components/capture/card";
 import containerStyles from "../../components/common/styles";
+import CreateCapture from "../../components/capture/create";
 import PageContainer from "../../components/common/page-container";
 import {
     ConfigConsumerProps,
@@ -9,9 +9,7 @@ import {
     } from "../../providers/config/config.provider";
 import {
     createStyles,
-    Fab,
     Theme,
-    Tooltip,
     WithStyles,
     withStyles
     } from "@material-ui/core";
@@ -37,7 +35,6 @@ const styles = (theme: Theme) => createStyles({
 
 const ControllerContainer = (props: ControllerContainerProps) => {
     const [now, setNow] = useState(new Date());
-    const { classes } = props;
 
     useEffect(() => {
         // tick now every 1 second.
@@ -59,11 +56,7 @@ const ControllerContainer = (props: ControllerContainerProps) => {
                         </React.Fragment>
                     )
             }
-            <Tooltip title="Add" aria-label="Add" onClick={() => alert("Todo add modal")}>
-                <Fab color="secondary" className={classes.absolute}>
-                    <AddIcon />
-                </Fab>
-            </Tooltip>
+            <CreateCapture />
         </PageContainer>
     );
 };

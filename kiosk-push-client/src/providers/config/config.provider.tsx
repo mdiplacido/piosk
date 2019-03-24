@@ -84,10 +84,10 @@ class ConfigProvider extends React.Component<ConfigProviderProps & IConfigAction
     }
 }
 
-export function withConfig<T extends Object = {}>(
-    Component: React.ComponentClass<ConfigConsumerProps & T> | React.FC<ConfigConsumerProps & T>
-): React.RefForwardingComponent<typeof Component, ConfigConsumerProps & T> {
-    const c: React.RefForwardingComponent<typeof Component, ConfigConsumerProps & T> = (props: T) => {
+export function withConfig<P extends Object = {}>(
+    Component: React.ComponentClass<ConfigConsumerProps & P> | React.FC<ConfigConsumerProps & P>
+): React.ComponentClass<Pick<P, Exclude<keyof P, keyof ConfigConsumerProps>>> {
+    const c: React.RefForwardingComponent<typeof Component, ConfigConsumerProps & P> = (props: P) => {
         return (
             <ConfigContext.Consumer>
                 {
@@ -98,7 +98,7 @@ export function withConfig<T extends Object = {}>(
     };
 
     c.displayName = `withConfig(${getDisplayName(Component)})`;
-    return c;
+    return c as unknown as React.ComponentClass<Pick<P, Exclude<keyof P, keyof ConfigConsumerProps>>>;
 }
 
 function mapStateToProps(state: IState): ConfigProviderProps {

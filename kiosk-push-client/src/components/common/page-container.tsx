@@ -5,7 +5,7 @@ import * as React from "react";
 import containerStyles, { ContainerStyleProps } from "../../components/common/styles";
 
 export interface PageContainerProps {
-    title: string;
+    title?: string;
     children?: React.ReactNode;
 }
 
@@ -15,12 +15,14 @@ const PageContainer = (props: ContainerStyleProps & PageContainerProps) => {
     return (
         <div className={classes.root}>
             <Grid container spacing={16}>
-                <Grid item xs={12}>
-                    <Typography className={classes.header} variant="h2" gutterBottom>
-                        {props.title}
-                    </Typography>
-                    <Divider variant="middle" />
-                </Grid>
+                {props.title &&
+                    <Grid item xs={12}>
+                        <Typography className={classes.header} variant="h2" gutterBottom>
+                            {props.title}
+                        </Typography>
+                        <Divider variant="middle" />
+                    </Grid>
+                }
                 <Grid item xs={12} className={classes["content-row"]}>
                     {props.children}
                 </Grid>

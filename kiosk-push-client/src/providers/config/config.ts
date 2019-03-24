@@ -4,7 +4,10 @@ export interface ICaptureConfig {
     author: string;
     description: string;
     captureIntervalSeconds: number;
-    lastCapture: Date;
+    lastCapture?: Date;
+    additionalData?: {
+        processing: boolean;
+    };
 }
 
 export interface ConfigState {

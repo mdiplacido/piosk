@@ -1,10 +1,13 @@
 import * as React from "react";
 import AppRoutes from "./app.routes";
+import CaptureController from "./components/capture/controller";
 import ConfigProvider from "./providers/config/config.provider";
 import IState from "./store/state";
 import NavBar from "./components/common/nav-bar";
 import Notification from "./components/common/notification";
 import PublisherProvider from "./providers/capture-publisher/publisher.provider";
+import { CaptureService } from "./providers/capture-service/capture.service";
+import { CaptureServiceContext } from "./providers/capture-service/provider";
 import { combineActionPropMappers } from "./store/utility";
 import { connect } from "react-redux";
 import {
@@ -63,10 +66,14 @@ export class App extends React.Component<AppProps, State> {
   }
 
   render() {
+    const captureService = new CaptureService();
     return (
       // note: REDUX provider is located in the bootstrapping index.html, this is done because App depends on
       // the provider so we we need to hoist it up one level
       <ConfigProvider>
+        <CaptureServiceContext.Provider value={captureService}>
+          <CaptureController />
+        </CaptureServiceContext.Provider>
         <PublisherProvider>
           <MuiThemeProvider theme={theme}>
             <CssBaseline />
