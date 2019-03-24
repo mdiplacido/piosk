@@ -37,7 +37,8 @@ export interface ConfigState {
     minAvailableSpaceOnPiPercent: number;
     maxLogFileSizeBytes: number;
     maxLogLinesForDisplay: number;
-    defaultPageSettleDelayMilliseconds: number;
+    defaultPageSettleDelaySeconds: number;
+    captureCheckIntervalSeconds: number;
     captureConfigs: ICaptureConfig[];
 }
 

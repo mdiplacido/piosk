@@ -3,17 +3,17 @@ import { CaptureServiceContext } from "../../providers/capture-service/provider"
 import {
     ConfigConsumerProps,
     withConfig
-    } from "../../providers/config/config.provider";
+} from "../../providers/config/config.provider";
 import { connect } from "react-redux";
 import {
     ILoggerActionsProp,
     mapLoggerActionsToProps,
     LoggerSeverity
-    } from "../../store/logger/actions";
+} from "../../store/logger/actions";
 import {
     useContext,
     useEffect
-    } from "react";
+} from "react";
 
 type CaptureControllerProps = ILoggerActionsProp & ConfigConsumerProps;
 
@@ -21,17 +21,33 @@ const CaptureController = (props: CaptureControllerProps) => {
     const captureService = useContext(CaptureServiceContext);
 
     useEffect(() => {
-        props.loggerActions.next("initializing the capture service timer", LoggerSeverity.Info);
+        if (!props.config.all(false /* do not include capture */).length) {
+            props.loggerActions.next(
+                "CaptureController will not start, config is not ready, waiting for config...", LoggerSeverity.Info);
 
-        const handle = window.setInterval(() => {
+            return;
+        }
+
+        props.loggerActions.next(
+            `initializing the capture service timer with ${props.config.settings.captureCheckIntervalSeconds} second interval`, LoggerSeverity.Info);
+
+        const doWork = () => {
             props.loggerActions.next("checking for pending captures...", LoggerSeverity.Verbose);
             captureService.process(props.config, props.loggerActions);
-        }, 2000);
+        };
+
+        // run immediate
+        doWork();
+
+        // setup checker
+        const handle = window.setInterval(() => {
+            doWork();
+        }, props.config.settings.captureCheckIntervalSeconds * 1000);
 
         return () => {
             window.clearInterval(handle);
         };
-    }, []); // no-deps, just run once
+    }, [props.config.settings]); // run on config changes
 
     return (
         <React.Fragment />

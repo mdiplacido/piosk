@@ -23,7 +23,7 @@ export interface ConfigProviderProps {
     config: ConfigState;
 }
 
-const defaultConfig: ConfigState = {
+export const defaultConfig: ConfigState = {
     localPublishPath: "/var/jail/data/piosk_pickup/",
     enablePublishToDisk: true,
     enablePublishToSFTP: false,
@@ -31,9 +31,10 @@ const defaultConfig: ConfigState = {
     sftpUsername: "piosk_publisher",
     sftpAddress: "192.168.42.1",
     minAvailableSpaceOnPiPercent: 50 / 100,
-    defaultPageSettleDelayMilliseconds: 30,
+    defaultPageSettleDelaySeconds: 30,
     maxLogFileSizeBytes: 1024 * 1024 * 10,
     maxLogLinesForDisplay: 1000,
+    captureCheckIntervalSeconds: 30,
     captureConfigs: []
 };
 
