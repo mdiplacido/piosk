@@ -2,9 +2,13 @@ export enum CaptureStatus {
     None = "none",
     PickedUp = "pickedUp",
     Loading = "loading",
+    Loaded = "loaded",
     Settling = "settling",
+    Settled = "settled",
     Capturing = "capturing",
+    Captured = "captured",
     Completed = "completed",
+    Canceled = "canceled",
     Failed = "failed",
     Paused = "paused",
 }
@@ -12,7 +16,8 @@ export enum CaptureStatus {
 export const PickupStates = [
     CaptureStatus.None,
     CaptureStatus.Completed,
-    CaptureStatus.Failed
+    CaptureStatus.Failed,
+    CaptureStatus.Canceled
 ];
 
 export interface ICaptureConfig {

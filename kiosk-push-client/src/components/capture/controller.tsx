@@ -45,9 +45,10 @@ const CaptureController = (props: CaptureControllerProps) => {
         }, props.config.settings.captureCheckIntervalSeconds * 1000);
 
         return () => {
+            // destroy interval checker
             window.clearInterval(handle);
         };
-    }, [props.config.settings]); // run on config changes
+    }, [props.config.settings.captureConfigs]); // run on capture config changes only
 
     return (
         <React.Fragment />

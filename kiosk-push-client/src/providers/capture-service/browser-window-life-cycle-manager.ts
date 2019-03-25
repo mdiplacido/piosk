@@ -1,0 +1,172 @@
+import {
+    BrowserWindow,
+    remote
+} from "electron";
+import {
+    CaptureStatus,
+    ConfigState
+} from "../config/config";
+import { ICaptureConfig } from "../config/config";
+
+export enum BrowserWindowLifeCycle {
+    None = "none",
+    LoadUrl = "load",
+    ReadyToShow = "ready-to-show",
+    EnterFullScreen = "enter-full-screen",
+    Closed = "closed",
+}
+
+export class BrowserWindowLifeCycleManager {
+    private renderWindow: BrowserWindow;
+    private readonly configState: ConfigState;
+    private readonly captureConfig: ICaptureConfig;
+    private status: CaptureStatus = CaptureStatus.None;
+    private lifeCycleStage = BrowserWindowLifeCycle.None;
+    private capture: Electron.NativeImage;
+
+    public get name(): string {
+        return this.captureConfig.name;
+    }
+
+    public get isVisible(): boolean {
+        return this.renderWindow && this.renderWindow.isVisible();
+    }
+
+    public get lastStatus(): CaptureStatus {
+        return this.status;
+    }
+
+    public get lastCapture(): Electron.NativeImage {
+        return this.capture;
+    }
+
+    constructor(
+        config: ConfigState,
+        captureConfig: ICaptureConfig,
+        private readonly onLifeCycleEvent: (
+            name: BrowserWindowLifeCycle,
+            status: CaptureStatus,
+            captureConfig: ICaptureConfig,
+            mgr: BrowserWindowLifeCycleManager) => void) {
+
+        // create a copy.
+        this.configState = {
+            ...config,
+            captureConfigs: []
+        };
+
+        // create a copy.
+        this.captureConfig = {
+            ...captureConfig,
+            additionalData: {
+                ...captureConfig.additionalData || { status: CaptureStatus.None }
+            }
+        };
+    }
+
+    public async run() {
+        try {
+            await this.runImpl();
+        } catch (error) {
+            this.renderWindow.close();
+            this.renderWindow = null as unknown as BrowserWindow;
+            this.updateState(CaptureStatus.Failed);
+            throw error;
+        }
+    }
+
+    private async runImpl() {
+        this.ensureRenderWindow();
+        const settleDelay = this.configState.defaultPageSettleDelaySeconds;
+
+        let lifeCycle: BrowserWindowLifeCycle = BrowserWindowLifeCycle.LoadUrl;
+        {
+            this.updateState(CaptureStatus.Loading, lifeCycle);
+            this.loadUrl();
+
+            lifeCycle = BrowserWindowLifeCycle.ReadyToShow;
+            {
+                this.updateState(CaptureStatus.Settling, lifeCycle);
+                await Promise.race([this.once(lifeCycle), this.delay(lifeCycle, settleDelay, true /* throw */)]);
+                this.renderWindow.show();
+                this.updateState(CaptureStatus.Loaded);
+            }
+        }
+
+        lifeCycle = BrowserWindowLifeCycle.EnterFullScreen;
+        {
+            this.maximize();
+            this.updateState(CaptureStatus.Settling, lifeCycle);
+            await Promise.race([this.once(lifeCycle), this.delay(lifeCycle, settleDelay, true /* throw */)]);
+        }
+
+        {
+            this.updateState(CaptureStatus.Capturing);
+            this.capture = await Promise.race([this.screenshot(), this.delay(lifeCycle, settleDelay, true /* throw */)]) as Electron.NativeImage;
+            this.updateState(CaptureStatus.Captured);
+        }
+    }
+
+    private async once(event: "ready-to-show" | "enter-full-screen"): Promise<void> {
+        return new Promise((resolve, reject) => {
+            try {
+                this.renderWindow.once(event as any, () => resolve());
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    private updateState(status: CaptureStatus, lifeCycle?: BrowserWindowLifeCycle): void {
+        this.status = status;
+        this.lifeCycleStage = lifeCycle || this.lifeCycleStage;
+        this.onLifeCycleEvent(this.lifeCycleStage, this.status, this.captureConfig, this);
+    }
+
+    private async delay(name: string, seconds = 2, throwIfReached = false): Promise<void> {
+        return new Promise((resolve, reject) => {
+            window.setTimeout(() =>
+                throwIfReached && reject(`timeout reached waiting for '${name}'`) || resolve(), seconds * 1000);
+        });
+    }
+
+    private ensureRenderWindow(): void {
+        if (this.renderWindow) {
+            return;
+        }
+
+        this.renderWindow = new remote.BrowserWindow({
+            show: false,
+            webPreferences: {
+                nodeIntegration: false,
+                webSecurity: false /* TODO: probably should make this an option per capture */
+            }
+        });
+
+        this.renderWindow.on("closed", () => {
+            this.renderWindow = null as unknown as BrowserWindow;
+            this.updateState(CaptureStatus.Canceled, BrowserWindowLifeCycle.Closed);
+        });
+    }
+
+    private loadUrl() {
+        this.renderWindow.loadURL(this.captureConfig.url);
+        // todo: attaching the dev tools should be optional and may not be available depending on
+        // the build or setting in config
+        // this.renderWindow.webContents.openDevTools();
+    }
+
+    private maximize() {
+        this.renderWindow.setFullScreen(true);
+    }
+
+    private screenshot(): Promise<Electron.NativeImage> {
+        return new Promise((resolve, reject) => {
+            try {
+                this.renderWindow.capturePage(image => resolve(image));
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+}

@@ -15,7 +15,7 @@ export default function reducer(state = initialState.logs, action: LoggerActions
                         ...action.payload,
                         sequence: state.nextSequenceId
                     },
-                    ...state.entries.slice(0, 9)
+                    ...state.entries.slice(0, 999)
                 ]
             };
         default:
