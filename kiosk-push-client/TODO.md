@@ -19,3 +19,4 @@
     - add pagination to the log view
     - clean-up CaptureService, it is a mess
     - move away from using the config name to find the config, introduce a UUID config id that we can match on.  we can still log the name, but we should match on config id.
+    - add log table filter so I can find stuff.
