@@ -1,6 +1,6 @@
 # piosk
 
-A simple framework for delivering images to a **Raspberry Pi** powered kiosk.  Images are delivered to the kiosk over bluetooth from a **Windows** "Producer"
+A simple framework for delivering images to a **Raspberry Pi** powered kiosk.  Images are delivered to the kiosk over wifi to a raspberry pi hot-spot from an electron screen-capture "Producer".  For security concerns the raspberry pi does not have to be on the Internet. 
 
 ## What's included
 
