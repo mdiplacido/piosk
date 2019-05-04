@@ -9,6 +9,10 @@ html, body {
     height: 100%;
 }
 
+.routeContainer {
+    padding-top: 70px;
+}
+
 ._loading_overlay_content {
     font-size: 1.75rem;
     font-family: "Roboto", "Helvetica", "Arial", sans-serif;

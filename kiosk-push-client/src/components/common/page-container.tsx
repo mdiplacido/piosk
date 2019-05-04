@@ -1,4 +1,4 @@
-import { Divider, Grid, withStyles } from "@material-ui/core";
+import { Grid, withStyles } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import * as React from "react";
 
@@ -16,11 +16,10 @@ const PageContainer = (props: ContainerStyleProps & PageContainerProps) => {
         <div className={classes.root}>
             <Grid container spacing={16}>
                 {props.title &&
-                    <Grid item xs={12}>
+                    <Grid xs={12} className={classes.headerGrid}>
                         <Typography className={classes.header} variant="h2" gutterBottom>
                             {props.title}
                         </Typography>
-                        <Divider variant="middle" />
                     </Grid>
                 }
                 <Grid item xs={12} className={classes["content-row"]}>

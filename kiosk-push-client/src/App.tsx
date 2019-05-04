@@ -14,17 +14,17 @@ import {
   createMuiTheme,
   CssBaseline,
   MuiThemeProvider
-  } from "@material-ui/core";
+} from "@material-ui/core";
 import { HashRouter } from "react-router-dom";
 import {
   IConfigActionsProp,
   mapConfigActionsToProps
-  } from "./store/config/actions";
+} from "./store/config/actions";
 import {
   ILoggerActionsProp,
   LoggerSeverity,
   mapLoggerActionsToProps
-  } from "./store/logger/actions";
+} from "./store/logger/actions";
 import { isConfigLoadingSelector } from "./store/loading.selectors";
 
 // tslint:disable:no-var-requires
@@ -88,7 +88,9 @@ export class App extends React.Component<AppProps, State> {
                 <NavBar />
                 {
                   !this.props.isConfigLoading &&
-                  <AppRoutes />
+                  <div className="routeContainer">
+                    <AppRoutes />
+                  </div>
                 }
                 <Notification />
               </LoadingOverlay>

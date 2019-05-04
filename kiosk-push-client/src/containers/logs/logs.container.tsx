@@ -90,6 +90,8 @@ const Logs = (props: ConnectedLogProps) => {
                 onClick={dispatchTestNotification}>
                 Test Notifications
             </Button>
+            <br/>
+            <br/>
         </PageContainer>
     );
 };
