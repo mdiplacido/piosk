@@ -5,6 +5,10 @@
 
 - move dev only packages to the devDependencies section of package.json
 
+- there are other TODO's in the code. review those
+
+- next we have to upload any images captured
+
 - for save settings feature:
     - try implementing the spinner button debounce using hooks
     - experiment with how the redux-observable effects can get access to things like config... we can use dependencies, redux itself, another way?
@@ -13,7 +17,7 @@
     - show inline error if the capture name is already taken
     - add edit capture config
     - implement rest of the processing logic which includes more silent notifications to the log page
-    - allow vertical scroll
+    - allow vertical scroll. DONE.
     - config saves should probably switch maps as last writer should win, no? yes?
     - make webSecurity configurable per capture config
     - add pagination to the log view
