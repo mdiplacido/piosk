@@ -19,6 +19,7 @@ type CaptureControllerProps = ILoggerActionsProp & ConfigConsumerProps;
 
 const CaptureController = (props: CaptureControllerProps) => {
     const captureService = useContext(CaptureServiceContext);
+    const [hasRunImmediate, setHasRunImmediate] = React.useState(false);
 
     useEffect(() => {
         if (!props.config.all(false /* do not include capture */).length) {
@@ -37,7 +38,14 @@ const CaptureController = (props: CaptureControllerProps) => {
         };
 
         // run immediate
-        doWork();
+        // TODO: had to do this because a change to the config was causing the effect to run again
+        // without realizing the last run date change. Need a cleaner way.
+        // we might be able to bring this back now that we are managing redux properly.  by bring this
+        // back I mean let the immediate run after any state change, not just the first.
+        if (!hasRunImmediate) {
+            setHasRunImmediate(true);
+            doWork();
+        }
 
         // setup checker
         const handle = window.setInterval(() => {
@@ -45,6 +53,7 @@ const CaptureController = (props: CaptureControllerProps) => {
         }, props.config.settings.captureCheckIntervalSeconds * 1000);
 
         return () => {
+            props.loggerActions.next("Destroying work interval timer...", LoggerSeverity.Info);
             // destroy interval checker
             window.clearInterval(handle);
         };

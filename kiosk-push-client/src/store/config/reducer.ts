@@ -1,5 +1,9 @@
 import initialState from "../initial-state";
 import {
+    CaptureStatus,
+    ICaptureConfig
+    } from "./../../providers/config/config";
+import {
     ConfigActions,
     ConfigActionTypes
     } from "./actions";
@@ -15,6 +19,23 @@ export default function configReducer(state = initialState.config, action: Confi
             return { ...defaultConfig, ...action.config };
         case ConfigActionTypes.SaveSuccess:
             return action.config;
+        case ConfigActionTypes.SaveCaptureStatus: {
+            const toUpdate = state.captureConfigs.find(c => c.name === action.payload.captureName) as ICaptureConfig;
+            return {
+                ...state,
+                captureConfigs: [
+                    ...state.captureConfigs.filter(c => c.name !== toUpdate.name),
+                    {
+                        ...toUpdate,
+                        lastCapture: action.payload.captureStatus === CaptureStatus.Captured && new Date() || toUpdate.lastCapture,
+                        additionalData: {
+                            ...toUpdate.additionalData,
+                            status: action.payload.captureStatus
+                        }
+                    }
+                ]
+            };
+        }
         default:
             return state;
     }

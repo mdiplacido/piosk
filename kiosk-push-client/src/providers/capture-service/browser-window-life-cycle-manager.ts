@@ -16,6 +16,12 @@ export enum BrowserWindowLifeCycle {
     Closed = "closed",
 }
 
+export type OnBrowserLifeCycleEventListener = (
+    name: BrowserWindowLifeCycle,
+    status: CaptureStatus,
+    captureConfig: ICaptureConfig,
+    mgr: BrowserWindowLifeCycleManager) => void;
+
 export class BrowserWindowLifeCycleManager {
     private renderWindow: BrowserWindow;
     private readonly configState: ConfigState;
@@ -43,11 +49,7 @@ export class BrowserWindowLifeCycleManager {
     constructor(
         config: ConfigState,
         captureConfig: ICaptureConfig,
-        private readonly onLifeCycleEvent: (
-            name: BrowserWindowLifeCycle,
-            status: CaptureStatus,
-            captureConfig: ICaptureConfig,
-            mgr: BrowserWindowLifeCycleManager) => void) {
+        private readonly onLifeCycleEventListener: OnBrowserLifeCycleEventListener) {
 
         // create a copy.
         this.configState = {
@@ -85,7 +87,8 @@ export class BrowserWindowLifeCycleManager {
             this.loadUrl();
 
             lifeCycle = BrowserWindowLifeCycle.ReadyToShow;
-            {
+
+            if (!this.renderWindow.isVisible()) {
                 this.updateState(CaptureStatus.Settling, lifeCycle);
                 await Promise.race([this.once(lifeCycle), this.delay(lifeCycle, settleDelay, true /* throw */)]);
                 this.renderWindow.show();
@@ -94,10 +97,13 @@ export class BrowserWindowLifeCycleManager {
         }
 
         lifeCycle = BrowserWindowLifeCycle.EnterFullScreen;
-        {
+
+        if (!this.renderWindow.isMaximized()) {
             this.maximize();
             this.updateState(CaptureStatus.Settling, lifeCycle);
-            await Promise.race([this.once(lifeCycle), this.delay(lifeCycle, settleDelay, true /* throw */)]);
+            // we do not really care if we can get into full screen mode, it doesn't seem very reliable anyway.
+            // given that we will not throw if the fullscreen mode did not settle.
+            await Promise.race([this.once(lifeCycle), this.delay(lifeCycle, settleDelay, false /* do not throw */)]);
         }
 
         {
@@ -120,7 +126,7 @@ export class BrowserWindowLifeCycleManager {
     private updateState(status: CaptureStatus, lifeCycle?: BrowserWindowLifeCycle): void {
         this.status = status;
         this.lifeCycleStage = lifeCycle || this.lifeCycleStage;
-        this.onLifeCycleEvent(this.lifeCycleStage, this.status, this.captureConfig, this);
+        this.onLifeCycleEventListener(this.lifeCycleStage, this.status, this.captureConfig, this);
     }
 
     private async delay(name: string, seconds = 2, throwIfReached = false): Promise<void> {

@@ -4,7 +4,8 @@ import selectConfig from "../../store/config/selectors";
 import {
     ConfigState,
     ConfigStore,
-    ICaptureConfig
+    ICaptureConfig,
+    CaptureStatus
     } from "./config";
 import { connect } from "react-redux";
 import { getDisplayName } from "../util";
@@ -55,8 +56,12 @@ class ConfigProvider extends React.Component<ConfigProviderProps & IConfigAction
             this.props.config || defaultConfig;
     }
 
-    saveCaptureConfig = (config: ICaptureConfig) => {
-        this.update({ captureConfigs: [config] });
+    saveCaptureConfig = (config: ICaptureConfig, silent = false) => {
+        this.update({ captureConfigs: [config] }, silent);
+    }
+
+    saveCaptureStatus = (captureName: string, captureStatus: CaptureStatus) =>  {
+        this.props.configActions.saveCaptureStatus(captureName, captureStatus);
     }
 
     update = (newState: Partial<ConfigState>, silent = false) => {
@@ -93,6 +98,7 @@ class ConfigProvider extends React.Component<ConfigProviderProps & IConfigAction
         const store: ConfigStore = {
             settings: this.settings,
             saveCaptureConfig: this.saveCaptureConfig,
+            saveCaptureStatus: this.saveCaptureStatus,
             update: this.update,
             all: this.all,
             captureConfigs: this.captureConfigs,

@@ -7,7 +7,8 @@ export enum CaptureStatus {
     Settled = "settled",
     Capturing = "capturing",
     Captured = "captured",
-    Completed = "completed",
+    // Don't see a need for completed state yet... captured seems to be enough
+    // Completed = "completed",
     Canceled = "canceled",
     Failed = "failed",
     Paused = "paused",
@@ -15,7 +16,7 @@ export enum CaptureStatus {
 
 export const PickupStates = [
     CaptureStatus.None,
-    CaptureStatus.Completed,
+    CaptureStatus.Captured,
     CaptureStatus.Failed,
     CaptureStatus.Canceled
 ];
@@ -51,6 +52,7 @@ export interface ConfigStore {
     settings: ConfigState;
     captureConfigs: () => ICaptureConfig[];
     update: (newState: ConfigState | Partial<ConfigState>, silent?: boolean) => void;
-    saveCaptureConfig: (config: ICaptureConfig) => void;
+    saveCaptureConfig: (config: ICaptureConfig, silent?: boolean) => void;
+    saveCaptureStatus: (captureName: string, captureStatus: CaptureStatus) => void;
     all: (includeCapture: boolean) => Array<{ key: string, value: any }>;
 }
