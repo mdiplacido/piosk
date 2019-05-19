@@ -27,7 +27,7 @@ const NavBar = (props: NavBarProps) => {
 
     return (
         <div>
-            <AppBar position="static" className={classes.appBar}>
+            <AppBar position="fixed" className={classes.appBar}>
                 <Toolbar>
                     <Typography variant="h5" color="inherit" className={classes.grow}>
                         Piosk Push Client

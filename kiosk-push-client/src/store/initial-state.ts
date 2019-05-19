@@ -1,8 +1,11 @@
 import IState, { ConfigStatus } from "./state";
-import { ConfigState } from "../providers/config/config";
+import { ConfigState, ICaptureConfig } from "../providers/config/config";
 
 const initialState: IState = {
-    config: {} as ConfigState,
+    config: {
+        captureConfigs: [
+        ] as ICaptureConfig[],
+    } as ConfigState,
     logs: {
         nextSequenceId: 1,
         entries: []

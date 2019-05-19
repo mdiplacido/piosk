@@ -3,15 +3,20 @@ import { composeWithDevTools } from "redux-devtools-extension";
 import immutableStateInvariantMiddleware from "redux-immutable-state-invariant";
 import { createEpicMiddleware } from "redux-observable";
 
+import { IEpicDependencies } from "./epic-dependencies";
 import rootEpic from "./epics";
 import initialStoreState from "./initial-state";
 import rootReducer from "./reducer";
 import IState from "./state";
 
-const epicMiddleware = createEpicMiddleware();
+const epicDependencies: IEpicDependencies = {
+    testDelayMilliseconds: 0
+};
+
+const epicMiddleware = createEpicMiddleware({ dependencies: epicDependencies });
 
 // TODO: are folks conditionally adding the immutableStateInvariantMiddleware for
-// prod vs. dev builds? -marcodi
+// prod vs. dev builds? -marco
 export default function configureStore(initialState: IState = initialStoreState) {
     const store = createStore(
         rootReducer,

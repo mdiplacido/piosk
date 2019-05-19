@@ -1,60 +1,64 @@
-import { Button, TextField, Typography, withStyles } from "@material-ui/core";
 import * as React from "react";
-import { ChangeEvent } from "react";
-
-import { Controller } from "../../App";
+import CaptureCard from "../../components/capture/card";
+import containerStyles from "../../components/common/styles";
+import CreateCapture from "../../components/capture/create";
 import PageContainer from "../../components/common/page-container";
-import containerStyles, { ContainerStyleProps } from "../../components/common/styles";
+import {
+    ConfigConsumerProps,
+    withConfig
+    } from "../../providers/config/config.provider";
+import {
+    createStyles,
+    Theme,
+    WithStyles,
+    withStyles
+    } from "@material-ui/core";
+import {
+    useEffect,
+    useState
+    } from "react";
 
-export interface ControllerContainerProps extends ContainerStyleProps {
-    url: string;
-    controller: Controller;
+export interface ControllerContainerProps extends ConfigConsumerProps, WithStyles<typeof styles> {
 }
 
-const ControllerContainer = (props: ControllerContainerProps) => {
-    const { controller, url, classes } = props;
+const styles = (theme: Theme) => createStyles({
+    fab: {
+        margin: theme.spacing.unit * 2,
+    },
+    absolute: {
+        position: "absolute",
+        bottom: theme.spacing.unit * 3,
+        right: theme.spacing.unit * 3,
+    },
+    ...containerStyles(theme)
+});
 
-    const handleOnUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
-        controller.urlChange(event.target.value);
-    };
+const ControllerContainer = (props: ControllerContainerProps) => {
+    const [now, setNow] = useState(new Date());
+
+    useEffect(() => {
+        // tick now every 1 second.
+        const timer = window.setInterval(() => setNow(new Date()), 1000);
+        return () => {
+            window.clearInterval(timer);
+        };
+    }, []);  // empty array runs effect only on mount.
 
     return (
         <PageContainer title="Controller">
-            <Typography variant="subtitle2" gutterBottom>
-                current url: {url}
-            </Typography>
-            <br />
-            <Button onClick={controller.screenshot} variant="contained" className={classes.button}>
-                Screenshot
-            </Button>
-            <br />
-            <br />
-            <Button onClick={controller.openWindow} variant="contained" className={classes.button}>
-                Open new window
-            </Button>
-            <br />
-            <br />
-            <Button onClick={controller.loadUrl} variant="contained" className={classes.button}>
-                Refresh
-            </Button>
-            <br />
-            <br />
-            <Button onClick={controller.maximize} variant="contained" className={classes.button}>
-                Maximize
-            </Button>
-            <br />
-            <br />
-            <TextField
-                id="url"
-                label="Change current Url"
-                className={classes.textField}
-                value={url}
-                onChange={handleOnUrlChange}
-                margin="normal"
-                fullWidth={true}
-            />
+            {
+                props.config
+                    .captureConfigs()
+                    .map(capture =>
+                        <React.Fragment key={capture.name}>
+                            <CaptureCard captureConfig={capture} now={now} />
+                            <br />
+                        </React.Fragment>
+                    )
+            }
+            <CreateCapture />
         </PageContainer>
     );
 };
 
-export default withStyles(containerStyles)(ControllerContainer);
+export default withConfig(withStyles(styles)(ControllerContainer));

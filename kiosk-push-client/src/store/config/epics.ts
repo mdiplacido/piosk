@@ -1,13 +1,33 @@
-import { Action } from "redux";
-import { combineEpics, ofType } from "redux-observable";
-import { Observable, of as observableOf } from "rxjs";
-import { catchError, delay, map, mapTo, mergeMap, withLatestFrom } from "rxjs/operators";
-
-import { readJson, saveJson } from "../../common/io/file-system";
-import { ConfigState } from "../../providers/config/config";
-import { LoggerSeverity, nextLogMessage } from "../logger/actions";
-import { nextNotification } from "../notifications/actions";
 import IState from "../state";
+import { Action } from "redux";
+import {
+    catchError,
+    delay,
+    map,
+    mapTo,
+    mergeMap,
+    withLatestFrom
+} from "rxjs/operators";
+import {
+    combineEpics,
+    ofType
+} from "redux-observable";
+import { ConfigState } from "../../providers/config/config";
+import { IEpicDependencies } from "../epic-dependencies";
+import {
+    LoggerSeverity,
+    nextLogMessage
+} from "../logger/actions";
+import { nextNotification } from "../notifications/actions";
+import {
+    Observable,
+    of as observableOf
+} from "rxjs";
+import {
+    readJson,
+    saveJson
+} from "../../common/io/file-system";
+
 import {
     ConfigActionTypes,
     ISaveConfigAction,
@@ -15,33 +35,55 @@ import {
     loadConfigSuccess,
     saveConfigFailure,
     saveConfigSuccess,
+    ISaveCaptureStatusAction,
 } from "./actions";
 
-export const loadConfigEpic =
-    (action$: Observable<Action>) =>
+const postProcessConfig = (config: ConfigState) => ({
+    ...config,
+    captureConfigs: (config.captureConfigs || [])
+        .map(c => ({
+            ...c,
+            // we convert the lastCapture to a date if one exists
+            lastCapture: c.lastCapture && new Date(c.lastCapture)
+        }))
+});
+
+export const loadConfigEpic$ =
+    (action$: Observable<Action>, _state$: Observable<IState>, dependencies: IEpicDependencies) =>
         action$.pipe(
             ofType(ConfigActionTypes.Load),
-            delay(3000),
+            delay(dependencies.testDelayMilliseconds),
             mergeMap(() => readJson("./config.json") as Observable<ConfigState>),
+            map(config => postProcessConfig(config)),
             map(config => loadConfigSuccess(config)),
-            catchError(err => observableOf(loadConfigFailure(err))),
+            catchError(err => observableOf(
+                loadConfigFailure(err),
+                nextLogMessage(JSON.stringify(err), LoggerSeverity.Error),
+                nextNotification("Failed to load config, see error log", LoggerSeverity.Error)
+            )),
         );
 
-export const saveConfigEpic =
-    (action$: Observable<ISaveConfigAction>, state$: Observable<IState>) =>
+const trimAdditionalData = (config: ConfigState) => ({
+    ...config,
+    captureConfigs: config.captureConfigs.map(c => ({ ...c, additionalData: undefined }))
+});
+
+export const saveConfigEpic$ =
+    (action$: Observable<ISaveConfigAction>, state$: Observable<IState>, dependencies: IEpicDependencies) =>
         action$.pipe(
             ofType(ConfigActionTypes.Save),
-            delay(3000),
+            delay(dependencies.testDelayMilliseconds),
             withLatestFrom(state$),
             mergeMap(([action, state]) =>
-                saveJson("./config.json", { ...state.config, ...action.config })
+                saveJson("./config.json", { ...trimAdditionalData(state.config), ...trimAdditionalData(action.config) })
                     .pipe(
-                        mapTo({ ...state.config, ...action.config }),
+                        mapTo({ config: { ...state.config, ...action.config }, silent: !!action.silent }),
                     )
             ),
-            mergeMap((config: ConfigState) => [
+            mergeMap(({ config, silent }) => [
                 saveConfigSuccess(config),
-                nextNotification("Configuration save complete", LoggerSeverity.Info)
+                !silent && nextNotification("Configuration save complete", LoggerSeverity.Info)
+                || nextLogMessage("Background configuration save complete", LoggerSeverity.Info)
             ]),
             catchError(err => observableOf(
                 saveConfigFailure(err),
@@ -50,4 +92,29 @@ export const saveConfigEpic =
             ))
         );
 
-export default combineEpics(loadConfigEpic, saveConfigEpic);
+// todo: might be able to combine the save logic for all config vs. capture status into a generic epic.
+// this is fine for now.
+export const saveCaptureStatusEpic$ =
+    (action$: Observable<ISaveCaptureStatusAction>, state$: Observable<IState>, dependencies: IEpicDependencies) =>
+        action$.pipe(
+            ofType(ConfigActionTypes.SaveCaptureStatus),
+            delay(dependencies.testDelayMilliseconds),
+            withLatestFrom(state$),
+            mergeMap(([_action, state]) =>
+                saveJson("./config.json", { ...trimAdditionalData(state.config) })
+                    .pipe(
+                        mapTo(state.config),
+                    )
+            ),
+            mergeMap((config) => [
+                saveConfigSuccess(config),
+                nextLogMessage("Capture status background configuration save complete", LoggerSeverity.Info)
+            ]),
+            catchError(err => observableOf(
+                saveConfigFailure(err),
+                nextLogMessage(JSON.stringify(err), LoggerSeverity.Error),
+                nextNotification("Failed to save config, see error log", LoggerSeverity.Error)
+            ))
+        );
+
+export default combineEpics(loadConfigEpic$, saveConfigEpic$, saveCaptureStatusEpic$);

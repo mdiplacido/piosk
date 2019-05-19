@@ -21,10 +21,10 @@ export interface SettingsProps extends ConfigConsumerProps, ConfigProviderSaving
 const Settings = (props: SettingsProps & ContainerStyleProps) => {
     const { classes, config, saving, saved } = props;
 
-    const [currentConfigState, setCurrentConfigState] = useState(config);
+    const [currentConfigState, setCurrentConfigState] = useState(config.settings);
 
     const onSave = () => {
-        config.update(currentConfigState.settings);
+        config.update(currentConfigState);
     };
 
     const updateConfigState = (key: string, value: string) => {
@@ -37,8 +37,8 @@ const Settings = (props: SettingsProps & ContainerStyleProps) => {
                     value :
                     +lowerValue;
 
-        const settings = { ...currentConfigState.settings, [key]: coercedValue };
-        setCurrentConfigState({ ...currentConfigState, settings });
+        const nextConfigState = { ...currentConfigState, [key]: coercedValue };
+        setCurrentConfigState(nextConfigState);
     };
 
     return (
@@ -51,21 +51,23 @@ const Settings = (props: SettingsProps & ContainerStyleProps) => {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {currentConfigState.all().map(c => (
-                        <TableRow key={c.key}>
-                            <TableCell component="th" scope="row">
-                                {c.key}
-                            </TableCell>
-                            <TableCell align="left">
-                                <input
-                                    size={100}
-                                    type="text"
-                                    name={c.key}
-                                    defaultValue={c.value}
-                                    onChange={e => updateConfigState(c.key, e.target.value)} />
-                            </TableCell>
-                        </TableRow>
-                    ))}
+                    {props.config    // we drive with the store config keys
+                        .all(false)  // do not include capture config
+                        .map(c => (
+                            <TableRow key={c.key}>
+                                <TableCell component="th" scope="row">
+                                    {c.key}
+                                </TableCell>
+                                <TableCell align="left">
+                                    <input
+                                        size={100}
+                                        type="text"
+                                        name={c.key}
+                                        defaultValue={currentConfigState[c.key]}   // we use the current component state
+                                        onChange={e => updateConfigState(c.key, e.target.value)} />
+                                </TableCell>
+                            </TableRow>
+                        ))}
                 </TableBody>
             </Table>
             <br />

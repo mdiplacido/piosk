@@ -1,20 +1,29 @@
-import { createStyles, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
-import { green } from "@material-ui/core/colors";
 import * as React from "react";
-import { ChangeEvent } from "react";
-import { connect } from "react-redux";
-
+import containerStyles from "../../components/common/styles";
 import PageContainer from "../../components/common/page-container";
 import SpinnerButton from "../../components/common/spinner-button";
-import containerStyles from "../../components/common/styles";
+import { ChangeEvent } from "react";
+import {
+  ConfigConsumerProps,
+  withConfig
+  } from "../../providers/config/config.provider";
+import { connect } from "react-redux";
+import {
+  createStyles,
+  TextField,
+  Theme,
+  WithStyles,
+  withStyles
+  } from "@material-ui/core";
+import { green } from "@material-ui/core/colors";
+import { LoggerSeverity } from "../../store/logger/actions";
+
 import {
   IPublisherService,
   IPublisherStore,
   PublisherProviderProps,
   withPublisher,
 } from "../../providers/capture-publisher/publisher.provider";
-import { ConfigConsumerProps, withConfig } from "../../providers/config/config.provider";
-import { LoggerSeverity } from "../../store/logger/actions";
 import {
   INotificationsActionsProp,
   mapNotificationActionsToProps,

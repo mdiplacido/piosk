@@ -1,12 +1,20 @@
-// following "Provider pattern" here: https://github.com/sw-yx/react-typescript-cheatsheet
 import * as React from "react";
-import { connect } from "react-redux";
-
-import { mapConfigActionsToProps, IConfigActionsProp } from "../../store/config/actions";
-import selectConfig from "../../store/config/selectors";
 import IState from "../../store/state";
+import selectConfig from "../../store/config/selectors";
+import {
+    ConfigState,
+    ConfigStore,
+    ICaptureConfig,
+    CaptureStatus
+    } from "./config";
+import { connect } from "react-redux";
 import { getDisplayName } from "../util";
-import { ConfigState, ConfigStore, UpdateConfigStateArg } from "./config";
+import {
+    IConfigActionsProp,
+    mapConfigActionsToProps
+    } from "../../store/config/actions";
+
+// following "Provider pattern" here: https://github.com/sw-yx/react-typescript-cheatsheet
 
 export interface ConfigConsumerProps {
     config: ConfigStore;
@@ -16,7 +24,7 @@ export interface ConfigProviderProps {
     config: ConfigState;
 }
 
-const defaultConfig: ConfigState = {
+export const defaultConfig: ConfigState = {
     localPublishPath: "/var/jail/data/piosk_pickup/",
     enablePublishToDisk: true,
     enablePublishToSFTP: false,
@@ -24,9 +32,11 @@ const defaultConfig: ConfigState = {
     sftpUsername: "piosk_publisher",
     sftpAddress: "192.168.42.1",
     minAvailableSpaceOnPiPercent: 50 / 100,
-    defaultPageSettleDelayMilliseconds: 30,
+    defaultPageSettleDelaySeconds: 30,
     maxLogFileSizeBytes: 1024 * 1024 * 10,
-    maxLogLinesForDisplay: 1000
+    maxLogLinesForDisplay: 1000,
+    captureCheckIntervalSeconds: 30,
+    captureConfigs: []
 };
 
 export const ConfigContext = React.createContext<ConfigStore>({} as ConfigStore);
@@ -46,21 +56,52 @@ class ConfigProvider extends React.Component<ConfigProviderProps & IConfigAction
             this.props.config || defaultConfig;
     }
 
-    update = (newState: UpdateConfigStateArg) => {
-        this.props.configActions.saveConfig(newState as Partial<ConfigState>);
+    saveCaptureConfig = (config: ICaptureConfig, silent = false) => {
+        this.update({ captureConfigs: [config] }, silent);
     }
 
-    all = () => {
+    saveCaptureStatus = (captureName: string, captureStatus: CaptureStatus) =>  {
+        this.props.configActions.saveCaptureStatus(captureName, captureStatus);
+    }
+
+    update = (newState: Partial<ConfigState>, silent = false) => {
+        const current = this.settings;
+        const newCaptureConfigs = newState.captureConfigs || [];
+        const currentCaptureConfigs = current.captureConfigs
+            .filter(cc => newCaptureConfigs
+                .every(ncc => ncc.name.toLowerCase() !== cc.name.toLowerCase()));
+
+        const mergedState = {
+            ...current,
+            ...newState,
+            captureConfigs: [
+                ...currentCaptureConfigs,
+                ...newCaptureConfigs
+            ]
+        };
+
+        this.props.configActions.saveConfig(mergedState, silent);
+    }
+
+    all = (includeCapture = true) => {
         return Object
             .keys(this.settings)
+            .filter(k => includeCapture || k !== "captureConfigs")
             .map(k => ({ key: k, value: this.settings[k] }));
+    }
+
+    captureConfigs = () => {
+        return this.settings.captureConfigs;
     }
 
     render(): JSX.Element {
         const store: ConfigStore = {
             settings: this.settings,
+            saveCaptureConfig: this.saveCaptureConfig,
+            saveCaptureStatus: this.saveCaptureStatus,
             update: this.update,
-            all: this.all
+            all: this.all,
+            captureConfigs: this.captureConfigs,
         };
 
         return (
@@ -71,10 +112,10 @@ class ConfigProvider extends React.Component<ConfigProviderProps & IConfigAction
     }
 }
 
-export function withConfig<T extends Object = {}>(
-    Component: React.ComponentClass<ConfigConsumerProps & T> | React.FC<ConfigConsumerProps & T>
-): React.RefForwardingComponent<typeof Component, ConfigConsumerProps & T> {
-    const c: React.RefForwardingComponent<typeof Component, ConfigConsumerProps & T> = (props: T) => {
+export function withConfig<P extends Object = {}>(
+    Component: React.ComponentClass<ConfigConsumerProps & P> | React.FC<ConfigConsumerProps & P>
+): React.ComponentClass<Pick<P, Exclude<keyof P, keyof ConfigConsumerProps>>> {
+    const c: React.RefForwardingComponent<typeof Component, ConfigConsumerProps & P> = (props: P) => {
         return (
             <ConfigContext.Consumer>
                 {
@@ -85,7 +126,7 @@ export function withConfig<T extends Object = {}>(
     };
 
     c.displayName = `withConfig(${getDisplayName(Component)})`;
-    return c;
+    return c as unknown as React.ComponentClass<Pick<P, Exclude<keyof P, keyof ConfigConsumerProps>>>;
 }
 
 function mapStateToProps(state: IState): ConfigProviderProps {

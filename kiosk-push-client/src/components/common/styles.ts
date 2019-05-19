@@ -9,7 +9,13 @@ export const containerStyles = (theme: Theme) => createStyles({
     header: {
         ["padding-top"]: "10px"
     },
+    headerGrid: {
+        backgroundColor: "white",
+        position: "fixed",
+        width: "100%",
+    },
     ["content-row"]: {
+        ["padding-top"]: "80px !important",
         ["padding-left"]: "30px !important"
     },
     button: {

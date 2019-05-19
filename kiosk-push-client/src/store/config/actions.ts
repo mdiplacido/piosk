@@ -1,4 +1,10 @@
-import { ActionCreatorsMapObject, AnyAction, bindActionCreators, Dispatch } from "redux";
+import {
+    ActionCreatorsMapObject,
+    AnyAction,
+    bindActionCreators,
+    Dispatch
+    } from "redux";
+import { CaptureStatus } from "./../../providers/config/config";
 import { ConfigState } from "../../providers/config/config";
 
 export enum ConfigActionTypes {
@@ -9,6 +15,8 @@ export enum ConfigActionTypes {
     Save = "CONFIG_SAVE",
     SaveSuccess = "CONFIG_SAVE_SUCCESS",
     SaveFailure = "CONFIG_SAVE_FAILURE",
+
+    SaveCaptureStatus = "CONFIG_SAVE_CAPTURE_STATUS",
 }
 
 export interface ILoadConfigAction extends AnyAction {
@@ -28,6 +36,7 @@ export interface ILoadConfigFailureAction extends AnyAction {
 export interface ISaveConfigAction extends AnyAction {
     type: ConfigActionTypes.Save;
     config: ConfigState;
+    silent?: boolean;
 }
 
 export interface ISaveConfigSuccessAction extends AnyAction {
@@ -38,6 +47,14 @@ export interface ISaveConfigSuccessAction extends AnyAction {
 export interface ISaveConfigFailureAction extends AnyAction {
     type: ConfigActionTypes.SaveFailure;
     error: any;
+}
+
+export interface ISaveCaptureStatusAction extends AnyAction {
+    type: ConfigActionTypes.SaveCaptureStatus;
+    payload: {
+        captureName: string;
+        captureStatus: CaptureStatus;
+    };
 }
 
 export function loadConfig(): ILoadConfigAction {
@@ -60,10 +77,11 @@ export function loadConfigFailure(error: any): ILoadConfigFailureAction {
     };
 }
 
-export function saveConfig(config: ConfigState): ISaveConfigAction {
+export function saveConfig(config: ConfigState, silent = false): ISaveConfigAction {
     return {
         type: ConfigActionTypes.Save,
-        config
+        config,
+        silent
     };
 }
 
@@ -81,14 +99,26 @@ export function saveConfigFailure(error: any): ISaveConfigFailureAction {
     };
 }
 
+export function saveCaptureStatus(captureName: string, status: CaptureStatus): ISaveCaptureStatusAction {
+    return {
+        type: ConfigActionTypes.SaveCaptureStatus,
+        payload: {
+            captureName,
+            captureStatus: status,
+        }
+    };
+}
+
 export interface IConfigActionCreator extends ActionCreatorsMapObject<ConfigActions> {
     loadConfig: () => ILoadConfigAction;
-    saveConfig: (state: Partial<ConfigState>) => ISaveConfigAction;
+    saveCaptureStatus: (captureName: string, status: CaptureStatus) => ISaveCaptureStatusAction;
+    saveConfig: (state: ConfigState, silent?: boolean) => ISaveConfigAction;
 }
 
 export const ConfigActionCreatorFactory: () => IConfigActionCreator = () => ({
     loadConfig,
-    saveConfig
+    saveCaptureStatus,
+    saveConfig,
 });
 
 export interface IConfigActionsProp {
@@ -103,4 +133,5 @@ export function mapConfigActionsToProps(dispatch: Dispatch): IConfigActionsProp 
 
 export type ConfigActions =
     ILoadConfigAction | ILoadConfigSuccessAction | ILoadConfigFailureAction |
-    ISaveConfigAction | ISaveConfigSuccessAction | ISaveConfigFailureAction;
+    ISaveConfigAction | ISaveConfigSuccessAction | ISaveConfigFailureAction |
+    ISaveCaptureStatusAction;
