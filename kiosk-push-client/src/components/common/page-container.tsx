@@ -16,7 +16,7 @@ const PageContainer = (props: ContainerStyleProps & PageContainerProps) => {
         <div className={classes.root}>
             <Grid container spacing={16}>
                 {props.title &&
-                    <Grid xs={12} className={classes.headerGrid}>
+                    <Grid container className={classes.headerGrid}>
                         <Typography className={classes.header} variant="h2" gutterBottom>
                             {props.title}
                         </Typography>
