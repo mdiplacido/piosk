@@ -4,13 +4,13 @@
   "description": "Top Level piosk node packages",
   "main": "index.js",
   "scripts": {
-    "build:client": "cd kiosk-browser-client && npm run build",
+    "build:client": "cd kiosk-push-client && npm run build",
     "build:server": "cd kiosk-server && npm run build",
     "build": "run-p build:client build:server",
-    "install:client": "cd kiosk-browser-client && npm install",
+    "install:client": "cd kiosk-push-client && npm install",
     "install:server": "cd kiosk-server && npm install",
     "postinstall": "run-p install:client install:server",
-    "start:client": "cd kiosk-browser-client && npm start",
+    "start:client": "cd kiosk-push-client && npm start",
     "start:server": "cd kiosk-server && npm run start:watch",
     "start": "run-p start:client start:server",
     "test": "echo \"Error: no test specified\" && exit 1"
