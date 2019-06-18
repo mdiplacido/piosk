@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "kiosk-push-client"
+		},
+		{
+			"path": "kiosk-common"
 		}
 	],
 	"settings": {
