@@ -14,8 +14,9 @@ import {
     useContext,
     useEffect
 } from "react";
+import { withPublisher, PublisherProviderProps } from '../../providers/capture-publisher/publisher.provider';
 
-type CaptureControllerProps = ILoggerActionsProp & ConfigConsumerProps;
+type CaptureControllerProps = ILoggerActionsProp & ConfigConsumerProps & PublisherProviderProps;
 
 const CaptureController = (props: CaptureControllerProps) => {
     const captureService = useContext(CaptureServiceContext);
@@ -34,7 +35,7 @@ const CaptureController = (props: CaptureControllerProps) => {
 
         const doWork = () => {
             props.loggerActions.next("checking for pending captures...", LoggerSeverity.Verbose);
-            captureService.process(props.config, props.loggerActions);
+            captureService.process(props.publisherStore.publisher, props.config, props.loggerActions);
         };
 
         // run immediate
@@ -65,4 +66,4 @@ const CaptureController = (props: CaptureControllerProps) => {
 };
 
 // using both HOC and useContext in this file, for fun.
-export default connect(null, mapLoggerActionsToProps)(withConfig(CaptureController));
+export default connect(null, mapLoggerActionsToProps)(withConfig(withPublisher(CaptureController)));

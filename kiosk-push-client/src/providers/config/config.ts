@@ -7,6 +7,8 @@ export enum CaptureStatus {
     Settled = "settled",
     Capturing = "capturing",
     Captured = "captured",
+    Publishing = "publishing",
+    Published = "published",
     // Don't see a need for completed state yet... captured seems to be enough
     // Completed = "completed",
     Canceled = "canceled",

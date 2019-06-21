@@ -71,10 +71,10 @@ export class App extends React.Component<AppProps, State> {
       // note: REDUX provider is located in the bootstrapping index.html, this is done because App depends on
       // the provider so we we need to hoist it up one level
       <ConfigProvider>
-        <CaptureServiceContext.Provider value={captureService}>
-          <CaptureController />
-        </CaptureServiceContext.Provider>
         <PublisherProvider>
+          <CaptureServiceContext.Provider value={captureService}>
+            <CaptureController />
+          </CaptureServiceContext.Provider>
           <MuiThemeProvider theme={theme}>
             <CssBaseline />
             {/* intentionally using hash router.  electron expects the file to be on disk

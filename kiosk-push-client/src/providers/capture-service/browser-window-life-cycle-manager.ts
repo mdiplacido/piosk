@@ -7,6 +7,7 @@ import {
     ConfigState
 } from "../config/config";
 import { ICaptureConfig } from "../config/config";
+import { IPublisherService, PublisherCompletionStatus } from '../capture-publisher/publisher.provider';
 
 export enum BrowserWindowLifeCycle {
     None = "none",
@@ -66,9 +67,9 @@ export class BrowserWindowLifeCycleManager {
         };
     }
 
-    public async run() {
+    public async run(publisher: IPublisherService) {
         try {
-            await this.runImpl();
+            await this.runImpl(publisher);
         } catch (error) {
             this.renderWindow.close();
             this.renderWindow = null as unknown as BrowserWindow;
@@ -77,7 +78,7 @@ export class BrowserWindowLifeCycleManager {
         }
     }
 
-    private async runImpl() {
+    private async runImpl(publisher: IPublisherService) {
         this.ensureRenderWindow();
         const settleDelay = this.configState.defaultPageSettleDelaySeconds;
 
@@ -111,6 +112,17 @@ export class BrowserWindowLifeCycleManager {
             this.capture = await Promise.race([this.screenshot(), this.delay(lifeCycle, settleDelay, true /* throw */)]) as Electron.NativeImage;
             this.updateState(CaptureStatus.Captured);
         }
+
+        this.updateState(CaptureStatus.Publishing);
+        const publishStatus = await Promise.race([publisher.sendImage(this.capture), this.delay(lifeCycle, settleDelay, true /* throw */)]);
+        
+        if (publishStatus && publishStatus.status && publishStatus.status === PublisherCompletionStatus.Failure) {
+            this.updateState(CaptureStatus.Failed);
+            return Promise.reject(`Failed to upload image for ${this.name}, got error ${publishStatus.message}`);
+        } 
+
+        this.updateState(CaptureStatus.Published);
+        return;
     }
 
     private async once(event: "ready-to-show" | "enter-full-screen"): Promise<void> {
