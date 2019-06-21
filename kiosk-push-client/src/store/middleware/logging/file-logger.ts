@@ -23,6 +23,7 @@ function getWriter(logger: Logger, event: INextLogAction) {
 
 function log(logger: Logger, event: INextLogAction): void {
     const writer = getWriter(logger, event); 
+    // TODO: use a scoped logger from data in the INextLogAction.
     writer.apply(logger, [event.payload.message]);
 }
 
