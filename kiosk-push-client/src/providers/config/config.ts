@@ -19,6 +19,7 @@ export enum CaptureStatus {
 export const PickupStates = [
     CaptureStatus.None,
     CaptureStatus.Captured,
+    CaptureStatus.Published,
     CaptureStatus.Failed,
     CaptureStatus.Canceled
 ];

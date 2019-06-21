@@ -6,7 +6,7 @@ import {
     map,
     mapTo,
     mergeMap,
-    withLatestFrom
+    withLatestFrom,
 } from "rxjs/operators";
 import {
     combineEpics,
@@ -21,7 +21,7 @@ import {
 import { nextNotification } from "../notifications/actions";
 import {
     Observable,
-    of as observableOf
+    of as observableOf,
 } from "rxjs";
 import {
     readJson,
@@ -106,8 +106,9 @@ export const saveCaptureStatusEpic$ =
                         mapTo(state.config),
                     )
             ),
-            mergeMap((config) => [
-                saveConfigSuccess(config),
+            mergeMap((_config) => [
+                // we don't update the config, that already happened in the reducer, for SaveCaptureStatus
+                saveConfigSuccess(null as any),
                 nextLogMessage("Capture status background configuration save complete", LoggerSeverity.Info)
             ]),
             catchError(err => observableOf(

@@ -118,11 +118,10 @@ export class BrowserWindowLifeCycleManager {
         
         if (publishStatus && publishStatus.status && publishStatus.status === PublisherCompletionStatus.Failure) {
             this.updateState(CaptureStatus.Failed);
-            return Promise.reject(`Failed to upload image for ${this.name}, got error ${publishStatus.message}`);
+            throw new Error(`Failed to upload image for ${this.name}, got error ${publishStatus.message}`);
         } 
 
         this.updateState(CaptureStatus.Published);
-        return;
     }
 
     private async once(event: "ready-to-show" | "enter-full-screen"): Promise<void> {

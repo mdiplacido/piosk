@@ -1,12 +1,15 @@
-import { ConfigStore } from "../config/config";
-import { IPublisherService, PublisherCompletionEvent, PublisherCompletionStatus } from "./publisher.provider";
+import { IPublisherService, PublisherCompletionEvent, PublisherCompletionStatus } from '../publisher.provider';
+import { ConfigStore } from '../../config/config';
 
 // tslint:disable:no-require-imports
 // tslint:disable:no-var-requires
 const Client = require("ssh2-sftp-client");
 
-export class PublisherService implements IPublisherService {
+export class SftpPublisherService implements IPublisherService {
+    readonly isEnabled: boolean;
+
     constructor(private readonly config: ConfigStore, private readonly password: string) {
+        this.isEnabled = !!this.config.settings.enablePublishToSFTP;
     }
 
     public get currentPassword() {
