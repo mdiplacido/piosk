@@ -8,7 +8,7 @@ import rootEpic from "./epics";
 import initialStoreState from "./initial-state";
 import rootReducer from "./reducer";
 import IState from "./state";
-import { createLoggingMiddleware } from './middleware/logging/file-logger';
+import { createLoggingMiddleware, createLogger } from './middleware/logging/file-logger';
 
 const epicDependencies: IEpicDependencies = {
     testDelayMilliseconds: 0
@@ -19,7 +19,8 @@ const epicMiddleware = createEpicMiddleware({ dependencies: epicDependencies });
 // TODO: are folks conditionally adding the immutableStateInvariantMiddleware for
 // prod vs. dev builds? -marco
 export default function configureStore(initialState: IState = initialStoreState) {
-    const loggingMiddleware = createLoggingMiddleware();
+    const logger = createLogger();
+    const loggingMiddleware = createLoggingMiddleware(logger);
 
     const store = createStore(
         rootReducer,
