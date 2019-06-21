@@ -57,6 +57,7 @@
     "chalk": "^2.4.1",
     "chokidar": "^2.0.4",
     "fs-extra": "^7.0.1",
+    "kiosk-common": "file:../kiosk-common",
     "lodash": "^4.17.11",
     "log4js": "^4.0.0",
     "rxjs": "^6.3.3",

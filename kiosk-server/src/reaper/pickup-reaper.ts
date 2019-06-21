@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import { Config } from './../config/config';
-import { Logger } from '../logging/logger';
+import { Logger } from 'kiosk-common';
 import { readdir, stat } from 'fs-extra';
 import { unlink } from 'fs-extra';
 

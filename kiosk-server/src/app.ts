@@ -6,7 +6,7 @@ import * as WebSocket from "ws";
 
 import { Config } from "./config/config";
 import { ReadFileStream } from "./io/read-file-stream";
-import { Logger } from "./logging/logger";
+import { Logger } from "kiosk-common";
 import { IImagePayload, IKioskMessage, KioskMessageType } from "./model/payloads";
 import { PickupReaper } from "./reaper/pickup-reaper";
 

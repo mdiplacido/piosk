@@ -4,7 +4,7 @@ import { argv } from "yargs";
 
 import { App } from "./app";
 import { Config } from "./config/config";
-import { AggregateLogger, ConsoleLogger, FileLogger } from "./logging";
+import { AggregateLogger, ConsoleLogger, FileLogger } from "kiosk-common";
 import { dumpSettings } from "./utility/dump-settings";
 
 // we read from a jailed location on the Pi, clients that push to the Pi push over SFTP and the SSHD jails these
