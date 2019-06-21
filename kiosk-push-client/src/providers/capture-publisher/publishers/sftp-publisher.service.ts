@@ -1,4 +1,4 @@
-import { IPublisherService, PublisherCompletionEvent, PublisherCompletionStatus } from '../publisher.provider';
+import { IPublisherService, PublisherCompletionEvent, PublisherCompletionStatus, IPublishInfo } from '../publisher.provider';
 import { ConfigStore } from '../../config/config';
 
 // tslint:disable:no-require-imports
@@ -16,7 +16,7 @@ export class SftpPublisherService implements IPublisherService {
         return this.password;
     }
 
-    sendImage(image: Electron.NativeImage): Promise<PublisherCompletionEvent> {
+    sendImage(info: IPublishInfo): Promise<PublisherCompletionEvent> {
         const client = new Client();
 
         return new Promise<PublisherCompletionEvent>((resolve, reject) => {
@@ -28,7 +28,7 @@ export class SftpPublisherService implements IPublisherService {
                     password: this.password
                 })
                 .then(() => {
-                    return client.put(image.toPNG(), "client-test-image.png");
+                    return client.put(info.image.toPNG(), info.name);
                 })
                 .then(() => {
                     resolve({

@@ -84,13 +84,15 @@
     "rxjs": "^6.4.0",
     "ssh2-sftp-client": "^2.4.3",
     "tslib": "^1.9.3",
-    "typeface-roboto": "0.0.54"
+    "typeface-roboto": "0.0.54",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@types/classnames": "^2.2.7",
     "@types/fs-extra": "^5.0.5",
     "@types/react-redux": "^7.0.1",
     "@types/redux-immutable-state-invariant": "^2.1.0",
+    "@types/uuid": "^3.4.4",
     "babel-plugin-transform-async-to-generator": "^6.24.1",
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",

@@ -7,7 +7,8 @@ import {
     ConfigState
 } from "../config/config";
 import { ICaptureConfig } from "../config/config";
-import { IPublisherService, PublisherCompletionStatus } from '../capture-publisher/publisher.provider';
+import { IPublisherService, PublisherCompletionStatus, IPublishInfo } from '../capture-publisher/publisher.provider';
+import * as uuid from "uuid";
 
 export enum BrowserWindowLifeCycle {
     None = "none",
@@ -114,7 +115,13 @@ export class BrowserWindowLifeCycleManager {
         }
 
         this.updateState(CaptureStatus.Publishing);
-        const publishStatus = await Promise.race([publisher.sendImage(this.capture), this.delay(lifeCycle, settleDelay, true /* throw */)]);
+        // todo: publisher should use pngx format 
+        const imageInfo: IPublishInfo = {
+            name: uuid() + ".png",
+            image: this.capture,
+        };
+
+        const publishStatus = await Promise.race([publisher.sendImage(imageInfo), this.delay(lifeCycle, settleDelay, true /* throw */)]);
         
         if (publishStatus && publishStatus.status && publishStatus.status === PublisherCompletionStatus.Failure) {
             this.updateState(CaptureStatus.Failed);
