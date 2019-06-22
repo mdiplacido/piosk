@@ -16,9 +16,15 @@ export interface PublisherCompletionEvent {
     status: PublisherCompletionStatus;
 }
 
+export interface IPublishInfo {
+    name: string;
+    image: Electron.NativeImage;
+}
+
 export interface IPublisherService {
+    isEnabled: boolean;
     currentPassword: string;
-    sendImage(image: Electron.NativeImage): Promise<PublisherCompletionEvent>;
+    sendImage(info: IPublishInfo): Promise<PublisherCompletionEvent>;
 }
 
 export interface IPublisherStore {

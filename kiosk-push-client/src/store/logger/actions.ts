@@ -48,4 +48,8 @@ export function mapLoggerActionsToProps(dispatch: Dispatch): ILoggerActionsProp 
     };
 }
 
+export function isLogAction(action: AnyAction): boolean {
+    return !!action && action.type === LoggerActionTypes.Next;
+}
+
 export type LoggerActions = INextLogAction;

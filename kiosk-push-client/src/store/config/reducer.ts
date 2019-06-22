@@ -18,7 +18,8 @@ export default function configReducer(state = initialState.config, action: Confi
             // TODO: should also consider removing "cruft config"
             return { ...defaultConfig, ...action.config };
         case ConfigActionTypes.SaveSuccess:
-            return action.config;
+            // we will use the current action state or the current state.
+            return action.config || state;
         case ConfigActionTypes.SaveCaptureStatus: {
             const toUpdate = state.captureConfigs.find(c => c.name === action.payload.captureName) as ICaptureConfig;
             return {

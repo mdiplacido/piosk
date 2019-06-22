@@ -1,19 +1,22 @@
-import { ConfigStore } from "../config/config";
-import { IPublisherService, PublisherCompletionEvent, PublisherCompletionStatus } from "./publisher.provider";
+import { IPublisherService, PublisherCompletionEvent, PublisherCompletionStatus, IPublishInfo } from '../publisher.provider';
+import { ConfigStore } from '../../config/config';
 
 // tslint:disable:no-require-imports
 // tslint:disable:no-var-requires
 const Client = require("ssh2-sftp-client");
 
-export class PublisherService implements IPublisherService {
+export class SftpPublisherService implements IPublisherService {
+    readonly isEnabled: boolean;
+
     constructor(private readonly config: ConfigStore, private readonly password: string) {
+        this.isEnabled = !!this.config.settings.enablePublishToSFTP;
     }
 
     public get currentPassword() {
         return this.password;
     }
 
-    sendImage(image: Electron.NativeImage): Promise<PublisherCompletionEvent> {
+    sendImage(info: IPublishInfo): Promise<PublisherCompletionEvent> {
         const client = new Client();
 
         return new Promise<PublisherCompletionEvent>((resolve, reject) => {
@@ -25,7 +28,7 @@ export class PublisherService implements IPublisherService {
                     password: this.password
                 })
                 .then(() => {
-                    return client.put(image.toPNG(), "client-test-image.png");
+                    return client.put(info.image.toPNG(), info.name);
                 })
                 .then(() => {
                     resolve({

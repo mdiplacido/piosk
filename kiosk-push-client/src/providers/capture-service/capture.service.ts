@@ -2,16 +2,15 @@ import { BrowserWindowLifeCycleManager, OnBrowserLifeCycleEventListener } from "
 import {
     CaptureStatus,
     ICaptureConfig,
-    PickupStates
-} from "./../config/config";
-import {
+    PickupStates,
     ConfigState,
-    ConfigStore
-} from "../config/config";
+    ConfigStore,
+} from "./../config/config";
 import {
     ILoggerActionCreator,
     LoggerSeverity
 } from "../../store/logger/actions";
+import { IPublisherService } from '../capture-publisher/publisher.provider';
 
 function normManagerName(name: string): string {
     // TODO: we should probably use a UUID to represent the manager config
@@ -21,7 +20,7 @@ function normManagerName(name: string): string {
 export class CaptureService {
     private browserManagers = new Map<string, BrowserWindowLifeCycleManager>();
 
-    public process(configStore: ConfigStore, loggerActions: ILoggerActionCreator) {
+    public process(publisher: IPublisherService, configStore: ConfigStore, loggerActions: ILoggerActionCreator) {
         const now = new Date();
         const configs = configStore.captureConfigs();
 
@@ -58,9 +57,9 @@ export class CaptureService {
             .map(pending => this.browserManagers.get(normManagerName(pending.name)) as BrowserWindowLifeCycleManager)
             .forEach(async mgr => {
                 try {
-                    await mgr.run();
+                    await mgr.run(publisher);
                 } catch (error) {
-                    loggerActions.next(`fatal error running capture window for '${mgr.name}' error ${error}`, LoggerSeverity.Error);
+                    loggerActions.next(`fatal error running capture window for '${mgr.name}' error ${JSON.stringify(error)}`, LoggerSeverity.Error);
                 }
             });
     }

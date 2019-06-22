@@ -105,8 +105,7 @@
       "node",
       "mjs"
     ],
-    "globals": {
-    }
+    "globals": {}
   },
   "babel": {
     "presets": [

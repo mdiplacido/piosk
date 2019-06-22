@@ -7,6 +7,8 @@ export enum CaptureStatus {
     Settled = "settled",
     Capturing = "capturing",
     Captured = "captured",
+    Publishing = "publishing",
+    Published = "published",
     // Don't see a need for completed state yet... captured seems to be enough
     // Completed = "completed",
     Canceled = "canceled",
@@ -17,6 +19,7 @@ export enum CaptureStatus {
 export const PickupStates = [
     CaptureStatus.None,
     CaptureStatus.Captured,
+    CaptureStatus.Published,
     CaptureStatus.Failed,
     CaptureStatus.Canceled
 ];
