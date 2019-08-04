@@ -36,7 +36,7 @@ export class CaptureService {
 
         // make sure the publisher is not falling behind, paused, or some other issue
         if (!publisher.canEnqueue()) {
-            loggerActions.next("Cannot process captures, the publisher queue is full!", LoggerSeverity.Verbose);
+            loggerActions.next("Cannot process captures, the publisher queue is full!", LoggerSeverity.Warning);
             return;
         }
 

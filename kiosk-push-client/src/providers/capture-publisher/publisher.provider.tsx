@@ -4,6 +4,7 @@ import { ConfigContext } from "../config/config.provider";
 import { ConfigStore } from "../config/config";
 import { getDisplayName } from "../util";
 import { PublisherService } from "./publisher.service";
+import { Queue } from "algothizms";
 
 export enum PublisherCompletionStatus {
     None = "None",
@@ -31,7 +32,6 @@ export interface IPublisherService {
     canEnqueue(): boolean;
     enqueue(info: IPublishInfo): Promise<void>;
     sendImage: IPublisherServiceProvider["sendImage"];
-    clone(config: ConfigStore, password: string): IPublisherService;
 }
 
 export interface IPublisherStore {
@@ -44,8 +44,11 @@ export interface PublisherProviderProps {
     publisherStore: IPublisherStore;
 }
 
+export type PublisherQueue = Queue<{ attempts: number; info: IPublishInfo; }>;
+
 export interface IPublisherState {
     password: string;
+    queue: PublisherQueue;
 }
 
 export const PublisherContext = React.createContext<IPublisherStore>({} as IPublisherStore);
@@ -57,22 +60,17 @@ export function makePublishInfo(image: Electron.NativeImage): IPublishInfo {
     };
 }
 
-const publisherFactory = (() => {
-    let last: PublisherService;
-    return (config: ConfigStore, password: string) =>
-        last && last.clone(config, password) || (last = new PublisherService(config, password)) && last;
-})();
-
 class PublisherProvider extends React.Component<{}, IPublisherState> {
     constructor(props: any) {
         super(props);
         this.state = {
             password: "",
+            queue: new Queue(),
         };
     }
 
     private publisherStoreFactory = (config: ConfigStore) => {
-        const service = publisherFactory(config, this.state.password);
+        const service = new PublisherService(config, this.state.password, this.state.queue);
         const store: IPublisherStore = {
             currentPassword: this.state.password,
             publisher: service,

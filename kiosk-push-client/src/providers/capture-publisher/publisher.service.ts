@@ -1,14 +1,14 @@
 import { ConfigStore } from "../config/config";
+import { FilePublisherService } from "./publishers/file-publisher.service";
+import { SftpPublisherService } from "./publishers/sftp-publisher.service";
 import {
     IPublisherService,
     IPublisherServiceProvider,
     IPublishInfo,
     PublisherCompletionEvent,
     PublisherCompletionStatus,
+    PublisherQueue,
 } from "./publisher.provider";
-import { FilePublisherService } from "./publishers/file-publisher.service";
-import { SftpPublisherService } from "./publishers/sftp-publisher.service";
-import { Queue } from "algothizms";
 
 type PartialPublisherProvider = Pick<IPublisherServiceProvider, "isEnabled">;
 
@@ -22,16 +22,11 @@ export class PublisherService implements IPublisherService, PartialPublisherProv
     constructor(
         config: ConfigStore,
         password: string,
-        private readonly queue: Queue<{ attempts: number; info: IPublishInfo; }> = new Queue()) {
+        private readonly queue: PublisherQueue) {
         this.publishers = [
             new SftpPublisherService(config, password),
             new FilePublisherService(config),
         ];
-    }
-
-    clone(config: ConfigStore, password: string): IPublisherService {
-        // we need to keep the queue around, this service is managing state!
-        return new PublisherService(config, password, this.queue);
     }
 
     canEnqueue(): boolean {
