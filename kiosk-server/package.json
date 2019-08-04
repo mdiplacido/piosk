@@ -9,6 +9,7 @@
   "license": "MIT",
   "keywords": [],
   "scripts": {
+    "preinstall": "npm install ../kiosk-common/kiosk-common-1.0.0.tgz --save",
     "describe": "npm-scripts-info",
     "build": "run-s clean && run-p build:*",
     "build:main": "tsc -p tsconfig.json",
@@ -59,7 +60,7 @@
     "fs-extra": "^7.0.1",
     "kiosk-common": "file:../kiosk-common/kiosk-common-1.0.0.tgz",
     "lodash": "^4.17.11",
-    "log4js": "^4.0.0",
+    "log4js": "^4.5.1",
     "rxjs": "^6.3.3",
     "sha.js": "^2.4.11",
     "ws": "^6.1.2",
