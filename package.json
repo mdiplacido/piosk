@@ -9,6 +9,7 @@
     "build:pusher": "cd kiosk-push-client && npm run make",
     "build:server": "cd kiosk-server && npm run build",
     "build": "npm run build:common && run-p build:pusher build:server build:browser",
+    "clean": "cd tools && npm run clean:all-proj",
     "install:browser": "cd kiosk-browser-client && npm install",
     "install:common": "cd kiosk-common && npm install",
     "install:pusher": "cd kiosk-push-client && npm install",
