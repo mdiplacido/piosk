@@ -5,6 +5,7 @@
   "description": "Piosk Push Client",
   "main": "src/index.ts",
   "scripts": {
+    "preinstall": "npm install ../kiosk-common/kiosk-common-1.0.0.tgz --save",
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
