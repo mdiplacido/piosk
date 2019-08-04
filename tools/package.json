@@ -4,7 +4,7 @@
   "description": "tool chain",
   "main": "index.js",
   "scripts": {
-    "clean:all-proj": "del-cli ../kiosk-push-client/node_modules ../kiosk-server/node_modules ../kiosk-browser-client/node_modules ../kiosk-common/node_modules --force",
+    "clean:all-proj": "del-cli ../kiosk-push-client/node_modules ../kiosk-server/node_modules ../kiosk-browser-client/node_modules ../kiosk-common/node_modules ../kiosk-common/kiosk-common-1.0.0.tgz --force",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
