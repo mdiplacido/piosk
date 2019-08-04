@@ -33,6 +33,7 @@ const NavBar = (props: NavBarProps) => {
                         Piosk Push Client
                     </Typography>
                     <Button color="inherit" onClick={navigateTo("/")}>Controller</Button>
+                    <Button color="inherit" onClick={navigateTo("/uploads")}>Uploads</Button>
                     <Button color="inherit" onClick={navigateTo("/settings")}>Settings</Button>
                     <Button color="inherit" onClick={navigateTo("/test")}>Test</Button>
                     <Button color="inherit" onClick={navigateTo("/logs")}>Logs</Button>

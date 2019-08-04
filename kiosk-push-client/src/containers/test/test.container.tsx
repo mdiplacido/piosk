@@ -16,18 +16,19 @@ import {
   withStyles
   } from "@material-ui/core";
 import { green } from "@material-ui/core/colors";
+import {
+  INotificationsActionsProp,
+  mapNotificationActionsToProps
+  } from "../../store/notifications/actions";
 import { LoggerSeverity } from "../../store/logger/actions";
 
 import {
   IPublisherService,
   IPublisherStore,
+  makePublishInfo,
   PublisherProviderProps,
   withPublisher,
 } from "../../providers/capture-publisher/publisher.provider";
-import {
-  INotificationsActionsProp,
-  mapNotificationActionsToProps,
-} from "../../store/notifications/actions";
 
 export interface State {
   password: string;
@@ -77,7 +78,7 @@ class TestContainer extends React.Component<TestContainerProps & INotificationsA
   constructor(props: TestContainerProps & INotificationsActionsProp) {
     super(props);
     this.state = {
-      password: props.publisherStore.publisher.currentPassword,
+      password: props.publisherStore.currentPassword,
       username: props.config.settings.sftpUsername,
       saving: false,
       success: false
@@ -143,21 +144,22 @@ class TestContainer extends React.Component<TestContainerProps & INotificationsA
     });
   }
 
-  private upload = (publisher: IPublisherService) => {
+  private upload = (publishProvider: IPublisherService) => {
     this.setState({ saving: true, success: false }, () => {
       const image = this.props.image as Electron.NativeImage;
+      const publishInfo = makePublishInfo(image);
 
       // here is an example of a memory leak. if we fire this and then the user moves to a different
       // view the call back would still happen but the current component is now unmounted.
       // todo: convert this to react hooks pattern... where we cancel.  option REDUX with side-effects
       // and cancellation would work too.
-      publisher
-        .sendImage(image)
+      publishProvider
+        .sendImage(publishInfo)
         .then(result => {
           this.setResult(true);
           console.log(`${JSON.stringify(result)} + ${image.toPNG().length}`);
         })
-        .catch(err => {
+        .catch((err: any) => {
           this.props.notificationActions.next(
             JSON.stringify(err),
             LoggerSeverity.Error,

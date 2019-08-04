@@ -1,7 +1,7 @@
 import * as React from "react";
-
-import { ConfigStore } from "../config/config";
+import * as uuid from "uuid";
 import { ConfigContext } from "../config/config.provider";
+import { ConfigStore } from "../config/config";
 import { getDisplayName } from "../util";
 import { PublisherService } from "./publisher.service";
 
@@ -21,13 +21,21 @@ export interface IPublishInfo {
     image: Electron.NativeImage;
 }
 
-export interface IPublisherService {
+export interface IPublisherServiceProvider {
     isEnabled: boolean;
-    currentPassword: string;
+    canSend(): Promise<boolean>;
     sendImage(info: IPublishInfo): Promise<PublisherCompletionEvent>;
 }
 
+export interface IPublisherService {
+    canEnqueue(): boolean;
+    enqueue(info: IPublishInfo): Promise<void>;
+    sendImage: IPublisherServiceProvider["sendImage"];
+    clone(config: ConfigStore, password: string): IPublisherService;
+}
+
 export interface IPublisherStore {
+    currentPassword: string;
     publisher: IPublisherService;
     changePassword: (password: string) => void;
 }
@@ -42,6 +50,19 @@ export interface IPublisherState {
 
 export const PublisherContext = React.createContext<IPublisherStore>({} as IPublisherStore);
 
+export function makePublishInfo(image: Electron.NativeImage): IPublishInfo {
+    return {
+        name: uuid() + ".png",
+        image,
+    };
+}
+
+const publisherFactory = (() => {
+    let last: PublisherService;
+    return (config: ConfigStore, password: string) =>
+        last && last.clone(config, password) || (last = new PublisherService(config, password)) && last;
+})();
+
 class PublisherProvider extends React.Component<{}, IPublisherState> {
     constructor(props: any) {
         super(props);
@@ -51,9 +72,10 @@ class PublisherProvider extends React.Component<{}, IPublisherState> {
     }
 
     private publisherStoreFactory = (config: ConfigStore) => {
-        const publisher = new PublisherService(config, this.state.password);
+        const service = publisherFactory(config, this.state.password);
         const store: IPublisherStore = {
-            publisher,
+            currentPassword: this.state.password,
+            publisher: service,
             changePassword: password => this.setState({ password })
         };
 
@@ -74,10 +96,10 @@ class PublisherProvider extends React.Component<{}, IPublisherState> {
     }
 }
 
-export function withPublisher<T extends {}>(
-    Component: React.ComponentClass<PublisherProviderProps & T> | React.FC<PublisherProviderProps & T>
-): React.RefForwardingComponent<typeof Component, PublisherProviderProps & T> {
-    const c: React.RefForwardingComponent<typeof Component, PublisherProviderProps & T> = (props: T) => {
+export function withPublisher<P extends {}>(
+    Component: React.ComponentClass<PublisherProviderProps & P> | React.FC<PublisherProviderProps & P>
+): React.RefForwardingComponent<typeof Component, P> {
+    const c: React.RefForwardingComponent<typeof Component, P> = (props: P) => {
         return (
             <PublisherContext.Consumer>
                 {publisher =>

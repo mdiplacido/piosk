@@ -14,7 +14,7 @@ import {
     useContext,
     useEffect
 } from "react";
-import { withPublisher, PublisherProviderProps } from '../../providers/capture-publisher/publisher.provider';
+import { withPublisher, PublisherProviderProps } from "../../providers/capture-publisher/publisher.provider";
 
 type CaptureControllerProps = ILoggerActionsProp & ConfigConsumerProps & PublisherProviderProps;
 

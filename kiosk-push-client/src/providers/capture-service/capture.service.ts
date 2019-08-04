@@ -1,16 +1,19 @@
-import { BrowserWindowLifeCycleManager, OnBrowserLifeCycleEventListener } from "./browser-window-life-cycle-manager";
+import {
+    BrowserWindowLifeCycleManager,
+    OnBrowserLifeCycleEventListener
+    } from "./browser-window-life-cycle-manager";
 import {
     CaptureStatus,
-    ICaptureConfig,
-    PickupStates,
     ConfigState,
     ConfigStore,
-} from "./../config/config";
+    ICaptureConfig,
+    PickupStates
+    } from "./../config/config";
 import {
     ILoggerActionCreator,
     LoggerSeverity
-} from "../../store/logger/actions";
-import { IPublisherService } from '../capture-publisher/publisher.provider';
+    } from "../../store/logger/actions";
+import { IPublisherService } from "../capture-publisher/publisher.provider";
 
 function normManagerName(name: string): string {
     // TODO: we should probably use a UUID to represent the manager config
@@ -28,6 +31,12 @@ export class CaptureService {
 
         if (!pending.length) {
             loggerActions.next("no pending captures to process", LoggerSeverity.Verbose);
+            return;
+        }
+
+        // make sure the publisher is not falling behind, paused, or some other issue
+        if (!publisher.canEnqueue()) {
+            loggerActions.next("Cannot process captures, the publisher queue is full!", LoggerSeverity.Verbose);
             return;
         }
 

@@ -1,14 +1,16 @@
 import {
     BrowserWindow,
     remote
-} from "electron";
+    } from "electron";
 import {
     CaptureStatus,
-    ConfigState
-} from "../config/config";
-import { ICaptureConfig } from "../config/config";
-import { IPublisherService, PublisherCompletionStatus, IPublishInfo } from '../capture-publisher/publisher.provider';
-import * as uuid from "uuid";
+    ConfigState,
+    ICaptureConfig
+    } from "../config/config";
+import {
+    IPublisherService,
+    makePublishInfo
+    } from "../capture-publisher/publisher.provider";
 
 export enum BrowserWindowLifeCycle {
     None = "none",
@@ -115,18 +117,11 @@ export class BrowserWindowLifeCycleManager {
         }
 
         this.updateState(CaptureStatus.Publishing);
-        // todo: publisher should use pngx format 
-        const imageInfo: IPublishInfo = {
-            name: uuid() + ".png",
-            image: this.capture,
-        };
 
-        const publishStatus = await Promise.race([publisher.sendImage(imageInfo), this.delay(lifeCycle, settleDelay, true /* throw */)]);
-        
-        if (publishStatus && publishStatus.status && publishStatus.status === PublisherCompletionStatus.Failure) {
-            this.updateState(CaptureStatus.Failed);
-            throw new Error(`Failed to upload image for ${this.name}, got error ${publishStatus.message}`);
-        } 
+        // todo: publisher should use pngx format
+        const imageInfo = makePublishInfo(this.capture);
+
+        await Promise.race([publisher.enqueue(imageInfo), this.delay(lifeCycle, settleDelay, true /* throw */)]);
 
         this.updateState(CaptureStatus.Published);
     }
