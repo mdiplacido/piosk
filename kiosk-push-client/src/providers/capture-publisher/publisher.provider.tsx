@@ -18,8 +18,9 @@ export interface PublisherCompletionEvent {
 }
 
 export interface IPublishInfo {
-    name: string;
     image: Electron.NativeImage;
+    name: string;
+    source: string;
 }
 
 export interface IPublisherServiceProvider {
@@ -35,9 +36,10 @@ export interface IPublisherService {
 }
 
 export interface IPublisherStore {
+    changePassword: (password: string) => void;
     currentPassword: string;
     publisher: IPublisherService;
-    changePassword: (password: string) => void;
+    queue: PublisherQueue;
 }
 
 export interface PublisherProviderProps {
@@ -53,10 +55,11 @@ export interface IPublisherState {
 
 export const PublisherContext = React.createContext<IPublisherStore>({} as IPublisherStore);
 
-export function makePublishInfo(image: Electron.NativeImage): IPublishInfo {
+export function makePublishInfo(image: Electron.NativeImage, source: string): IPublishInfo {
     return {
-        name: uuid() + ".png",
         image,
+        name: uuid() + ".png",
+        source,
     };
 }
 
@@ -71,10 +74,12 @@ class PublisherProvider extends React.Component<{}, IPublisherState> {
 
     private publisherStoreFactory = (config: ConfigStore) => {
         const service = new PublisherService(config, this.state.password, this.state.queue);
+
         const store: IPublisherStore = {
+            changePassword: password => this.setState({ password }),
             currentPassword: this.state.password,
             publisher: service,
-            changePassword: password => this.setState({ password })
+            queue: this.state.queue,
         };
 
         return store;

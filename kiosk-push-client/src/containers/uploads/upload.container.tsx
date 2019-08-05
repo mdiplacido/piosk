@@ -1,51 +1,214 @@
-import { Table, TableBody, TableCell, TableHead, TableRow, withStyles } from "@material-ui/core";
 import * as React from "react";
-import { connect } from "react-redux";
-
+import containerStyles from "../../components/common/styles";
 import PageContainer from "../../components/common/page-container";
-import containerStyles, { ContainerStyleProps } from "../../components/common/styles";
-import { PublisherCompletionStatus } from "../../providers/capture-publisher/publisher.provider";
+import SpinnerButton from "../../components/common/spinner-button";
+import { ChangeEvent } from "react";
+import {
+  ConfigConsumerProps,
+  withConfig
+} from "../../providers/config/config.provider";
+import { connect } from "react-redux";
+import {
+  createStyles,
+  TextField,
+  Theme,
+  WithStyles,
+  withStyles,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody
+} from "@material-ui/core";
+import { green } from "@material-ui/core/colors";
+import {
+  INotificationsActionsProp,
+  mapNotificationActionsToProps
+} from "../../store/notifications/actions";
+import { LoggerSeverity } from "../../store/logger/actions";
 
-export interface UploadsProps {
+import {
+  IPublisherService,
+  IPublisherStore,
+  makePublishInfo,
+  PublisherProviderProps,
+  withPublisher,
+  PublisherCompletionStatus,
+} from "../../providers/capture-publisher/publisher.provider";
+
+export interface State {
+  password: string;
+  username: string;
+  saving: boolean;
+  success: boolean;
 }
 
-const Uploads = (props: UploadsProps & ContainerStyleProps) => {
-    const { classes } = props;
+const styles = (theme: Theme) => ({
+  ...createStyles({
+    wrapperRoot: {
+      display: "flex",
+      alignItems: "center",
+    },
+    wrapper: {
+      margin: theme.spacing.unit,
+      "margin-left": "0px",
+      position: "relative",
+    },
+    buttonSuccess: {
+      backgroundColor: green[500],
+      "&:hover": {
+        backgroundColor: green[700],
+      },
+    },
+    buttonProgress: {
+      color: green[500],
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      marginTop: -12,
+      marginLeft: -12,
+    },
+    ...containerStyles(theme)
+  }),
+});
+
+export interface TestContainerImageProp {
+  image?: Electron.NativeImage;
+}
+
+export interface TestContainerProps extends WithStyles<typeof styles>, PublisherProviderProps, ConfigConsumerProps, TestContainerImageProp {
+}
+class TestContainer extends React.Component<TestContainerProps & INotificationsActionsProp, State> {
+  mounted = false;
+
+  constructor(props: TestContainerProps & INotificationsActionsProp) {
+    super(props);
+    this.state = {
+      password: props.publisherStore.currentPassword,
+      username: props.config.settings.sftpUsername,
+      saving: false,
+      success: false
+    };
+  }
+
+  componentDidMount(): void {
+    this.mounted = true;
+  }
+
+  componentWillUnmount(): void {
+    this.mounted = false;
+  }
+
+  render() {
+    const { classes, publisherStore: publisherStore } = this.props;
+    const { success, saving } = this.state;
+
+    const onUpload = () => this.upload(publisherStore.publisher);
+
+    const onPasswordChangeWithPub =
+      (event: ChangeEvent<HTMLInputElement>) => this.onPasswordChange(event, publisherStore);
 
     return (
+      <React.Fragment>
         <PageContainer title="Uploads">
-            <Table className={classes.table}>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Upload id</TableCell>
-                        <TableCell align="left">Size</TableCell>
-                        <TableCell align="left">Source</TableCell>
-                        <TableCell align="left">Status</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {[{ key: "upload1", size: 1024 ** 2, source: "Google", status: PublisherCompletionStatus.None }]
-                        .map(c => (
-                            <TableRow key={c.key}>
-                                <TableCell component="th" scope="row">
-                                    {c.key}
-                                </TableCell>
-                                <TableCell component="th" scope="row">
-                                    {c.size}
-                                </TableCell>
-                                <TableCell component="th" scope="row">
-                                    {c.source}
-                                </TableCell>
-                                <TableCell component="th" scope="row">
-                                    {c.status}
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                </TableBody>
-            </Table>
-            <br />
-        </PageContainer>
-    );
-};
+          <TextField
+            id="username"
+            label="Username"
+            className={classes.textField}
+            value={this.state.username}
+            disabled={true}
+            margin="normal"
+          />
+          <br />
+          <TextField
+            id="password"
+            label="Password"
+            type="password"
+            className={classes.textField}
+            value={this.state.password}
+            onChange={onPasswordChangeWithPub}
+            margin="normal"
+          />
+          <br />
+          <SpinnerButton
+            onClickHandler={onUpload}
+            spinning={saving}
+            success={success}
+            disabled={!this.canUpload() || saving}>
+            Test Upload Image
+          </SpinnerButton>
 
-export default connect()(withStyles(containerStyles)(Uploads));
+          <Table className={classes.table}>
+            <TableHead>
+              <TableRow>
+                <TableCell>Upload id</TableCell>
+                <TableCell align="left">Source</TableCell>
+                <TableCell align="left">Attempts</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {Array.from(publisherStore.queue.items())
+                .map(c => (
+                  <TableRow key={c.info.name}>
+                    <TableCell component="th" scope="row">
+                      {c.info.name}
+                    </TableCell>
+                    <TableCell component="th" scope="row">
+                      {c.info.source}
+                    </TableCell>
+                    <TableCell component="th" scope="row">
+                      {c.attempts}
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+          <br />
+        </PageContainer>
+      </React.Fragment>
+    );
+  }
+
+  private canUpload = () => !!this.props.image && !!this.state.password.trim() && !!this.state.username.trim();
+
+  private onPasswordChange = (event: ChangeEvent<HTMLInputElement>, publisherState: IPublisherStore) => {
+    this.setState({ password: event.target.value }, () => {
+      publisherState.changePassword(this.state.password);
+    });
+  }
+
+  private upload = (publishProvider: IPublisherService) => {
+    this.setState({ saving: true, success: false }, () => {
+      const image = this.props.image as Electron.NativeImage;
+      const publishInfo = makePublishInfo(image, "test");
+
+      // here is an example of a memory leak. if we fire this and then the user moves to a different
+      // view the call back would still happen but the current component is now unmounted.
+      // todo: convert this to react hooks pattern... where we cancel.  option REDUX with side-effects
+      // and cancellation would work too.
+      publishProvider
+        .sendImage(publishInfo)
+        .then(result => {
+          this.setResult(true);
+          console.log(`${JSON.stringify(result)} + ${image.toPNG().length}`);
+        })
+        .catch((err: any) => {
+          this.props.notificationActions.next(
+            JSON.stringify(err),
+            LoggerSeverity.Error,
+          );
+
+          this.setResult(false);
+          console.error(err);
+        });
+    });
+  }
+
+  setResult = (success: boolean) => {
+    if (this.mounted) {
+      this.setState({ success, saving: false });
+    }
+  }
+}
+
+export default connect(null, mapNotificationActionsToProps)(withConfig<TestContainerImageProp>(withPublisher(withStyles(styles)(TestContainer))));

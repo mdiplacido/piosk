@@ -119,7 +119,7 @@ export class BrowserWindowLifeCycleManager {
         this.updateState(CaptureStatus.Publishing);
 
         // todo: publisher should use pngx format
-        const imageInfo = makePublishInfo(this.capture);
+        const imageInfo = makePublishInfo(this.capture, this.name);
 
         await Promise.race([publisher.enqueue(imageInfo), this.delay(lifeCycle, settleDelay, true /* throw */)]);
 

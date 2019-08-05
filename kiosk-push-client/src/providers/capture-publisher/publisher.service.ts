@@ -12,7 +12,7 @@ import {
 
 type PartialPublisherProvider = Pick<IPublisherServiceProvider, "isEnabled">;
 
-const MAX_QUEUE_SIZE = 1;
+const MAX_QUEUE_SIZE = 2;
 
 // TODO: need a timer somewhere that calls the PublisherService to push the next image
 export class PublisherService implements IPublisherService, PartialPublisherProvider {
