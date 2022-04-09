@@ -67,7 +67,7 @@
     "fs-extra": "^7.0.1",
     "kiosk-common": "file:../kiosk-common/kiosk-common-1.0.0.tgz",
     "log4js": "^4.3.1",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "raf": "^3.4.0",
     "react": "^16.8.2",
     "react-dom": "^16.8.2",
